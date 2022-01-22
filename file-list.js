@@ -1,5 +1,5 @@
 // file-list.js
-// version 0.1.2
+// version 0.1.6
 
 export const scriptFiles = [
     "scan.js",
@@ -41,7 +41,9 @@ export const scriptFiles = [
 
     "aliases.script",
     "file-list.js",
-    "update.js"
+    "update.js",
+
+    "rm.js"
 ];
 
 
