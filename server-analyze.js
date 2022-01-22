@@ -18,8 +18,8 @@ export async function main(ns) {
     const lg = new Logger(ns);
 
     if (!ns.serverExists(target)) {
-    lg.log(1, "server '%s' not found", target);
-    return;
+        lg.log(1, "server '%s' not found", target);
+        return;
     }
 
     const host = ns.getHostname();
@@ -28,23 +28,22 @@ export async function main(ns) {
     const t = threads || Math.floor(ns.getServerMaxRam(host) - ns.getServerUsedRam(host))/ns.getScriptRam("worker.js");
 
     if (t == 0) {
-    lg.log(1, "server '%s' unable to do anything, not enough memory on host %s", target, host);
-    return;
+        lg.log(1, "server '%s' unable to do anything, not enough memory on host %s", target, host);
+        return;
     }
 
     lg.log(1, "server '%s' analyze grow/hack on max threads %d", target, t);
 
     const server = new Server(target);
+    updateInfo(ns, server);
 
     const table = new TableFormatter(ns,
-        ["    Name", "Chance", "Min ", "Cur",  "Avail",  "Max",    "Ratio", "Hack",   "Grow",   "Weak",   "Hack r", "Grow r", "Hack Th", "Hack $", "Grow Th", "Grow $", "Weak Th", "Sec Down"],
-        ["    %s ",  "%.2f%%", "%.2f", "%.2f", "%.2f%s", "%.2f%s", "%.5f",  "%.2f%s", "%.2f%s", "%.2f%s", "%.8f",   "%d",     "%d",      "%.2f%s", "%d",      "%.2f%s", "%d",      "%.2f"         ]
+        ["    Name", "Chance",  "Min ",   "Cur",     "Avail",  "Max",     "Ratio", "Hack",   "Grow",   "Weak",   "Hack r",
+           "Grow r", "Hack Th", "Hack $", "Grow Th", "Grow $", "Weak Th", "Sec Down"],
+        [      "%s",  "%.2f%%", "%.2f",   "%.2f",    "%.2f%s", "%.2f%s",  "%.5f",  "%.2f%s", "%.2f%s", "%.2f%s", "%.8f",
+               "%d",     "%d",  "%.2f%s", "%d",      "%.2f%s", "%d",      "%.2f"         ]
     );
-    // sort by hacking chance descending
-    //servers.sort(function(a, b){return ns.hackAnalyzeChance(b.name) - ns.hackAnalyzeChance(a.name)});
 
-    // sort by hackin level ascending
-    updateInfo(ns, server);
     table.push(
         server.name,
         100 * server.analyzeChance,
@@ -98,14 +97,14 @@ export async function main(ns) {
     let na = a;
 
     while (gt > t) {
-    if (++i > 10 ) break; // обычно хватает нескольких итераций
-    const tr = gt/t; // на сколько нужно уменьшить
-    na = a + (m - a) / tr;
-    nr = na/a;
-    lg.log(1, "gt %d t %d tr %f, a %d m %d na %d nr %f", gt, t, tr, a, m, na, nr);
-    gt = Math.ceil(ns.growthAnalyze(target, nr));
-    m = a * nr;
-    lg.log(1, "thread grow ratio %f threads %d", nr, gt);
+        if (++i > 10 ) break; // обычно хватает нескольких итераций
+        const tr = gt/t; // на сколько нужно уменьшить
+        na = a + (m - a) / tr;
+        nr = na/a;
+        lg.log(1, "gt %d t %d tr %f, a %d m %d na %d nr %f", gt, t, tr, a, m, na, nr);
+        gt = Math.ceil(ns.growthAnalyze(target, nr));
+        m = a * nr;
+        lg.log(1, "thread grow ratio %f threads %d", nr, gt);
     }
 
     const ga = costFormat(a * nr - a);
@@ -130,10 +129,10 @@ export async function main(ns) {
 
     // так погоди если у нас gt > t, то мы должны и hack ограничить этим t значением
     if (st > t) {
-    st = t;
-    sr = 1/(1 - server.hackMoney * st); //a/(a - a * hackMoney * t);
-    sm = costFormat(a*(1-1/sr));
-    st = Math.floor(ns.hackAnalyzeThreads(target, sm.value)); // проверка
+        st = t;
+        sr = 1/(1 - server.hackMoney * st); //a/(a - a * hackMoney * t);
+        sm = costFormat(a*(1-1/sr));
+        st = Math.floor(ns.hackAnalyzeThreads(target, sm.value)); // проверка
     }
 
     lg.log(1, "max money nr %f sr %f hack %.2f%s threads << %d >>", nr, sr, sm.cost, sm.unit, st);

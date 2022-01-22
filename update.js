@@ -1,5 +1,5 @@
 // update.js
-// version 0.1.4
+// version 0.1.7
 
 const baseUrl      = 'https://raw.githubusercontent.com/AlexBurnes/btbsjs/master/';
 const fileList     =  "file-list.js";
@@ -24,5 +24,6 @@ async function update(ns) {
         ns.tprintf("failed get update-fetch script, %s/%s", baseUrl, updateScript);
         return;
     }
+    await ns.run("update-fetch.js");
     ns.tprint('Done updating!');
 }

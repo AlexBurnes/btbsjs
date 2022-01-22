@@ -3,7 +3,6 @@
 
 /*
     based https://github.com/Baizey/BitBurner.git  version 1.2.0 worm.js
-
     very simple and effective script
 */
 

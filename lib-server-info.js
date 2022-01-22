@@ -11,14 +11,14 @@ export function serverInfo(ns, name) {
     const moneyMax   = costFormat(ns.getServerMaxMoney(name));
 
     return [
-    "[",  ns.getServerRequiredHackingLevel(name),
+        "[",  ns.getServerRequiredHackingLevel(name),
         ", ", ns.getServerNumPortsRequired(name),
-    "] ",
+        "] ",
         ns.getServerMaxRam(name), "Gb",
         " ", round(moneyAvail.cost, 2), moneyAvail.unit,
-    "$ / ", round(moneyMax.cost, 2), moneyMax.unit,
-    "$ (",
+        "$ / ", round(moneyMax.cost, 2), moneyMax.unit,
+        "$ (",
         moneyMax ? round((100 * moneyAvail.value / moneyMax.value), 2) : 0,
-    "%)"
+        "%)"
     ].join("");
 }

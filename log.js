@@ -41,8 +41,8 @@ export class Logger {
             this.ns.tprintf("%s", this.ns.vsprintf(format, args));
         }
         return;
-        }
-        log(level, format, ...args) {
+    }
+    log(level, format, ...args) {
         if (typeof(level) !== "number") throw Error("BUG: wrong usage of Logger.log(level, format, ..args), wrong type of argument level, expected number");
         if (this.logLevel == 0 || level > this.logLevel) return;
         if (this.file) {

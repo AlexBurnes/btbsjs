@@ -4,9 +4,9 @@ const memoryUnits = ['b', 'k', 'M', 'G', 'T'];
 
 class MemoryFormatted {
     constructor(value, size, unit) {
-	this.value = value;
-	this.size = size;
-	this.unit = unit;
+    this.value = value;
+    this.size = size;
+    this.unit = unit;
     }
 }
 
@@ -24,9 +24,9 @@ const costUnits   = ['',  'k', 'm', 'b'];
 
 class CostFormatted {
     constructor(value, cost, unit) {
-	this.value = value;
-	this.cost = cost;
-	this.unit = unit
+        this.value = value;
+        this.cost = cost;
+        this.unit = unit
     }
 }
 
@@ -44,9 +44,9 @@ const timeBases = [60,  60,  60,  24,  30,  12];
 
 class TimeFormatted {
     constructor(value, time, unit) {
-	this.value = value;
-	this.time = time;
-	this.unit = unit;
+        this.value = value;
+        this.time = time;
+        this.unit = unit;
     }
 }
 

@@ -3,7 +3,7 @@
 export class Target {
     /**
      * @param {import("Ns").NS } ns
-     * @param {string} name     
+     * @param {string} name
      * @param {Array{server}} hosts
      */
     constructor(logger, name, hosts) {
@@ -62,7 +62,7 @@ export class Target {
      */
 
     kill(options = {}) {
-        // foreach hosts check there is a worker on the host, if exists kill 
+        // foreach hosts check there is a worker on the host, if exists kill
     }
 
     execute(cmd, threads, options = {}) {
@@ -72,7 +72,7 @@ export class Target {
         // write info about pid of sctipt
         // const pid = this.ns.exec('worker.js', this.host, threads, this.name, cmd, start);
 
-        // always wait 
+        // always wait
         // if (!options.await) return Promise.resolve();
 
         //this.lg.log("[%s:%d] work start '%s' job '%s' threads %d", this.host, pid, this.name, cmd, threads);
@@ -99,5 +99,5 @@ export class Target {
             }
             resolve();
         })
-    }	
+    }
 }
