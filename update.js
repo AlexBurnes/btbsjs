@@ -1,5 +1,5 @@
 // update.js
-// version 0.1.3
+// version 0.1.4
 
 const baseUrl      = 'https://raw.githubusercontent.com/AlexBurnes/btbsjs/master/';
 const fileList     =  "file-list.js";
@@ -19,7 +19,7 @@ async function update(ns) {
         return;
     }
 
-    await ns.wget(`${baseUrl}${fileList}`, updateScript);
+    await ns.wget(`${baseUrl}${updateScript}`, updateScript);
     if (!ns.fileExists(updateScript, host)) {
         ns.tprintf("failed get update-fetch script, %s/%s", baseUrl, updateScript);
         return;
