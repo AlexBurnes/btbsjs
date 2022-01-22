@@ -1,3 +1,6 @@
+// file-list.js
+// version 0.1.2
+
 export const scriptFiles = [
     "scan.js",
     "scan-info-with-contracts.js",
