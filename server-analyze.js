@@ -1,5 +1,5 @@
 // server-analyze.js
-// version 0.1.0
+// version 0.1.9
 
 /*
     experimetal code for analyze server stat to make hack strategy
@@ -68,7 +68,7 @@ export async function main(ns) {
     table.print();
 
     // consider this is a max grouw rate possible for server
-    const serverGrowthThreads = server.serverMaxGrouthThreads;
+    const serverGrowthThreads = server.serverMaxGrowthThreads;
     lg.log(1, "server growth effect %d threads %d", server.serverGrowth, serverGrowthThreads);
 
     // current grow rate threads to max money, if unknown get max grow rate threads
