@@ -66,11 +66,13 @@ export async function main(ns) {
     );
 
     table.print();
-    //считаем что это максимальный рост который возможен у сервера
+
+    // consider this is a max grouw rate possible for server
     const serverGrowthThreads = server.serverMaxGrouthThreads;
     lg.log(1, "server growth effect %d threads %d", server.serverGrowth, serverGrowthThreads);
 
-    // server grow rate threads, if unknown get max grow rate threads
+    // current grow rate threads to max money, if unknown get max grow rate threads
+    // but we must recalc it to secure level
     let gt = server.growMaxThreads || serverGrowthThreads;
 
     let a = server.availMoney.value;

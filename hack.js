@@ -9,7 +9,7 @@ export async function main(ns) {
     let [name, threads, host] = ns.args;
     const lg = new Logger(ns);
     if (name == undefined || typeof(name) !== 'string') {
-        ns.tprintf("usage: run grow.js name [threads] [host]");
+        ns.tprintf("usage: run hack.js name [threads] [host]");
         return;
     }
     if (!ns.hasRootAccess(name)) {
@@ -23,11 +23,11 @@ export async function main(ns) {
     }
     if (threads == undefined) threads = 0;
     else if (typeof(threads) !== "number") {
-        ns.tprintf("usage: run grow.js name [threads] [host]")
+        ns.tprintf("usage: run hack.js name [threads] [host]")
         return;
     }
     const target = new Target(lg, name, host);
-    await target.grow(threads, {await: true});
+    await target.hack(threads, {await: true});
 }
 
 export function autocomplete(data, args) {
