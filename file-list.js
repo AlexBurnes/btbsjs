@@ -37,7 +37,8 @@ export const scriptFiles = [
     "worker.js",
 
     "aliases.script",
-    "file-list.js"
+    "file-list.js",
+    "update.js"
 ];
 
 
