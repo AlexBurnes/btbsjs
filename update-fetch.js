@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.2.1'; // update this every time when edit the code!!!
+const Version = '0.2.1.2'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -56,14 +56,23 @@ async function update(lg, baseUrl) {
     const host = ns.getHostname();
     lg.lg(1, "update %d files", scriptFiles.length);
 
+    const host_files = new Map();
+    ns.ls()
+        .filter(file => file.match(/.*\.js|.*\.txt/))
+        .filter(file => !file.match(/^bk_.\.js/))
+        .forEach(file => {host_files.set(host_file, host_file)});
+
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
 
         lg.lg(1, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
 
-        ns.rm(`bk_${file}`);
-        if (ns.fileExists(file, host)) {
-            ns.mv(host, file, `bk_${file}`);
+        if (host_files.has(file)) {
+            ns.rm(`bk_${file}`);
+            if (ns.fileExists(file, host)) {
+                ns.mv(host, file, `bk_${file}`);
+            }
+            host_files.set(file, `bk_${file}`);
         }
 
         await ns.wget(`${baseUrl}${file}`, file);
@@ -73,10 +82,23 @@ async function update(lg, baseUrl) {
         }
 
         //FIXME compare file versions!!! inform user about
+        if (host_files.has(fille)) {
+            ns.tprintf("[%d/%d] uploaded, compare version of %s and bk_%s", i+1, scriptFiles.length, file);
+
+            host_files.delete(file);
+        }
+        else {
+            ns.tprintf("[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
+        }
 
         lg.lg(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
 
+    }
 
-
+    if (host_files.size > 0) {
+        lg.lg(1, "not updated files:");
+        host_files.forEach((file, key) => {
+            lg.lg(1, "\t%s");
+        });
     }
 }
