@@ -20,8 +20,8 @@ export class Target {
         this.ns.print(`Host: ${this.host}, Target: ${this.name}`);
     }
 
- 
-    /**function 
+
+    /**function
      * @param {number} threads
      * @param {{start?: number, await?: boolean}} options
      * @returns {Promise<void>}
@@ -72,7 +72,7 @@ export class Target {
         const pid = this.ns.exec('worker.js', this.host, threads, this.name, cmd, start, this.host, threads, options.await);
         if (!options.await) return Promise.resolve();
 
-        //this.lg.log("[%s:%d] work start '%s' job '%s' threads %d", this.host, pid, this.name, cmd, threads);
+        //this.lg.lg("[%s:%d] work start '%s' job '%s' threads %d", this.host, pid, this.name, cmd, threads);
         const end = new Date(start + options.await);
         const begin = Date.now();
         return new Promise(async resolve => {
@@ -87,9 +87,9 @@ export class Target {
                     else await this.ns.sleep(1000)
                 }
                 else await this.ns.sleep(1000)
-                //await this.lg.log("[%s:%d] work done for '%s' job '%s' in %s", this.host, pid, this.name, cmd, timeout.toUTCString().substr(17, 8));
+                //await this.lg.lg("[%s:%d] work done for '%s' job '%s' in %s", this.host, pid, this.name, cmd, timeout.toUTCString().substr(17, 8));
             }
             resolve();
         })
-    }	
+    }
 }

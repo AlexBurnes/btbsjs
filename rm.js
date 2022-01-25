@@ -16,7 +16,7 @@ export async function main(ns) {
     const lg = new Logger(ns);
 
     if (filter == undefined) {
-        lg.log(1, "usage: rm pattern [host]");
+        lg.lg(1, "usage: rm pattern [host]");
         return;
     }
 
@@ -27,10 +27,10 @@ export async function main(ns) {
         .forEach(file => {
             ns.rm(file, host);
             if (ns.fileExists(file, host)) {
-                lg.log(1, "failed rm %s", file);
+                lg.lg(1, "failed rm %s", file);
             }
             else {
-                lg.log(1, "rm %s", file);
+                lg.lg(1, "rm %s", file);
             }
         });
 }

@@ -1,29 +1,29 @@
-// watcher.js
+// botnet.js
 // version 0.1.10
 
-const Module  = 'watcher.js';
-const Version = '0.2.0'
-
 /*
-    listen port and output events info
-    watch for hack,grow,weaken actions and output server affected information
+    botnet hacking machine, based on wather script, it would be event driven script to hack all servers
+    and monitor the chagens :)
 
 */
 
-import {Constants} from "lib-constants.js";
+const protocolVersion = 2;
+
 import {costFormat, timeFormat} from "lib-units.js"
 import {Server, serversList} from "lib-server-list.js"
 import {updateInfo} from "lib-server-info-full.js"
 import {Logger} from "log.js"
 
+const receivePort = 1;
+const sendPort    = 2;
 
-const protocolVersion = Constants.protocolVersion;
-const watchPort       = Constants.watchPort;
+const debugLevel  = 0;
+const logLevel    = 1;
 
-const debugLevel = 0;
-const logLevel   = 1;
+let quietMode     = 0;
 
-let quietMode    = 0;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// events from Target to start action for target on server
 
 async function actionStart(lg, servers, time, data) {
     const ns = lg.ns;
@@ -56,6 +56,10 @@ async function actionStart(lg, servers, time, data) {
         );
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// events from Target about stop action for target on server
+// collect changes, make new decition based on hacking strategy
 
 async function actionStop(lg, servers, time, data) {
     const ns = lg.ns;
@@ -106,44 +110,15 @@ async function actionStop(lg, servers, time, data) {
                 currentTarget.diffGrowTime   = currentTarget.growTime.value/target.growTime.value;
                 currentTarget.diffWeakTime   = currentTarget.weakTime.value/target.weakTime.value;
                 // FIXME gather information for max/min times!!!
-                const timeSpent = timeFormat((Date.now() - target.startTime)/1000);
-                if (quietMode == 0) {
-                    if (method == "weaken") {
-                        lg.lg(1, "<= '%s' %s => %s%.2f -> %.2f / %.2f in %.2f%s",
-                            server, method,
-                            currentTarget.currentSecurity > target.currentSecurity
-                                ? "+"
-                                : "",
-                            currentTarget.diffSecuriry,
-                            currentTarget.currentSecurity, currentTarget.minSecurity,
-                            timeSpent.time, timeSpent.unit
-                        );
-                    }
-                    else {
-                        lg.lg(1, "<= '%s' %s => %s%.2f%s -> %.2f%s / %.2f%s in %.2f%s",
-                            server, method,
-                            currentTarget.availMoney.value > target.availMoney.value
-                                ? "+"
-                                : currentTarget.availMoney.value == target.availMoney.value
-                                    ? ""
-                                    : "-",
-                            currentTarget.diffAvailMoney.cost, currentTarget.diffAvailMoney.unit,
-                            currentTarget.availMoney.cost, currentTarget.diffAvailMoney.unit,
-                            currentTarget.maxMoney.cost,   currentTarget.maxMoney.unit,
-                            timeSpent.time, timeSpent.unit
-                       );
-                    }
-                }
-                //FIXME need caclulate timeout depends on money value
-                if (method == "hack" && currentTarget.diffAvailMoney.value > 0) {
-                    const text = ns.sprintf("%s +%.2f%s", server, currentTarget.diffAvailMoney.cost, currentTarget.diffAvailMoney.unit);
-                    const timeout = Math.log10(currentTarget.diffAvailMoney.value/1000000)*5;
-                    if (timeout < 5) timeout = 5;
-                    if (timeout > 60) timeout = 60;
-                    ns.toast(text, "success", timeout * 1000);
-                }
+
+                currentTarget.timeSpent = timeFormat((Date.now() - target.startTime)/1000);
+
                 //replace target
                 servers.set(server, currentTarget);
+
+                //serverHack(lg, server);
+                eventStopInfo(lg, currentTarget, method);
+                // serversInfo
 
                 //ns.run("server-analyze.js", 1, server);
 
@@ -153,52 +128,64 @@ async function actionStop(lg, servers, time, data) {
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// event start action on target from server hack script
+
+async function actionInfo(lg, servers, time, data) {
+    const ns = lg.ns;
+
+    if (quietMode == 0) lg.lg(1, "%s", data.join(", "));
+    return;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// output event stop action on target
+
+function eventStopInfo(lg, server, method) {
+    const timeSpent = server.timeSpent;
+
+    if (quietMode) return;
+
+    if (method == "weaken") {
+        lg.lg(1, "<= '%s' %s => %s%.2f -> %.2f / %.2f in %.2f%s",
+            server.name, method,
+            server.diffSecuriry > 0
+                ? "+"
+                : "",
+            server.diffSecuriry,
+            server.currentSecurity, server.minSecurity,
+            timeSpent.time, timeSpent.unit
+        );
+    }
+    else {
+        lg.lg(1, "<= '%s' %s => %s%.2f%s -> %.2f%s / %.2f%s in %.2f%s",
+            server.name, method,
+            server.diffAvailMoney.value > 0
+                ? "+"
+                : server.diffAvailMoney.value == 0
+                    ? ""
+                    : "-",
+            server.diffAvailMoney.cost, server.diffAvailMoney.unit,
+            server.availMoney.cost,     server.diffAvailMoney.unit,
+            server.maxMoney.cost,       server.maxMoney.unit,
+            timeSpent.time, timeSpent.unit
+       );
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Handle control events to control this script or request information
+
 async function actionCtrl(lg, servers, time, data) {
     const ns = lg.ns;
 
-    const port = data[0];
+    const port = data.shift();
 
-    if (quietMode == 0) lg.lg(1, "ctrl receive %s, port %d", data[1], data[0]);
+    if (quietMode == 0) lg.lg(1, "ctrl receive %s, port %d", data[0], port);
 
     switch (data[1]) {
         case "server-hacking-list":
-            const scripts = new Map();
-            const own_servers = ns.getPurchasedServers();
-            own_servers.push("home");
-            own_servers.forEach(server => {
-                const procs = ns.ps(server);
-                procs
-                    .filter(proc => proc.filename == "server-hack.js")
-                    .forEach(proc => {
-                        scripts.set(proc.args[0], true)
-                    });
-            });
-            const list = new Array();
-            servers.forEach((server, key) => {
-                lg.ld(1, "server %s, action %s", server.name, server.currentAction);
-                if (
-                    ns.getServerMaxMoney(server.name) > 0 &&
-                    ns.hasRootAccess(server.name) &&
-                    ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel() &&
-                    scripts.has(server.name)
-                ) {
-                    list.push(server);
-                }
-            });
-
-            if (port > 0)  {
-                const info =
-                    list
-                        .map(
-                            s =>
-                                ns.sprintf("%s,%s,%d,%d,%s,%f,%f,%f",
-                                    s.name, s.currentAction, s.startTime, s.endTime,
-                                    s.lastAction, s.diffAvailMoney.value, s.totalAmount, s.diffSecuriry
-                                )
-                        )
-                        .join(";");
-                await ns.tryWritePort(port, ns.sprintf("%d|%d|#|server-hacking-list|%s", Date.now(), protocolVersion, info));
-            }
+            await ctrServerHackingList(lg, servers, time, port, data);
             break;
         case "quiet":
             quietMode = 1;
@@ -220,42 +207,54 @@ async function actionCtrl(lg, servers, time, data) {
     */
 }
 
-async function actionInfo(lg, servers, time, data) {
-    const ns = lg.ns;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// events from Target about stop action for target on server
 
-    if (quietMode == 0) lg.lg(1, "%s", data.join(", "));
+async function ctrServerHackingList(lg, servers, time, data) {
+    const ns = lg.ns;
+    const scripts = new Map();
+    const procs = await ns.ps(ns.getHostname());
+    procs
+        .filter(proc => proc.filename = "server-hack.js")
+        .forEach(proc => {
+            scripts.set(proc.args[0], true)
+        });
+    const list = new Array();
+    servers.forEach((server, key) => {
+        lg.ld(1, "server %s, action %s", server.name, server.currentAction);
+        if (
+            ns.getServerMaxMoney(server.name) > 0 &&
+            ns.hasRootAccess(server.name) &&
+            ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel() &&
+            scripts.has(server.name)
+        ) {
+            list.push(server);
+        }
+    });
+
+    if (port > 0)  {
+        const info =
+            list
+                .map(
+                    s =>
+                        ns.sprintf("%s,%s,%d,%d,%s,%f,%f,%f",
+                            s.name, s.currentAction, s.startTime, s.endTime,
+                            s.lastAction, s.diffAvailMoney.value, s.totalAmount, s.diffSecuriry
+                        )
+                )
+                .join(";");
+        await ns.tryWritePort(port, ns.sprintf("%d|%d|#|server-hacking-list|%s", Date.now(), protocolVersion, info));
+    }
     return;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// events from Target about stop action for target on server
+
 /** @param {NS} ns **/
 export async function main(ns) {
+
     const lg = new Logger(ns, {logLevel: logLevel, debugLevel: debugLevel});
-    // run only at home and ctr-server
-    if (!ns.getHostname().match(/home|ctrl-server/)) {
-        ns.tprintf("could be run only on home or ctrl-server");
-        return;
-    }
-    //check that we do not run on home or ctrl-server
-    const is_home_run =
-        ns.getHostname() != "home" &&
-        ns.ps("home").filter(proc => proc.filename == Module).length
-        ? true : false;
-    const is_ctrl_run =
-        ns.getHostname() != "ctrl-server" &&
-        ns.serverExists("ctrl-server") &&
-        ns.ps("ctrl-server").filter(proc => proc.filename == Module).length
-        ? true : false;
-
-    if (is_home_run || is_ctrl_run){
-        ns.tprintf("module is already running on %s", is_home_run ? "home" : "ctrl-server");
-        return;
-    }
-
-    if (ns.getHostname() !== "ctrl-server" && ns.serverExists("ctrl-server")) {
-        lg.lg(1, "start watcher on 'ctrl-server'");
-        ns.exec(Module, "ctrl-server", 1);
-        return;
-    }
 
     const servers = new Map();
     serversList(ns)
@@ -272,7 +271,6 @@ export async function main(ns) {
             server.diffSecuriry   = 0;
             server.startTime      = 0;
             server.endTime        = 0;
-            server.hosts          = new Map();
             updateInfo(ns, server);
             servers.set(server.name, server);
         });
@@ -282,7 +280,7 @@ export async function main(ns) {
     lg.ld(1, "time %d", oldTime);
 
     while (true) {
-        const str = await ns.readPort(watchPort);
+        const str = await ns.readPort(receivePort);
         if (str !== "NULL PORT DATA") {
             lg.ld(1, "time %d", oldTime);
             const [time, version, action, ...data] = str.split("|");
@@ -310,7 +308,7 @@ export async function main(ns) {
         }
         oldTime = Date.now();
 
-        //FIXME need function to check wait sto events from servers;
+        //FIXME need function to check wait stop events from servers;
         // need event driven mechanism, like listent + on receive
         await ns.sleep(100);
     }

@@ -37,11 +37,11 @@ export async function main(ns) {
         if (str !== "NULL PORT DATA") {
             const [time, version, action, ...data] = str.split("|");
             if (time == undefined || version == undefined || version != protocolVersion) continue;
-            lg.debug(1, "%d %s: %s", time, action, data.join(", "));
+            lg.ld(1, "%d %s: %s", time, action, data.join(", "));
             if (action == "#") {
                 if (data[0] == "server-hacking-list") {
                     const list = data[1].split(";").filter(server => !server.match(/^$/));
-                    lg.log(1, "hacking servers %d", list.length);
+                    lg.lg(1, "hacking servers %d", list.length);
                     if (list.length > 0) {
                         const servers = new Array();
                         list.forEach(
@@ -63,7 +63,7 @@ export async function main(ns) {
                                     diff_security,
                                     total_amount
                                 ]);
-                                //lg.debug(1, "\t%s data: %s", server[0], server.join(","));
+                                //lg.ld(1, "\t%s data: %s", server[0], server.join(","));
                             });
 
                         servers.sort(function(a, b){return b[6].value - a[6].value});
@@ -87,5 +87,5 @@ export async function main(ns) {
         }
         await ns.sleep(100);
     }
-    lg.log(1, "done");
+    lg.lg(1, "done");
 }

@@ -1,7 +1,11 @@
 // worker.js
 // version 0.1.10
 
-const protocolVersion = 2;
+import {Constants} from "lib-constants.js";
+//import {Netowrk} from "lib-network.js"
+
+const protocolVersion = Constants.protocolVersion;
+
 
 /**
  * @param {import("Ns").NS } ns

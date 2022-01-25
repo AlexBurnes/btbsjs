@@ -16,6 +16,7 @@ export class BotNet {
         this.usedRam = 0;
         this.servers =
             serversList(ns)
+                .filter(server => !server.name.match(/^(ctrl-server|hack-server|hack-server-0)$/)) // do not use ctr-server and hack-server for workers
                 .filter(server => ns.hasRootAccess(server.name))
                 .filter(server => ns.getServerMaxRam(server.name) > this.workerRam)
                 .filter(server => ns.fileExists(this.workerScript, server.name));

@@ -31,6 +31,8 @@ export const scriptFiles = [
     "lib-botnet.js",
     "log.js",
     "install-backdoor.js",
+    "module.js",
+    "lib-network.js",
 
     "server-analyze.js",
     "server-hack.js",

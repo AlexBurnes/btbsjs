@@ -29,7 +29,7 @@ export async function main(ns) {
     }
 
     const hosts = serversList(ns).filter(server => ns.hasRootAccess(server.name) && ns.getServerMaxRam(server.name) > 0);
-    lg.log(1, "run hack threads %d on %d servers", threads, hosts.length);
+    lg.lg(1, "run hack threads %d on %d servers", threads, hosts.length);
 
     const target = new Target(lg, name, hosts);
     await target.hack(threads, {await: true});

@@ -1,14 +1,16 @@
-const Module  = 'update.js'; // replace by name of new module
+const Module  = 'module.js'; // replace by name of new module
 const Version = '0.2.0';     // update this every time when edit the code!!!
 
-const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/btbsjs/devel/";
-const files_list = ["file-list.js", "update-fetch.js", "lib-constants.js", "lib-network.js", "log.js"];
+/*
+    minimal application immplementation
+
+*/
 
 const logLevel   = 1;   // default log level
 const debugLevel = 0;   // default debug level
 
-import {Constants}  from "lib-constants.js";
-import {Logger}     from "log.js"
+import {Constants} from "lib-constants.js";
+import {Logger} from "log.js"
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -21,7 +23,8 @@ async function version(ns, port) {
 
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] | --help", Module);
-    ns.tprintf("update script from github");
+    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
+    ns.tprintf("module description"); // in case of a module
     return;
 }
 
@@ -39,24 +42,7 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    // do not use anything from current libraries
-    await update(ns);
-    ns.tprintf("done updating");
+    const lg = new Logger(ns, {logLevel : logLevel, debugLevel: debugLevel});
+
     return;
-}
-
-/** @param {import("Ns").NS } ns */
-async function update(lg) {
-    const host = ns.getHostname();
-    for(i = 0; i < files_list.length; i++) {
-        const file = files_list[i];
-        await ns.wget(`${baseUrl}${file}`, file);
-        if (!ns.fileExists(file, host)) {
-            ns.tprintf("failed get file for update %s/%s", baseUrl, file);
-            return;
-        }
-    }
-
-    await ns.run("update-fetch.js", 1, baseUrl);
-
 }

@@ -19,11 +19,11 @@ export async function main(ns) {
     let maxNumNodes =  nodes || 24;
 
     if (maxNumNodes == numNodes) {
-        lg.log(1, "maximum hacknet nodes %d/%d", numNodes, maxNumNodes);
+        lg.lg(1, "maximum hacknet nodes %d/%d", numNodes, maxNumNodes);
         return;
     }
 
-    lg.log(1, "hacknet nodes %d/%d", numNodes, maxNumNodes);
+    lg.lg(1, "hacknet nodes %d/%d", numNodes, maxNumNodes);
 
     const maxLevel = 200;
     const maxRam   = 64;
@@ -58,13 +58,13 @@ export async function main(ns) {
             nodes[i] = node;
             productionRate += node.production;
         }
-        lg.debug(1, "total nodes %d production rate %d", nodes.length, productionRate);
+        lg.ld(1, "total nodes %d production rate %d", nodes.length, productionRate);
 
         needUpgrade = false;
 
         nodes
             .forEach( node => {
-                lg.debug(1, "node[%d] level %d ram %d cpu %d", node.index, node.level, node.ram, node.cores);
+                lg.ld(1, "node[%d] level %d ram %d cpu %d", node.index, node.level, node.ram, node.cores);
                 if (node.level < maxLevel) {
                     needUpgrade = true;
                     const cost = ns.hacknet.getLevelUpgradeCost(node.index, 1);
@@ -94,14 +94,14 @@ export async function main(ns) {
                 }
             });
 
-        lg.debug(1, "node cost %d, upgrade cost %d, upgrade node %d, upgrade what %d",
+        lg.ld(1, "node cost %d, upgrade cost %d, upgrade node %d, upgrade what %d",
             nodeCost, minUpgradeCost, minUpgradeNode, minUpgradeWhat
         );
 
         if (nodeCost > 0 && (nodeCost < minUpgradeCost || minUpgradeCost == -1)) {
             if (nodeCost < availMoney) {
                 const price = costFormat(nodeCost);
-                lg.debug(1, "purchase node for %.2f%s$", price.cost, price.unit);
+                lg.ld(1, "purchase node for %.2f%s$", price.cost, price.unit);
                 ns.hacknet.purchaseNode();
                 minUpgradeNode = -1;
                 minUpgradeCost = -1;
@@ -115,15 +115,15 @@ export async function main(ns) {
                 const price = costFormat(minUpgradeCost);
                 switch(minUpgradeWhat) {
                     case 0:
-                        lg.debug(1, "upgrade node %d level for %.2f%s$", minUpgradeNode, price.cost, price.unit);
+                        lg.ld(1, "upgrade node %d level for %.2f%s$", minUpgradeNode, price.cost, price.unit);
                         ns.hacknet.upgradeLevel(minUpgradeNode, 1);
                         break;
                     case 1:
-                        lg.debug(1, "upgrade node %d ram for %.2f%s$", minUpgradeNode, price.cost, price.unit);
+                        lg.ld(1, "upgrade node %d ram for %.2f%s$", minUpgradeNode, price.cost, price.unit);
                         ns.hacknet.upgradeRam(minUpgradeNode, 1);
                         break;
                     case 2:
-                        lg.debug(1, "upgrade node %d cpu for %.2f%s$", minUpgradeNode, price.cost, price.unit);
+                        lg.ld(1, "upgrade node %d cpu for %.2f%s$", minUpgradeNode, price.cost, price.unit);
                         ns.hacknet.upgradeCore(minUpgradeNode, 1);
                         break;
                 }
@@ -137,6 +137,6 @@ export async function main(ns) {
         numNodes = ns.hacknet.numNodes();
         if (needUpgrade == false || minUpgradeCost > availMoney) await ns.sleep(1000);
     }
-    lg.log(1, "hack-net done, maximum nodes");
+    lg.lg(1, "hack-net done, maximum nodes");
 
 }
