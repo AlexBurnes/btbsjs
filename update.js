@@ -46,7 +46,7 @@ export async function main(ns) {
 }
 
 /** @param {import("Ns").NS } ns */
-async function update(lg) {
+async function update(ns) {
     const host = ns.getHostname();
     for(i = 0; i < files_list.length; i++) {
         const file = files_list[i];
