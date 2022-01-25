@@ -60,7 +60,7 @@ async function update(lg, baseUrl) {
     ns.ls(host)
         .filter(file => file.match(/.*\.js|.*\.txt/))
         .filter(file => !file.match(/^bk_.\.js/))
-        .forEach(file => {host_files.set(host_file, host_file)});
+        .forEach(file => {host_files.set(file, file)});
 
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
