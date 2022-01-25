@@ -98,7 +98,7 @@ async function update(lg, baseUrl) {
     if (host_files.size > 0) {
         lg.lg(1, "not updated files:");
         host_files.forEach((file, key) => {
-            lg.lg(1, "\t%s");
+            lg.lg(1, "\t%s", file);
         });
     }
 }
