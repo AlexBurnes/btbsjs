@@ -33,6 +33,7 @@ export const scriptFiles = [
     "install-backdoor.js",
     "module.js",
     "lib-network.js",
+    "lib-hack-server.js",
 
     "server-analyze.js",
     "server-hack.js",
