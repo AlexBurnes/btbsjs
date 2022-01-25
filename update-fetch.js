@@ -110,7 +110,7 @@ async function update(lg, baseUrl) {
 
 async function get_version(ns, socket, module) {
     const start = Date.now();
-    await tryCatchIgnore(() => ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
+    await tryCatchIgnore(() => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
     while (true) {
         const [time, data] = await socket.read({timeout: 1000});
         if (time = 0) break;

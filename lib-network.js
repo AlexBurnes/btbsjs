@@ -39,8 +39,8 @@ export class Socket {
                 if (time == undefined || version == undefined || version != this.version) continue; //failed
                 return [time, data];
             }
-            if (options.timeout && Date.now() - start >= timeout) break;
-            ns.sleep(100);
+            if (options.timeout && Date.now() - start >= options.timeout) break;
+            await ns.sleep(100);
         }
         return [0, ""];
     }
