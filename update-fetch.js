@@ -53,6 +53,7 @@ export async function main(ns) {
 /** @param { Logger } lg */
 async function update(lg, baseUrl) {
     const ns = lg.ns;
+    const socket = new Socket(ns, Constants.updatePort);
     const host = ns.getHostname();
     lg.lg(1, "update %d files", scriptFiles.length);
 
@@ -83,7 +84,11 @@ async function update(lg, baseUrl) {
 
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
-            ns.tprintf("[%d/%d] uploaded, compare version of %s and bk_%s", i+1, scriptFiles.length, file);
+            ns.tprintf("[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
+            const old_module_version = await get_version(ns, socket, host_files.get(file));
+            lg.lg(1, "old module %s version %s", file, old_module_version);
+            const new_module_version = await get_version(ns, socket, file);
+            lg.lg(1, "new module %s version %s", file, new_module_version);
 
             host_files.delete(file);
         }
@@ -100,5 +105,29 @@ async function update(lg, baseUrl) {
         host_files.forEach((file, key) => {
             lg.lg(1, "\t%s", file);
         });
+    }
+}
+
+async function get_version(ns, socket, module) {
+    const start = Date.now();
+    await tryCatchIgnore(() => ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
+    while (true) {
+        const [time, data] = await socket.read({timeout: 1000});
+        if (time = 0) break;
+        if (time < start) continue;
+        return data;
+    }
+    return "";
+}
+
+/**
+ * @param {(() => Promise<void>) | (() => void)} lambda
+ * @returns {Promise<void>}
+ */
+async function tryCatchIgnore(lambda) {
+    try {
+        await lambda();
+    } catch (e) {
+        // ignore
     }
 }

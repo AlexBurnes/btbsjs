@@ -31,6 +31,7 @@ export class Socket {
     //FIXME write it in async way
     read(options = {}) {
         const ns = this.ns;
+        const start = Date.now();
         while (true) {
             const str = ns.readPort(this.port);
             if (str !== "NULL PORT DATA") {
