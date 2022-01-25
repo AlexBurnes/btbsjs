@@ -52,7 +52,7 @@ export async function main(ns) {
 
 /** @param { Logger } lg */
 async function update(lg, baseUrl) {
-
+    const ns = lg.ns;
     const host = ns.getHostname();
     lg.lg(1, "update %d files", scriptFiles.length);
 
