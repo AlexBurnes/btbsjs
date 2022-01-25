@@ -50,6 +50,11 @@ async function update(ns) {
     const host = ns.getHostname();
     for(let i = 0; i < files_list.length; i++) {
         const file = files_list[i];
+        // before download file move to bk and delet
+        ns.rm(`bk_${file}`);
+        if (ns.fileExists(file, host)) {
+            ns.mv(host, file, `bk_${file}`);
+        }
         await ns.wget(`${baseUrl}${file}`, file);
         if (!ns.fileExists(file, host)) {
             ns.tprintf("failed get file for update %s/%s", baseUrl, file);
