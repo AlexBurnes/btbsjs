@@ -57,7 +57,7 @@ async function update(lg, baseUrl) {
     lg.lg(1, "update %d files", scriptFiles.length);
 
     const host_files = new Map();
-    ns.ls()
+    ns.ls(host)
         .filter(file => file.match(/.*\.js|.*\.txt/))
         .filter(file => !file.match(/^bk_.\.js/))
         .forEach(file => {host_files.set(host_file, host_file)});
