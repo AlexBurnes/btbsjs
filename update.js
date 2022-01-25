@@ -1,5 +1,5 @@
 const Module  = 'update.js'; // replace by name of new module
-const Version = '0.2.0.1';     // update this every time when edit the code!!!
+const Version = '0.2.0.2';     // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/btbsjs/devel/";
 const files_list = ["file-list.js", "update-fetch.js", "lib-constants.js", "lib-network.js", "log.js"];
