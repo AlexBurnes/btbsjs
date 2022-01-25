@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.2.1.2'; // update this every time when edit the code!!!
+const Version = '0.2.0.3'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -82,7 +82,7 @@ async function update(lg, baseUrl) {
         }
 
         //FIXME compare file versions!!! inform user about
-        if (host_files.has(fille)) {
+        if (host_files.has(file)) {
             ns.tprintf("[%d/%d] uploaded, compare version of %s and bk_%s", i+1, scriptFiles.length, file);
 
             host_files.delete(file);
