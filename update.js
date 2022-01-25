@@ -48,7 +48,7 @@ export async function main(ns) {
 /** @param {import("Ns").NS } ns */
 async function update(ns) {
     const host = ns.getHostname();
-    for(i = 0; i < files_list.length; i++) {
+    for(let i = 0; i < files_list.length; i++) {
         const file = files_list[i];
         await ns.wget(`${baseUrl}${file}`, file);
         if (!ns.fileExists(file, host)) {
