@@ -62,9 +62,9 @@ async function listHackingServers(lg, timeout) {
 /** @param {NS} ns **/
 export async function main(ns) {
     const args = ns.flags([
-        [ 'version'         , false     ],
-        [ 'update-port'     , 0         ],
-        [ 'help'            , true      ]
+        [ 'version'         , false ],
+        [ 'update-port'     , 0     ],
+        [ 'help'            , false ]
     ]);
 
     if (args['version']) {

@@ -33,7 +33,7 @@ export async function main(ns) {
     const args = ns.flags([
         [ 'version'         , false     ],
         [ 'update-port'     , 0         ],
-        [ 'help'            , true      ]
+        [ 'help'            , false     ]
     ]);
 
     if (args['version']) {
