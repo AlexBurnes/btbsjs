@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.2.0.3'; // update this every time when edit the code!!!
+const Version = '0.2.0.4'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -59,7 +59,7 @@ async function update(lg, baseUrl) {
     const host_files = new Map();
     ns.ls(host)
         .filter(file => file.match(/.*\.js|.*\.txt/))
-        .filter(file => !file.match(/^bk_.\.js/))
+        .filter(file => !file.match(/^bk_.*\.js/))
         .forEach(file => {host_files.set(file, file)});
 
     for (let i = 0; i < scriptFiles.length; i++) {
