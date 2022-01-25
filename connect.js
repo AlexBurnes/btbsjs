@@ -11,7 +11,7 @@ export async function main(ns) {
     const [target] = ns.args;
     const paths = {'home': []};
     const queue = Object.keys(paths);
-    
+
     while (queue.length > 0) {
         const current = queue.shift();
         ns.scan(current)
@@ -26,13 +26,13 @@ export async function main(ns) {
         ns.tprint(`No path found to node ${target}`);
         return;
     }
-    
+
     /*ns.connect("home");
     paths[target].forEach(host => {
         ns.connect(host);
-    });    
+    });
     */
-    
+
     const terminalCommand = `home; ${paths[target].map(e => `connect ${e}`).join(';')}`
 
     const terminalInput = document.getElementById("terminal-input");

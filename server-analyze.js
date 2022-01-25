@@ -1,21 +1,28 @@
 // server-analyze.js
-// version 0.1.9
+// version 0.1.10
 
 /*
     experimetal code for analyze server stat to make hack strategy
+    deprecated use server-hack targe --analyze
 */
 
 import {Logger} from "log.js"
 import {Server} from "lib-server-list.js"
-import {costFormat, timeFormat} from "lib-units.js"
+import {BotNet} from "lib-botnet.js"
 import {TableFormatter} from "lib-utils.js"
-import {updateInfo} from "lib-server-info-full.js"
+
+import {costFormat, timeFormat} from "lib-units.js"
+import {updateInfo, calcGrowth, calcHack} from "lib-server-info-full.js"
+
+const logLevel = 1;
+const debugLevel = 1;
+
 
 /** @param {NS} ns **/
 export async function main(ns) {
     const [target, threads] = ns.args
 
-    const lg = new Logger(ns);
+    const lg = new Logger(ns, {logLevel: logLevel, debugLevel: debugLevel});
 
     if (!ns.serverExists(target)) {
         lg.log(1, "server '%s' not found", target);
@@ -23,9 +30,10 @@ export async function main(ns) {
     }
 
     const host = ns.getHostname();
+    const botnet = new BotNet(ns);
 
     // if max threads not defined calculate it
-    const t = threads || Math.floor(ns.getServerMaxRam(host) - ns.getServerUsedRam(host))/ns.getScriptRam("worker.js");
+    const t = threads || botnet.workers;
 
     if (t == 0) {
         lg.log(1, "server '%s' unable to do anything, not enough memory on host %s", target, host);
@@ -35,116 +43,209 @@ export async function main(ns) {
     lg.log(1, "server '%s' analyze grow/hack on max threads %d", target, t);
 
     const server = new Server(target);
+
     updateInfo(ns, server);
 
     const table = new TableFormatter(ns,
-        ["    Name", "Chance",  "Min ",   "Cur",     "Avail",  "Max",     "Ratio", "Hack",   "Grow",   "Weak",   "Hack r",
-           "Grow r", "Hack Th", "Hack $", "Grow Th", "Grow $", "Weak Th", "Sec Down"],
-        [      "%s",  "%.2f%%", "%.2f",   "%.2f",    "%.2f%s", "%.2f%s",  "%.5f",  "%.2f%s", "%.2f%s", "%.2f%s", "%.8f",
-               "%d",     "%d",  "%.2f%s", "%d",      "%.2f%s", "%d",      "%.2f"         ]
+        [
+            ["    Name" , "%s"      ],  // server name
+            ["Chance"   , "%.2f%%"  ],  // hack  chance
+            ["Min "     , "%.2f"    ],  // min sucity
+            ["Cur"      , "%.2f"    ],  // cure: security
+            ["Avail"    , "%.2f%s"  ],  // available money
+            ["Max"      , "%.2f%s"  ],  // max money
+            ["R"        , "%.2f"    ],  // rate to grow from available to max money
+            ["Gr"       , "%d"      ],  // server growth effectivness
+            ["Htm"      , "%.2f%s"  ],  // hack time
+            ["Gtm"      , "%.2f%s"  ],  // grow time
+            ["Wtm"      , "%.2f%s"  ],  // weaken time
+            ["Hp"       , "%.8f"    ],  // hack money part
+            ["Hth"      , "%d"      ],  // hack threads to hack all avail money
+            //["Hm"       , "%.2f%s"  ],  // hack money with Hth threads
+            ["Gth"      , "%d"      ],  // grow threads to grow from avail to max money
+            //["Gm"       , "%.2f%s"  ],  // grow money with Gth threads
+            ["Wth"      , "%d"      ],  // weaken threads to down security to minimum
+            //["Ws"       , "%.2f"    ],  // weaken security level with Wth
+            ["Max Oth"  , "%d"      ],  // maximum optimal threads required for server
+            ["Cr"       , "%.2f%s"  ],  // cicle rate, cycle = n(grow+hack)+weak
+        ],
+
     );
 
+
+    const moneyHackRate = costFormat(server.threadRate);
     table.push(
         server.name,
         100 * server.analyzeChance,
         server.minSecurity,
         server.currentSecurity,
-        [ server.availMoney.cost, server.availMoney.unit ],
-        [ server.maxMoney.cost, server.maxMoney.unit ],
+        [server.availMoney.cost, server.availMoney.unit],
+        [server.maxMoney.cost, server.maxMoney.unit],
         server.moneyRatio,
-        [ server.hackTime.time, server.hackTime.unit ],
-        [ server.growTime.time, server.growTime.unit ],
-        [ server.weakTime.time, server.weakTime.unit ],
-        server.hackMoney,
         server.serverGrowth,
+        [server.hackTime.time, server.hackTime.unit],
+        [server.growTime.time, server.growTime.unit],
+        [server.weakTime.time, server.weakTime.unit],
+        //scripts.has(server.name) ? "yes" : "no",
+        server.hackMoney,
         server.hackThreads,
-        [ server.hackAmount.cost, server.hackAmount.unit ],
+        //[server.hackAmount.cost, server.hackAmount.unit],
         server.growThreads,
-        [ server.growAmount.cost, server.growAmount.unit ],
+        //[server.growAmount.cost, server.growAmount.unit],
         server.weakThreads,
-        server.weakAmount
+        //server.weakAmount,
+        server.optimalMaxThreads,
+        [moneyHackRate.cost, moneyHackRate.unit]
     );
 
     table.print();
 
-    // consider this is a max grouw rate possible for server
-    const serverGrowthThreads = server.serverMaxGrowthThreads;
-    lg.log(1, "server growth effect %d threads %d", server.serverGrowth, serverGrowthThreads);
+    // нужно разделить логику, поскольку код усложняется, разделить события
 
-    // current grow rate threads to max money, if unknown get max grow rate threads
-    // but we must recalc it to secure level
-    let gt = server.growMaxThreads || serverGrowthThreads;
+    // security = 100 hack chance лучше не смотреть, но если предыдущая операция hack/grow value = 0 то тоже начать
 
-    let a = server.availMoney.value;
-    let m = server.maxMoney.value;
-    let nr = server.moneyRatio;
+    // a == m   => расчитываем hr на основе grow по max t
+    // a >= m - m/gtr  оцениваем grow на основе max t нужно оценить кто больше принесет grow или hack
+    // a < m - m/gtr
 
-    // possible grow rate for t threads from max server growth
-    const gtr = server.serverGrowth * (Math.min(t, gt) / serverGrowthThreads);
-    // possible grow amount for t threads when maximum money
-    const gta = m - m / gtr;
+    // possible grow amount for t threads, naive method
 
-    // maximum hack threads
-    let ht = Math.min(t, server.hackThreads);
+    // prepare variables
 
-    lg.log(1, "m %f a %f a > (m - gta) %f", m, a, (m - gta));
-    if (a > m - gta) {
-        a = m - gta;
-        nr = gtr;
+    const a = server.availMoney.value; // avail money on server
+    const m = server.maxMoney.value;   // max money on server
+
+    const gr = server.moneyRatio;      // money ratio - possible 0, current
+    const gt = server.growMaxThreads;  // current grow rate from a to m, possible 0 for a = m, and moneyRatio = 0
+
+    const gmt = server.serverMaxGrowthThreads; // maximum grow threads
+    const gmr = server.serverGrowth;           // server maximum grows rate
+    const gma = m/gmr;                         // available money to grow for a to max
+
+    lg.log(1, "chances %f", server.analyzeChance);
+    const wt = Math.min(server.weakThreads, t);
+    const ws = wt * server.weakSecurityRate;
+
+    if (server.analyzeChance < 0.01) {
+        lg.log(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+            target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
+        );
+        return;
     }
 
-    lg.log(1, "a %f m %f t %d gt %d nr %f", a, m, t, gt, nr);
+    lg.debug(1, "a %f m %f gr %f gt %f", a, m, gr, gt);
+    // calc maximum growth on max(gmt,t);
+    const [gpr, gpt] = calcGrowth(lg, server, gma, gmr, gmt, t);
+    const gpa = m/gpr;
+    lg.debug(1, "gpa %f, gnt %d, gpr %f", gpa, gpt, gpr);
 
-    let i = 1;
-    let na = a;
 
-    while (gt > t) {
-        if (++i > 10 ) break; // обычно хватает нескольких итераций
-        const tr = gt/t; // на сколько нужно уменьшить
-        na = a + (m - a) / tr;
-        nr = na/a;
-        lg.log(1, "gt %d t %d tr %f, a %d m %d na %d nr %f", gt, t, tr, a, m, na, nr);
-        gt = Math.ceil(ns.growthAnalyze(target, nr));
-        m = a * nr;
-        lg.log(1, "thread grow ratio %f threads %d", nr, gt);
+    if (a == m || gt == 0) {
+        lg.debug(1, "server full, a == m");
+
+        // calculcate hack threads max(hmt|t)
+        const hm = m - gpa;
+        const ht = Math.floor(ns.hackAnalyzeThreads(target, hm));
+        lg.log(1, "hm %f, ht %d", hm, ht);
+
+        const [hpm, hpt] = calcHack(lg, server, hm, ht, t);
+        const hma = costFormat(hpm);
+        const sma = costFormat(m - hpm);
+
+        if (
+                server.minSecurity + server.hackSecurity * hpt > 100
+                ||
+                server.weakThreads > t
+        ) {
+            lg.log(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+                target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
+            );
+        }
+        else {
+            lg.log(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
+                hpt, hma.cost, hma.unit, sma.cost, sma.unit, server.hackTime.time, server.hackTime.unit
+            );
+        }
     }
+    else if (a >= m/gr && a > gpa) {
+        lg.debug(1, "server near full");
 
-    const ga = costFormat(a * nr - a);
-    // когда сервер полный, то будет 0 0,
-    lg.log(1, "after grow on << %d >> threads money grow will be %.2f%s", gt, ga.cost, ga.unit);
+        //calculate hack threads to stole a - gpa max(ht|t)
+        const hm = a - gpa;
+        const ht = Math.floor(ns.hackAnalyzeThreads(target, hm));
+        lg.log(1, "hm %f, ht %d", hm, ht);
+        const [hpm, hpt] = calcHack(lg, server, hm, ht, t);
 
-    a = server.availMoney.value;
+        const hma = costFormat(hpm);
+        const sma = costFormat(a - hpm);
 
-    // пока это нам ничего не дает, кроме как ответ на вопрос growfactor nr
-    // вопрос сколько денег можно взять
-    //hm * nr = a; hm = a/nr; ha = a - a/nr; ha = a*(1-1/nr);
-    let hm = costFormat(a*(1-1/nr));
-    ht = Math.floor(ns.hackAnalyzeThreads(target, hm.value));
-    lg.log(1, "max money hack %.2f%s threads %d", hm.cost, hm.unit, ht);
+        //calculate growth threads from a to m for max(gt,t);
+        const [ghr, ght] = calcGrowth(lg, server, a, gr, gt, t);
+        const gha = a * ghr;  // amount of money after grow
 
-    // ok это если сервер не должен расти, а если должен?, а вот и ответ собственно на вопрос когда денег много
+        const gaf = costFormat(gha*(ghr - 1));
+        const gmf = costFormat(gha*ghr);
 
-    // a это формула роста
-    let sr = nr - (nr - 1)*0.5; // уменьшаем в два раза, а как уменьшить на 50%  a - (a - 1)*0.5
-    let sm = costFormat(a*(1-1/sr));
-    let st = Math.floor(ns.hackAnalyzeThreads(target, sm.value));
-
-    // так погоди если у нас gt > t, то мы должны и hack ограничить этим t значением
-    if (st > t) {
-        st = t;
-        sr = 1/(1 - server.hackMoney * st); //a/(a - a * hackMoney * t);
-        sm = costFormat(a*(1-1/sr));
-        st = Math.floor(ns.hackAnalyzeThreads(target, sm.value)); // проверка
+        if (
+            server.minSecurity + Math.max(server.hackSecurity * hpt, server.growSecurity * ght) > 100
+            ||
+            server.weakThreads > t
+        ){
+            lg.log(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+                target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
+            );
+        }
+        else if ( hpm > m - a) {
+            lg.log(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
+                hpt, hma.cost, hma.unit, sma.cost, sma.unit, server.hackTime.time, server.hackTime.unit
+            );
+        }
+        else {
+            lg.log(1, "grow threads << %d >> money %.2f%s => %.2f%s in %.2f%s",
+                ght, gaf.cost, gaf.unit, gmf.cost, gmf.unit, server.hackTime.time, server.hackTime.unit
+            );
+        }
     }
+    else {
+        lg.debug(1, "server has a few money, need grow");
 
-    lg.log(1, "max money nr %f sr %f hack %.2f%s threads << %d >>", nr, sr, sm.cost, sm.unit, st);
+        const [grr, grt] = calcGrowth(lg, server, a, gr, gt, t);
+        const gra = a * grr;
+        lg.debug(1, "gra %f, grt %d, grr %f", gra, grt, grr);
 
-    lg.log(1, "weak threads << %d >>", server.weakThreads);
+        // нужно подсчитать сколько сможем взять что бы обеспечить при этом рост
+        // a*grr столько будет денег после роста
+        const hm = (a - a/grr) * 0.5;
+        const ht = Math.floor(ns.hackAnalyzeThreads(target, hm));
+        const [hpm, hpt] = calcHack(lg, server, hm, ht, t);
 
-    // if weak > t do weak
-    // if a == m do hack
-    // else do grow and then hack
-    // if grow or hack operation is fault value = 0 then do week
+        const hma = costFormat(hpm);
+        const sma = costFormat(a - hpm);
+
+        const gaf = costFormat(gra*(grr - 1));
+        const gmf = costFormat(gra*grr);
+
+        if (
+            server.minSecurity + Math.max(server.hackSecurity * hpt, server.growSecurity * grt) > 100
+            ||
+            server.weakThreads > t
+        ){
+            lg.log(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+                target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
+            );
+        }
+        else {
+            // first must grow, next must hack and repeat
+
+            lg.log(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
+                hpt, hma.cost, hma.unit, sma.cost, sma.unit, server.hackTime.time, server.hackTime.unit
+            );
+            lg.log(1, "grow threads << %d >> money %.2f%s => %.2f%s in %.2f%s",
+                grt, gaf.cost, gaf.unit, gmf.cost, gmf.unit, server.hackTime.time, server.hackTime.unit
+            );
+        }
+
+    }
 
     return;
 }

@@ -1,5 +1,5 @@
 // lib-utils.js
-// version 0.1.0
+// version 0.1.10
 
 // Level tree dumper
 const graphEmpty    = '    ';
@@ -48,31 +48,39 @@ export class LVS {
 
 export class TableFormatter {
 
-    constructor(ns, headers, formats) {
-    this.ns = ns;
-    this.headers = headers; // column names
-    this.formats = formats; // column formats
-    this.rows = []; // rows data
-    this.columns = []; // column max sizes
-    if (headers.length != formats.length) {
-        throw new Error("number of column names and column formats not equals");
-    }
-    for(let i = 0; i < headers.length; i++) {
-        this.columns[i] = headers[i].length;
-    }
+    constructor(ns, columns) {
+        this.ns = ns;
+
+        this.headers = []; // column names
+        this.formats = []; // column formats
+        columns.forEach(
+            column => {
+                this.headers.push(column[0]);
+                this.formats.push(column[1]);
+            }
+        );
+
+        this.rows = []; // rows data
+        this.columns = []; // column max sizes
+        if (this.headers.length != this.formats.length) {
+            throw new Error("number of column names and column formats not equals");
+        }
+        for(let i = 0; i < this.headers.length; i++) {
+            this.columns[i] = this.headers[i].length;
+        }
     }
 
     push(...row) {
-    let data = [];
-    for(let i = 0; i < row.length; i++) {
-        if (this.formats[i] == undefined) {
-            data[i] = typeof(row[i]) == "array" ? row[i].join(" ") : toString(row[i]);
+        let data = [];
+        for(let i = 0; i < row.length; i++) {
+            if (this.formats[i] == undefined) {
+                data[i] = typeof(row[i]) == "array" ? row[i].join(" ") : toString(row[i]);
+            }
+            else {
+                data[i] = this.ns.vsprintf(this.formats[i], typeof(row[i]) == "object" ? row[i] : [row[i]]);
+            }
+            if (this.columns[i] == undefined || this.columns[i] < data[i].length) this.columns[i] = data[i].length;
         }
-        else {
-            data[i] = this.ns.vsprintf(this.formats[i], typeof(row[i]) == "object" ? row[i] : [row[i]]);
-        }
-        if (this.columns[i] == undefined || this.columns[i] < data[i].length) this.columns[i] = data[i].length;
-    }
     this.rows.push(data);
     }
 
@@ -125,6 +133,13 @@ export class TableFormatter {
             border += i == this.columns.length - 1 ? "╝" : "";
         }
         this.ns.tprintf("%s", border);
+
+        // clean rows
+        this.rows = []; // rows data
+        this.columns = []; // column max sizes
+        for(let i = 0; i < this.headers.length; i++) {
+            this.columns[i] = this.headers[i].length;
+        }
     }
 }
 

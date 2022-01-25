@@ -1,9 +1,16 @@
-/** @param {NS} ns **/
+// hack-net.js
+// version 0.1.10
+/*
+
+    Grow hacknet to max nodes
+
+*/
+
 import {costFormat} from "lib-units.js"
 import {Logger} from "log.js";
 
-// version 0.1.0
 
+/** @param {NS} ns **/
 export async function main(ns) {
     const [nodes] = ns.args;
     const lg = new Logger(ns);
@@ -128,7 +135,7 @@ export async function main(ns) {
         }
 
         numNodes = ns.hacknet.numNodes();
-        await ns.sleep(1000);
+        if (needUpgrade == false || minUpgradeCost > availMoney) await ns.sleep(1000);
     }
     lg.log(1, "hack-net done, maximum nodes");
 

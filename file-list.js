@@ -16,8 +16,10 @@ export const scriptFiles = [
     "server-rm.js",
     "server-cost.js",
 
+    "h3ml.js",
     "hack-net.js",
     "hack-servers.js",
+    "hacking.js",
 
     "lib-constants.js",
     "lib-server-info.js",
@@ -26,10 +28,10 @@ export const scriptFiles = [
     "lib-units.js",
     "lib-utils.js",
     "lib-target.js",
+    "lib-botnet.js",
     "log.js",
     "install-backdoor.js",
 
-    "server-stat.js",
     "server-analyze.js",
     "server-hack.js",
 
@@ -38,6 +40,10 @@ export const scriptFiles = [
     "grow.js",
     "weak.js",
     "worker.js",
+
+    "watcher.js",
+    "quiet.js",
+    "verbose.js",
 
     "aliases.script",
     "file-list.js",

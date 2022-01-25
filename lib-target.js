@@ -1,4 +1,7 @@
-// version 0.1.0
+// lib-targets.js
+// version 0.1.10
+
+import {Constants} from "lib-constants.js";
 
 export class Target {
     /**
@@ -66,24 +69,77 @@ export class Target {
     }
 
     execute(cmd, threads, options = {}) {
+        const ns = this.ns;
         const start = options.start || Date.now();
 
-        // for each host in hosts, run thread as many as possible, while anough ram on that host
-        // write info about pid of sctipt
-        // const pid = this.ns.exec('worker.js', this.host, threads, this.name, cmd, start);
+        if (this.hosts.length == 0) return Promise.resolve(); // FIXME return error
 
-        // always wait
-        // if (!options.await) return Promise.resolve();
+        const scriptRamRequire = ns.getScriptRam(Constants.workerScriptFile);
+
+        // this logic must be implemeted at strategy layer
+        // prioritezation for weaken jobs on host with more cpu
+        if (cmd == "weaken" || cmd == "grow") {
+            this.hosts.sort(function(a, b){
+                return Math.pow(ns.getServerMaxRam(b.name) - ns.getServerUsedRam(b.name), ns.getServer(b.name).cpuCores)
+                    - Math.pow(ns.getServerMaxRam(a.name) - ns.getServerUsedRam(a.name), ns.getServer(a.name).cpuCores)
+            });
+        }
+        else {
+            this.hosts.sort(function(a, b){
+                return (ns.getServerMaxRam(b.name) - ns.getServerUsedRam(b.name)) -
+                    (ns.getServerMaxRam(a.name) - ns.getServerUsedRam(a.name))
+            });
+        }
+        let scripts = [];
+        this.hosts
+            .filter(server => ns.hasRootAccess(server.name))
+            .filter(server => ns.getServerMaxRam(server.name) > 0)
+            .forEach(server => {
+                if (threads > 0) {
+                    const serverMaxRam = ns.getServerMaxRam(server.name);
+                    const serverUsedRam = ns.getServerUsedRam(server.name);
+                    const reserveRam = server.name == "home" ? Constants.reserveRam : 0;
+                    const cpuCores = ns.getServer(server.name).cpuCores;
+                    const hostThreads = (serverMaxRam - serverUsedRam - reserveRam) / scriptRamRequire;
+                    //ns.tprintf("server %s %d/%d CPU %d, threads allow %d", server.name, serverMaxRam, serverUsedRam, cpuCores, hostThreads);
+                    if (hostThreads > 0) {
+
+                        const weakCpuCoeff = cpuCores > 1 && cmd == "weaken"
+                                ? ns.weakenAnalyze(1)/ns.weakenAnalyze(1, cpuCores)
+                                : 1;
+                        const growCpuCoeff = cpuCores > 1 && cmd == "grow" && options.growRate !== undefined
+                                ? ns.growthAnalyze(server.name, options.growRate, cpuCores)/ns.growthAnalyze(server.name, options.growRate)
+                                : 1;
+                        //ns.tprint(`weakcoeff ${weakCpuCoeff} growcoeff ${growCpuCoeff}`);
+                        server.workerThreads = Math.min(hostThreads, Math.ceil(threads*weakCpuCoeff*growCpuCoeff));
+                        const pid = ns.exec(Constants.workerScriptFile, server.name, server.workerThreads,
+                            this.name, cmd, start, server.name, server.workerThreads, options.await
+                        );
+                        /*ns.tprintf("server %s target %s cmd %s threads %d cpu %d pid %d",
+                            server.name, this.name, cmd, server.workerThreads, cpuCores, pid
+                        );*/
+                        server.workerPid = pid;
+                        scripts.push(server);
+                        threads -= Math.floor(server.workerThreads/(weakCpuCoeff*growCpuCoeff));
+                    }
+
+                }
+            });
+
+        if (!options.await) return Promise.resolve();
 
         //this.lg.log("[%s:%d] work start '%s' job '%s' threads %d", this.host, pid, this.name, cmd, threads);
         const end = new Date(start + options.await);
         const begin = Date.now();
 
         return new Promise(async resolve => {
-            while (true) {
+            while (scripts.length) {
 
                 // check for each runned hosts there is script, if no than break, else wait
                 //this.ns.isRunning('worker.js', this.host, this.name, cmd, start)
+                scripts =
+                    scripts
+                        .filter(server => this.ns.isRunning(Constants.workerScriptFile, server.name, this.name, cmd, start, server.name, server.workerThreads, options.await));
 
                 if (end.getTime() > Date.now()) {
                     const now = new Date(end.getTime() - Date.now());

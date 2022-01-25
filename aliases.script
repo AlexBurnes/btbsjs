@@ -1,17 +1,21 @@
 alias scan-deep=run scan.js
+alias hack-deep=run hack-deep.script
+alias server-cost=run server-cost.js
 alias conn=run connect.js
 alias worm=run worm.js
 alias hack=run hack.js
-alias grow=run grow.js
-alias weak=run weak.js
-alias server-cost=run server-cost.js
 alias server-stat=run server-stat.js
 alias server-hack=run server-hack.js
 alias server-buy=run server-buy.js
 alias server-rm=run server-rm.js
 alias hack-servers=run hack-servers.js
-alias watch=run watcher.js
+alias h3ml=run h3ml.js
 alias stop=run stop.js
+alias watch=run watcher.js
+alias grow=run grow.js
+alias weak=run weak.js
 alias server-analyze=run server-analyze.js
 alias hack-net=run hack-net.js
-
+alias hacking=run hacking.js
+alias verbose=run verbose.js
+alias quiet=run quiet.js

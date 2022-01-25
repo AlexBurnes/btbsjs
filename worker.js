@@ -1,7 +1,7 @@
 // worker.js
-// version 0.1.0
+// version 0.1.10
 
-const protocolVersion = 1;
+const protocolVersion = 2;
 
 /**
  * @param {import("Ns").NS } ns
@@ -10,13 +10,13 @@ const protocolVersion = 1;
 export async function main(ns) {
     const [target, method, time, host, threads, end] = ns.args;
 
-    if (time) await ns.sleep(time - Date.now());
+    if (time > Date.now()) await ns.sleep(time - Date.now());
     const hostName = host == undefined ? "" : host;
     const threadsNum = threads == undefined ? 0 : threads;
-    const eventTime = Date.now();
-    await ns.tryWritePort(1, ns.sprintf("%d|%d|>|%s|%d|%s|%s|%d", eventTime, protocolVersion, hostName, threadsNum, target, method, end));
+    //const eventTime = Date.now();
+    await ns.tryWritePort(1, ns.sprintf("%d|%d|>|%s|%d|%s|%s|%d", time, protocolVersion, hostName, threadsNum, target, method, end));
     const result = await ns[method](`${target}`);
-    await ns.tryWritePort(1, ns.sprintf("%d|%d|<|%s|%d|%d|%s|%s|%f", Date.now(), protocolVersion, hostName, threadsNum, eventTime, target, method, result));
+    await ns.tryWritePort(1, ns.sprintf("%d|%d|<|%s|%d|%d|%s|%s|%f", Date.now(), protocolVersion, hostName, threadsNum, time, target, method, result));
 }
 
 /** @param {import("Ns").NS } ns */

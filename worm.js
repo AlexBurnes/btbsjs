@@ -1,5 +1,5 @@
 // worm.js
-// version 0.1.0
+// version 0.1.10
 
 /*
     based https://github.com/Baizey/BitBurner.git  version 1.2.0 worm.js
@@ -29,7 +29,7 @@ export async function main(ns) {
 
     for (const server of servers) {
         if (ns.hasRootAccess(server.name)) {
-            await tryCatchIgnore(async () => await ns.scp(["worker.js", "backdoor.js"], ns.getHostname(), server.name));
+            await tryCatchIgnore(async () => await ns.scp(files, ns.getHostname(), server.name));
             // Needs singularity :/
             //await tryCatchIgnore(() => ns.exec('backdoor.js', server.name));
         }

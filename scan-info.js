@@ -1,7 +1,7 @@
 // scan-info.js
-// version 0.1.0
+// version 0.1.10
 
-import {rootKitFiles} from "lib-constants.js"
+import {Constants} from "lib-constants.js"
 import {serversTree} from "lib-server-list.js"
 import {serverInfo} from "lib-server-info.js"
 import {LVS} from "lib-utils.js"
@@ -34,6 +34,6 @@ export function serversTreePrint(ns, node, options, lvs) {
 /** @param {NS} ns **/
 export async function main(ns) {
     const home = serversTree(ns);
-    const rootKits = ns.ls('home').filter(f => rootKitFiles[f]).length;
+    const rootKits = ns.ls('home').filter(f => Constants.rootKitFiles[f]).length;
     serversTreePrint(ns, home, {"rootKits": rootKits});
 }

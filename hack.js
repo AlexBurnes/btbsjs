@@ -1,12 +1,16 @@
+// hack.js
+// version 0.1.10
+
 /**
  * @param {Ns} ns
  * @returns void
  */
-import {Target} from "target.js"
+import {Target} from "lib-target.js"
 import {Logger} from "log.js"
+import {serversList} from "lib-server-list.js"
 
 export async function main(ns) {
-    let [name, threads, host] = ns.args;
+    let [name, threads] = ns.args;
     const lg = new Logger(ns);
     if (name == undefined || typeof(name) !== 'string') {
         ns.tprintf("usage: run hack.js name [threads] [host]");
@@ -16,17 +20,18 @@ export async function main(ns) {
         ns.tprintf("'%s' no root access", name);
         return;
     }
-    if (host == undefined) host = ns.getHostname();
-    if (!ns.hasRootAccess(host)) {
-        ns.tprintf("'%s' no root access", host);
-        return;
+    if (threads == undefined) {
+        ns.tprintf("usage: run grow.js name threads [host]");
     }
-    if (threads == undefined) threads = 0;
-    else if (typeof(threads) !== "number") {
+    if (typeof(threads) !== "number") {
         ns.tprintf("usage: run hack.js name [threads] [host]")
         return;
     }
-    const target = new Target(lg, name, host);
+
+    const hosts = serversList(ns).filter(server => ns.hasRootAccess(server.name) && ns.getServerMaxRam(server.name) > 0);
+    lg.log(1, "run hack threads %d on %d servers", threads, hosts.length);
+
+    const target = new Target(lg, name, hosts);
     await target.hack(threads, {await: true});
 }
 

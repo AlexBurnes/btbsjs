@@ -1,7 +1,7 @@
 // scan-info-with-contracts.js
-// version 0.1.0
+// version 0.1.10
 
-import {rootKitFiles} from "lib-constants.js"
+import {Constants} from "lib-constants.js"
 import {LVS} from "lib-utils.js"
 import {serversTree} from "lib-server-list.js"
 import {serverInfo} from "lib-server-info.js"
@@ -31,12 +31,13 @@ export function serversTreePrint(ns, node, options, lvs) {
         const hacked = ns.getServer(child.name).backdoorInstalled == true ? "🞕" : hackable ? "🞖" : "🞎";
         //const hacked = ns.hasRootAccess(child.name) && hackable ? "🞕" : hackable ? "🞖" : "🞎";
 
-        ns.tprintf("%s %s %s %s %s",
+        ns.tprintf("%s %s %s %s %s %s cpu",
             lvs.pad(child.depth, i == node.childs.length-1 ? 1 : 0),
             rooted,
             hacked,
             child.name,
-            serverInfo(ns, child.name)
+            serverInfo(ns, child.name),
+            ns.getServer(child.name).cpuCores
         );
         serversTreePrint(ns, child, options, lvs);
     }
@@ -44,6 +45,6 @@ export function serversTreePrint(ns, node, options, lvs) {
 
 export async function main(ns) {
     const home = serversTree(ns);
-    const rootKits = ns.ls('home').filter(f => rootKitFiles[f]).length;
+    const rootKits = ns.ls('home').filter(f => Constants.rootKitFiles[f]).length;
     serversTreePrint(ns, home, {"rootKits": rootKits});
 }
