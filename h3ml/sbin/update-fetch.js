@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.4'; // update this every time when edit the code!!!
+const Version = '0.3.0.6'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -23,7 +23,7 @@ async function version(ns, port) {
 }
 
 function help(ns) {
-    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("usage: %s [url] | [--version [--update-port]] | [--help]", Module);
     ns.tprintf("update all scripts");
     return;
 }
@@ -62,6 +62,11 @@ async function update(l, baseUrl) {
     const ns = l.ns;
     const host = ns.getHostname();
     l.g(1, "update %d files", scriptFiles.length);
+
+    if (baseUrl == undefined) {
+        l.e("url to fetch from not specified");
+        return help();
+    }
 
     const host_files = new Map();
     ns.ls(host)
