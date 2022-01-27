@@ -10,7 +10,7 @@
 
 # Version 
 
-    v0.0.3.0.5 update h3ml scripts
+    v0.3.1 update h3ml scripts, core files work properly
 
 # Change log 
 
