@@ -6,7 +6,7 @@
 */
 
 const Module  = 'update.js'; // replace by name of new module
-const Version = '0.2.1';     // update this every time when edit the code!!!
+const Version = '0.2.1.2';     // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel/";
 
@@ -58,18 +58,18 @@ async function update(ns) {
     ns.tprintf("uploading core files");
     for(let i = 0; i < files_list.length; i++) {
         const file = files_list[i];
-        ns.tprintf("[%d/%d] move %s to bk_%s", i+1, files_list.length, file, file);
-        ns.rm(`bk_${file}`);
-        if (ns.fileExists(`bk_%{file}`, host)) {
-            ns.tprintf("[%d/%d] filed delete bk_%s", i+1, files_list.length, file);
-            return false;
-        }
         if (ns.fileExists(file, host)) {
+            ns.tprintf("[%d/%d] move %s to bk_%s", i+1, files_list.length, file, file);
+            ns.rm(`bk_${file}`);
+            if (ns.fileExists(`bk_%{file}`, host)) {
+                ns.tprintf("[%d/%d] filed delete bk_%s", i+1, files_list.length, file);
+                return false;
+            }
             ns.mv(host, file, `bk_${file}`);
-        }
-        if (ns.fileExists(file, host)) {
-            ns.tprintf("[%d/%d] filed move file %s to bk_%s", i+1, files_list.length, file, file);
-            return false;
+            if (ns.fileExists(file, host)) {
+                ns.tprintf("[%d/%d] filed move file %s to bk_%s", i+1, files_list.length, file, file);
+                return false;
+            }
         }
         await ns.wget(`${baseUrl}${file}`, file);
         if (!ns.fileExists(file, host)) {
