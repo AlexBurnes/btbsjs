@@ -7,12 +7,18 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.1'; // update this every time when edit the code!!!
+const Version = '0.3.1.6'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
 // core files required for updater
-const files_list = ["/h3ml/var/files.js", "/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
+const files_list = [
+    "/h3ml/var/files.js",
+    "/h3ml/sbin/update-fetch.js",
+    "/h3ml/lib/constants.js",
+    "/h3ml/lib/log.js",
+    "/h3ml/etc/settings.js"
+];
 
 const backup_path = "/h3ml/var/backup";
 
@@ -82,6 +88,12 @@ async function update(ns) {
         ns.tprintf("[%d/%d] %s uploaded", i+1, files_list.length, file);
     }
     ns.tprintf("run h3ml update-fetch to complite updating");
+
+    // settings files, if not exists copy it, is user configurated file
+    if (!ns.fileExists("h3ml-settings"), host) {
+        ns.scp("/h3ml/etc/settings.js", "h3ml-settings", host);
+    }
+
     const pid = ns.run("/h3ml/sbin/update-fetch.js", 1, baseUrl);
     if (pid == 0) return false;
     return true;

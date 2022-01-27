@@ -163,7 +163,7 @@ async function update(l, baseUrl) {
             l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
             continue;
         }
-        l.g(1, "[%d/%d] core file %s ok, version %s, memory require %dGb", i+1, core_files.length, file, module_version, ns.getScriptRam(file, host));
+        l.g(1, "[%d/%d] core file %s ok, version %s, memory require %fGb", i+1, core_files.length, file, module_version, ns.getScriptRam(file, host));
     }
 
     if (host_files.has("h3ml-update.js")) {
