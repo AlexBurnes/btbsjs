@@ -1,7 +1,7 @@
 
 "use strict";
-const Module  = 'update-fetch.js';
-const Version = '0.3.0.18'; // update this every time when edit the code!!!
+const Module  = '/h3ml/sbin/update-fetch.js';
+const Version = '0.3.0.19'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -103,7 +103,7 @@ async function update(l, baseUrl) {
 
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
-            l.g(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
+            l.d(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
             if (!await checkVersion(l, file, host_files.get(file))) {
                 l.e("inspect old %s file, compare it with new %s", host_files.get(file), file);
             }

@@ -1,5 +1,6 @@
+"use strict";
 const Module  = '/h3ml/lib/network.js';
-const Version = '0.3.0.11';
+const Version = '0.3.0.18';
 
 /*
     network interaction, read, write, listen

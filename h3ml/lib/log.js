@@ -1,5 +1,6 @@
+"use strict";
 const Module  = '/h3ml/lib/log.js';
-const Version = '0.3.0.6';  // update this every time when edit the code!!!
+const Version = '0.3.0.18';  // update this every time when edit the code!!!
 
 /*
     logger
