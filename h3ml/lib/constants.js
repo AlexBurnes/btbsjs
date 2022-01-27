@@ -56,7 +56,7 @@ export const Constants = new _Constants();
 
 async function version(ns, port) {
     if (port !== undefined && port) {
-        const data = ns.sprintf("%d|%d|%s|%s", Date.now(), _protocolVersion, Module, Version);
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(Constants.updatePort, data);
     }
     ns.tprintf("version %s", Version);

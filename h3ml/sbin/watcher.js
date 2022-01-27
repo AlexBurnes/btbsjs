@@ -137,7 +137,7 @@ async function actionStop(lg, servers, time, data) {
                 //FIXME need caclulate timeout depends on money value
                 if (method == "hack" && currentTarget.diffAvailMoney.value > 0) {
                     const text = ns.sprintf("%s +%.2f%s", server, currentTarget.diffAvailMoney.cost, currentTarget.diffAvailMoney.unit);
-                    const timeout = Math.log10(currentTarget.diffAvailMoney.value/1000000)*5;
+                    let timeout = Math.log10(currentTarget.diffAvailMoney.value/1000000)*5;
                     if (timeout < 5) timeout = 5;
                     if (timeout > 60) timeout = 60;
                     ns.toast(text, "success", timeout * 1000);

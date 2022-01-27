@@ -9,7 +9,7 @@
 const Module  = 'h3ml-update.js';
 const Version = '0.3.0.5'; // update this every time when edit the code!!!
 
-const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel-directory";
+const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
 // core files required for updater
 const files_list = ["/h3ml/var/files.js", "/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
