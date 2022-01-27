@@ -6,9 +6,10 @@ const Version = '0.2.1.3'; // update this every time when edit the code!!!
 
 */
 
+import {scriptFiles} from "file-list.js";
 import {Constants}   from "lib-constants.js";
 import {Logger}      from "lib-log.js";
-import {scriptFiles} from "file-list.js";
+
 
 const waitTimeout = 2000; //default wait timwout for version from module
 
