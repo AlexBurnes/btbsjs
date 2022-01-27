@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.1.9'; // update this every time when edit the code!!!
+const Version = '0.3.1.10'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -91,7 +91,7 @@ async function update(ns) {
 
     // settings files, if not exists copy it, is user configurated file
     if (!ns.fileExists("h3ml-settings", host)) {
-        await ns.mv("/h3ml/etc/settings.js", "h3ml-settings.js");
+        await ns.mv(host, "/h3ml/etc/settings.js", "h3ml-settings.js");
     }
 
     const pid = ns.run("/h3ml/sbin/update-fetch.js", 1, baseUrl);
