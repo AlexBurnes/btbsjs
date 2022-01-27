@@ -78,7 +78,7 @@ export const scriptFiles = [
     "/h3ml/sbin/watcher.js",
     */
 
-    "sbin/update.js",
+    "h3ml-update.js",
 
 
 ];
