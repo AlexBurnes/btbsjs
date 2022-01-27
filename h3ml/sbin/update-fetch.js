@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.12'; // update this every time when edit the code!!!
+const Version = '0.3.0.13'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -115,6 +115,12 @@ async function update(l, baseUrl) {
     }
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
+    for(let i = 0; i < core_files.length; i++) {
+        const file = core_files[i];
+        if (await checkVersion(l, file, `${backup_path}${file}`)) {
+            l.e("inspect old %s file, compare it with new %s", `${backup_path}${file}`, file);
+        }
+    });
 
     if (host_files.has("h3ml-update.js")) {
         host_files.delete("h3ml-update.js");
@@ -131,14 +137,25 @@ async function update(l, baseUrl) {
 
 async function checkVersion(l, new_file, old_file) {
     const ns = l.ns;
+    const host = ns.getHostname();
 
     if (new_file == old_file) {
         l.e("old and new file names equal, %s vs %s, bug?", new_file, old_file);
         return false;
     }
 
+    if (ns.fileExists(new_file, host)) {
+        l.e("new file %s do not exists, bug?");
+        return false;
+    }
+
+    if (ns.fileExists(old_file, host)) {
+        l.e("old file %s do not exists, bug?");
+        return false;
+    }
+
     const [new_module_name, new_module_version] = await getModuleVersion(l, new_file);
-    l.g(1, "new module %s identify as %s version %s", file, new_module_name, new_module_version);
+    l.g(1, "new module %s identify as %s version %s", new_file, new_module_name, new_module_version);
     if (new_module_name == undefined || new_module_verson == undefined) {
         l.e("new module %s return empty identity or/and version", new_file);
         return false;
@@ -150,7 +167,7 @@ async function checkVersion(l, new_file, old_file) {
 
 
     const [old_module_name, old_module_version] = await getModuleVersion(l, old_file);
-    l.g(1, "old module %s identify as %s version %s", file, old_module_name, old_module_version);
+    l.g(1, "old module %s identify as %s version %s", new_file, old_module_name, old_module_version);
     if (old_module_name == undefined || old_module_verson == undefined) {
         l.e("new module %s return empty identity or/and version", old_file);
     }
