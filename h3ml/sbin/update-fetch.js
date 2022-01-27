@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.1'; // update this every time when edit the code!!!
+const Version = '0.3.1,1'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -113,10 +113,24 @@ async function update(l, baseUrl) {
             host_files.delete(file);
         }
         else {
+            const [module_name, module_version] = await getModuleVersion(l, file);
+            l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
+            if (module_name == undefined || module_version == undefined) {
+                l.e("new module %s return empty identity or/and version", old_file);
+                l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
+                continue;
+            }
+            if (module_name !== file) {
+                l.e("new module identity %s not equal file name %s, something wrong", module_name, file);
+                l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
+                continue;
+            }
             l.g(1, "[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
         }
 
-        l.g(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
+        //if everithing is ok get its version and memory requirement
+        const [module_name, module_version] = await getModuleVersion(l, file);
+        l.g(1, "[%d/%d] got file %s success, version %s, memory require %dGb", i+1, scriptFiles.length, file, module_version, ns.getScriptRam(file, host));
     }
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
@@ -128,7 +142,20 @@ async function update(l, baseUrl) {
             l.e("inspect old %s file, compare it with new %s", `${backup_path}${file}`, file);
             continue;
         }
-        l.g(1, "[%d/%d] core file %s ok", i+1, core_files.length, file);
+        const [module_name, module_version] = await getModuleVersion(l, file);
+        // FIXME DRY
+        l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
+        if (module_name == undefined || module_version == undefined) {
+            l.e("new module %s return empty identity or/and version", old_file);
+            l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
+            continue;
+        }
+        if (module_name !== file) {
+            l.e("new module identity %s not equal file name %s, something wrong", module_name, file);
+            l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
+            continue;
+        }
+        l.g(1, "[%d/%d] core file %s ok, version %s, memory require %dGb", i+1, core_files.length, file, module_version, ns.getScriptRam(file, host));
     }
 
     if (host_files.has("h3ml-update.js")) {
