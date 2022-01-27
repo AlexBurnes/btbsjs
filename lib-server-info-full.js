@@ -103,7 +103,7 @@ export function updateInfo(ns, target) {
 // recalculate growth for max threads t
 export function calcGrowth(lg, server, ga, gr, gt, t) {
     const ns = lg.ns;
-    lg.ld(1, "ga %f, gr %f, gt %d t %d", ga, gr, gt, t);
+    l.d(1, "ga %f, gr %f, gt %d t %d", ga, gr, gt, t);
     if (gt <= t) {
         // nothing to recalc
         return [gr, gt];
@@ -116,7 +116,7 @@ export function calcGrowth(lg, server, ga, gr, gt, t) {
 
     let gnt = Math.ceil(ns.growthAnalyze(server.name, gpr));
     let gpr_ = gr*(1 - 1/(gt/gnt));
-    lg.ld(1, "gt %d, t %d, ga %f gpa %f gpr %f -> %f, gpt %d gnt %d ", gt, t, ga, gpa, gpr, gpr_, gpt, gnt);
+    l.d(1, "gt %d, t %d, ga %f gpa %f gpr %f -> %f, gpt %d gnt %d ", gt, t, ga, gpa, gpr, gpr_, gpt, gnt);
     let i = 0;
     while (Math.abs(gnt - gpt) > 0) { //
         if (i++ > 100) {break};
@@ -126,7 +126,7 @@ export function calcGrowth(lg, server, ga, gr, gt, t) {
         gnt =  Math.ceil(ns.growthAnalyze(server.name, gpr));
     }
     //gpa = ga * gpr;
-    lg.ld(1, "gnt %d, t %d, gpr %f, i %d", gnt, t, gpr, i);
+    l.d(1, "gnt %d, t %d, gpr %f, i %d", gnt, t, gpr, i);
     return [gpr, gnt];
 }
 
@@ -144,8 +144,8 @@ export function calcHack(lg, server, hm, ht, t) {
     let hnt = Math.floor(ns.hackAnalyzeThreads(server.name, hpm));
     let hpm_ = (hm - hpm)/2;
     // ? так, а это точно рассчитывается, поэтому не нужно считать интервалами
-    lg.ld(1, "hm %f ht %d hpt %d hnt %d", hm, ht, hpt, hnt);
-    lg.ld(1, "hm %.2f, hpm_c %.2f hpm %.2f, diff %f", hm, hpm_c, hpm, hpm_);
+    l.d(1, "hm %f ht %d hpt %d hnt %d", hm, ht, hpt, hnt);
+    l.d(1, "hm %.2f, hpm_c %.2f hpm %.2f, diff %f", hm, hpm_c, hpm, hpm_);
     let i = 0;
     while (Math.abs(hnt - hpt) > 1) { //
         if (i++ > 1000) {break};

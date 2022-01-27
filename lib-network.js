@@ -29,11 +29,11 @@ export class Socket {
         this.time = Date.now();
     }
     //FIXME write it in async way
-    read(options = {}) {
+    async read(options = {}) {
         const ns = this.ns;
         const start = Date.now();
         while (true) {
-            const str = ns.readPort(this.port);
+            const str = await ns.readPort(this.port);
             if (str !== "NULL PORT DATA") {
                 const [time, version, ...data] = str.split("|");
                 if (time == undefined || version == undefined || version != this.version) continue; //failed

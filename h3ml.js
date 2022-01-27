@@ -41,13 +41,13 @@ async function listHackingServers(lg, timeout) {
         if (str !== "NULL PORT DATA") {
             const [time, version, action, ...data] = str.split("|");
             if (time == undefined || version == undefined || version != protocolVersion) continue;
-            lg.ld(1, "%d %s: %s", time, action, data.join(", "));
+            l.d(1, "%d %s: %s", time, action, data.join(", "));
             if (action == "#") {
                 if (data[0] == "server-hacking-list") {
                     const list = data[1].split(",").filter(server => !server.match(/^$/));
-                    lg.ld(1, "hacking servers %d", list.length);
+                    l.d(1, "hacking servers %d", list.length);
                     if (list.length > 0) {
-                        list.forEach(server => lg.ld(1, "\t%s", server));
+                        list.forEach(server => l.d(1, "\t%s", server));
                     }
                     return list;
                 }
@@ -90,13 +90,13 @@ export async function main(ns) {
         .filter(server => ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel())
         .forEach(server => {
             if (hacking_servers.has(server.name)) {
-                lg.lg(1, "%s already haking", server.name);
+                l.g(1, "%s already haking", server.name);
             }
             else {
                 const pid = ns.exec("server-hack.js", hack_server, 1, server.name);
-                lg.lg(1, "%s start hacking at '%s' pid %d", server.name, hack_server, pid);
+                l.g(1, "%s start hacking at '%s' pid %d", server.name, hack_server, pid);
             }
         });
 
-        lg.lg(1, "done");
+        l.g(1, "done");
 }

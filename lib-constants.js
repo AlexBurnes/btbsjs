@@ -9,8 +9,10 @@ const _rootKitFiles = {
     "SQLInject.exe" : 5
 };
 
-const _workerScriptFile = "worker.js";
+const _logLevel     = 1;    // default log level for all scripts
+const _debugLevel   = 0;    // default debug level for all scripts
 
+const _workerScriptFile = "worker.js";
 const _reserveRam = 0;
 
 const _protocolVersion  = 2; // version of protocol for iteract on botnet network
@@ -19,6 +21,10 @@ const _ctrlPort         = 2; // port number for receive ctrl data
 const _infoPort         = 3; // reserved port for hacking.js, hack-servers.js
 const _updatePort       = 4; // reserved port for updater.js
 
+// log toast
+const _toastLogResult         = true;
+const _toastResultTimeout     = 5000;
+
 class _Constants {
     constructor() {
         if (!_Constants._instance) {
@@ -26,15 +32,22 @@ class _Constants {
         }
         return _Constants._instansce;
     }
-    get workerScriptFile()  {return _workerScriptFile};
-    get rootKitFiles()      {return _rootKitFiles};
-    get reserveRam()        {return _reserveRam;}
 
-    get protocolVersion()    {return _protocolVersion;}
-    get watchPort()         {return _watchPort;}
-    get updatePort()        {return _updatePort;}
-    get ctrlPort()          {return _ctrlPort;}
-    get infoPort()          {return _infoPort;}
+    get logLevel()              {return _logLevel;}
+    get debugLevel()            {return _debugLevel;}
+
+    get workerScriptFile()      {return _workerScriptFile};
+    get rootKitFiles()          {return _rootKitFiles};
+    get reserveRam()            {return _reserveRam;}
+
+    get protocolVersion()       {return _protocolVersion;}
+    get watchPort()             {return _watchPort;}
+    get updatePort()            {return _updatePort;}
+    get ctrlPort()              {return _ctrlPort;}
+    get infoPort()              {return _infoPort;}
+
+    get toastLogResult()        {return _toastLogResult;}
+    get toastResultTimeout()    {return _toastResultTimeout;}
 }
 
 export const Constants = new _Constants();

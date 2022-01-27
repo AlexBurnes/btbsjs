@@ -31,13 +31,13 @@ async function listHackingServers(lg, timeout) {
         if (str !== "NULL PORT DATA") {
             const [time, version, action, ...data] = str.split("|");
             if (time == undefined || version == undefined || version != protocolVersion) continue;
-            lg.ld(1, "%d %s: %s", time, action, data.join(", "));
+            l.d(1, "%d %s: %s", time, action, data.join(", "));
             if (action == "#") {
                 if (data[0] == "server-hacking-list") {
                     const list = data[1].split(";").filter(server => !server.match(/^$/));
-                    lg.ld(1, "hacking servers %d", list.length);
+                    l.d(1, "hacking servers %d", list.length);
                     if (list.length > 0) {
-                        list.forEach(server => lg.ld(1, "\t%s", server));
+                        list.forEach(server => l.d(1, "\t%s", server));
                     }
                     return list;
                 }
@@ -72,7 +72,7 @@ export async function main(ns) {
             diff_security,
             total_amount
         ];
-        //lg.ld(1, "\t%s data: %s", server[0], server.join(","));
+        //l.d(1, "\t%s data: %s", server[0], server.join(","));
         hacking_servers.set(server[0], hack_info);
     });
 
@@ -83,7 +83,7 @@ export async function main(ns) {
         .filter(server => ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel()); // hackable
 
     const botnet = new BotNet(ns);
-    lg.lg(1, "botnet %d memory %dGb max threads %d, used memory %dGb usage %.2f%%",
+    l.g(1, "botnet %d memory %dGb max threads %d, used memory %dGb usage %.2f%%",
         botnet.servers.length, botnet.maxRam, botnet.workers,
         botnet.usedRam, 100 * botnet.usedRam / botnet.maxRam
     );

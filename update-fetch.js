@@ -6,17 +6,15 @@ const Version = '0.2.0.4'; // update this every time when edit the code!!!
 
 */
 
-const logLevel   = 1;   // default log level
-const debugLevel = 0;   // default debug level
-
 import {Constants}   from "lib-constants.js";
-import {Socket}      from "lib-network.js";
-import {Logger}      from "log.js";
+import {Logger}      from "lib-log.js";
 import {scriptFiles} from "file-list.js";
+
+const waitTimeout = 2000; //default wait timwout for version from module
 
 async function version(ns, port) {
     if (port !== undefined && port) {
-        const data = ns.sprintf("%d|%d|%s|%s", Date.now(), Constants.protocolVersion, Module, Version);
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(Constants.updatePort, data);
     }
     ns.tprintf("version %s", Version);
@@ -32,9 +30,14 @@ function help(ns) {
 /** @param {NS} ns **/
 export async function main(ns) {
     const args = ns.flags([
-        [ 'version'         , false ],
-        [ 'update-port'     , 0     ],
-        [ 'help'            , false ]
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+
     ]);
     const [baseUrl] = args["_"];
 
@@ -44,18 +47,20 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    const lg = new Logger(ns, {logLevel : logLevel, debugLevel: debugLevel});
-    await update(lg, baseUrl)
+    const l = new Logger(ns, {args: args});
+    l.g(1, "%s %s", Module, Version);
+
+    await update(l, baseUrl)
 
     return;
 }
 
-/** @param { Logger } lg */
-async function update(lg, baseUrl) {
-    const ns = lg.ns;
-    const socket = new Socket(ns, Constants.updatePort);
+/** @param { Logger } lg **/
+/** @param { String } baseUrl **/
+async function update(l, baseUrl) {
+    const ns = l.ns;
     const host = ns.getHostname();
-    lg.lg(1, "update %d files", scriptFiles.length);
+    l.g(1, "update %d files", scriptFiles.length);
 
     const host_files = new Map();
     ns.ls(host)
@@ -66,7 +71,7 @@ async function update(lg, baseUrl) {
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
 
-        lg.lg(1, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
+        l.g(1, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
 
         if (host_files.has(file)) {
             ns.rm(`bk_${file}`);
@@ -84,40 +89,52 @@ async function update(lg, baseUrl) {
 
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
-            ns.tprintf("[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
-            const old_module_version = await get_version(ns, socket, host_files.get(file));
-            lg.lg(1, "old module %s version %s", file, old_module_version);
-            const new_module_version = await get_version(ns, socket, file);
-            lg.lg(1, "new module %s version %s", file, new_module_version);
-
+            // FIXME not all scripts supported updater
+            /*
+                ns.tprintf("[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
+                const [old_module_name, old_module_version] = await getModuleVersion(ns, socket, host_files.get(file), 2000);
+                l.g(1, "old module %s version %s", file, old_module_version);
+                const [new_module_name, new_module_version] = await getModuleVersion(ns, socket, file, 2000);
+                l.g(1, "new module %s version %s", file, new_module_version);
+            */
             host_files.delete(file);
         }
         else {
             ns.tprintf("[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
         }
 
-        lg.lg(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
+        l.g(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
 
     }
 
     if (host_files.size > 0) {
-        lg.lg(1, "not updated files:");
+        l.g(1, "not updated files:");
         host_files.forEach((file, key) => {
-            lg.lg(1, "\t%s", file);
+            l.g(1, "\t%s", file);
         });
     }
 }
 
-async function get_version(ns, socket, module) {
+async function getModuleVersion(ns, module) {
     const start = Date.now();
-    await tryCatchIgnore(() => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
+    // this will not save from show up errors, run modules and do what they do, but it helps do not break the job for this module!!!
+    // every script that must updated by this module must be writed in module.js way!!!
+    await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
+    const start = Date.now();
     while (true) {
-        const [time, data] = await socket.read({timeout: 1000});
-        if (time = 0) break;
-        if (time < start) continue;
-        return data;
+        const str = await ns.readPort(Constants.updatePort);
+        if (str !== "NULL PORT DATA") {
+            const [time, ...data] = str.split("|");
+            if (time == undefined || time < start) {
+                if (Date.now() - start >= waitTimeout) break;
+                continue;
+            }
+            return data;
+        }
+        if (Date.now() - start >= waitTimeout) break;
+        await ns.sleep(100);
     }
-    return "";
+    return;
 }
 
 /**

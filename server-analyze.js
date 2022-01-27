@@ -25,7 +25,7 @@ export async function main(ns) {
     const lg = new Logger(ns, {logLevel: logLevel, debugLevel: debugLevel});
 
     if (!ns.serverExists(target)) {
-        lg.lg(1, "server '%s' not found", target);
+        l.g(1, "server '%s' not found", target);
         return;
     }
 
@@ -36,11 +36,11 @@ export async function main(ns) {
     const t = threads || botnet.workers;
 
     if (t == 0) {
-        lg.lg(1, "server '%s' unable to do anything, not enough memory on host %s", target, host);
+        l.g(1, "server '%s' unable to do anything, not enough memory on host %s", target, host);
         return;
     }
 
-    lg.lg(1, "server '%s' analyze grow/hack on max threads %d", target, t);
+    l.g(1, "server '%s' analyze grow/hack on max threads %d", target, t);
 
     const server = new Server(target);
 
@@ -122,31 +122,31 @@ export async function main(ns) {
     const gmr = server.serverGrowth;           // server maximum grows rate
     const gma = m/gmr;                         // available money to grow for a to max
 
-    lg.lg(1, "chances %f", server.analyzeChance);
+    l.g(1, "chances %f", server.analyzeChance);
     const wt = Math.min(server.weakThreads, t);
     const ws = wt * server.weakSecurityRate;
 
     if (server.analyzeChance < 0.01) {
-        lg.lg(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+        l.g(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
             target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
         );
         return;
     }
 
-    lg.ld(1, "a %f m %f gr %f gt %f", a, m, gr, gt);
+    l.d(1, "a %f m %f gr %f gt %f", a, m, gr, gt);
     // calc maximum growth on max(gmt,t);
     const [gpr, gpt] = calcGrowth(lg, server, gma, gmr, gmt, t);
     const gpa = m/gpr;
-    lg.ld(1, "gpa %f, gnt %d, gpr %f", gpa, gpt, gpr);
+    l.d(1, "gpa %f, gnt %d, gpr %f", gpa, gpt, gpr);
 
 
     if (a == m || gt == 0) {
-        lg.ld(1, "server full, a == m");
+        l.d(1, "server full, a == m");
 
         // calculcate hack threads max(hmt|t)
         const hm = m - gpa;
         const ht = Math.floor(ns.hackAnalyzeThreads(target, hm));
-        lg.lg(1, "hm %f, ht %d", hm, ht);
+        l.g(1, "hm %f, ht %d", hm, ht);
 
         const [hpm, hpt] = calcHack(lg, server, hm, ht, t);
         const hma = costFormat(hpm);
@@ -157,23 +157,23 @@ export async function main(ns) {
                 ||
                 server.weakThreads > t
         ) {
-            lg.lg(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+            l.g(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
                 target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
             );
         }
         else {
-            lg.lg(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
+            l.g(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
                 hpt, hma.cost, hma.unit, sma.cost, sma.unit, server.hackTime.time, server.hackTime.unit
             );
         }
     }
     else if (a >= m/gr && a > gpa) {
-        lg.ld(1, "server near full");
+        l.d(1, "server near full");
 
         //calculate hack threads to stole a - gpa max(ht|t)
         const hm = a - gpa;
         const ht = Math.floor(ns.hackAnalyzeThreads(target, hm));
-        lg.lg(1, "hm %f, ht %d", hm, ht);
+        l.g(1, "hm %f, ht %d", hm, ht);
         const [hpm, hpt] = calcHack(lg, server, hm, ht, t);
 
         const hma = costFormat(hpm);
@@ -191,27 +191,27 @@ export async function main(ns) {
             ||
             server.weakThreads > t
         ){
-            lg.lg(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+            l.g(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
                 target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
             );
         }
         else if ( hpm > m - a) {
-            lg.lg(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
+            l.g(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
                 hpt, hma.cost, hma.unit, sma.cost, sma.unit, server.hackTime.time, server.hackTime.unit
             );
         }
         else {
-            lg.lg(1, "grow threads << %d >> money %.2f%s => %.2f%s in %.2f%s",
+            l.g(1, "grow threads << %d >> money %.2f%s => %.2f%s in %.2f%s",
                 ght, gaf.cost, gaf.unit, gmf.cost, gmf.unit, server.hackTime.time, server.hackTime.unit
             );
         }
     }
     else {
-        lg.ld(1, "server has a few money, need grow");
+        l.d(1, "server has a few money, need grow");
 
         const [grr, grt] = calcGrowth(lg, server, a, gr, gt, t);
         const gra = a * grr;
-        lg.ld(1, "gra %f, grt %d, grr %f", gra, grt, grr);
+        l.d(1, "gra %f, grt %d, grr %f", gra, grt, grr);
 
         // нужно подсчитать сколько сможем взять что бы обеспечить при этом рост
         // a*grr столько будет денег после роста
@@ -230,17 +230,17 @@ export async function main(ns) {
             ||
             server.weakThreads > t
         ){
-            lg.lg(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
+            l.g(1, "%s weak threads << %d >> security -%.2f -> %d in %.2f%s",
                 target, wt, ws, server.currentSecurity - ws, server.weakTime.time, server.weakTime.unit
             );
         }
         else {
             // first must grow, next must hack and repeat
 
-            lg.lg(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
+            l.g(1, "hack threads << %d >> money -%.2f%s => %.2f%s in %.2f%s",
                 hpt, hma.cost, hma.unit, sma.cost, sma.unit, server.hackTime.time, server.hackTime.unit
             );
-            lg.lg(1, "grow threads << %d >> money %.2f%s => %.2f%s in %.2f%s",
+            l.g(1, "grow threads << %d >> money %.2f%s => %.2f%s in %.2f%s",
                 grt, gaf.cost, gaf.unit, gmf.cost, gmf.unit, server.hackTime.time, server.hackTime.unit
             );
         }

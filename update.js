@@ -1,19 +1,21 @@
+/*
+    update h3ml script, this module must not have any library dependency
+    upload this script at home computer and type:
+        run update.js
+*/
+
 const Module  = 'update.js'; // replace by name of new module
-const Version = '0.2.0.2';     // update this every time when edit the code!!!
+const Version = '0.2.1';     // update this every time when edit the code!!!
 
-const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/btbsjs/devel/";
-const files_list = ["file-list.js", "update-fetch.js", "lib-constants.js", "lib-network.js", "log.js"];
+const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel/";
 
-const logLevel   = 1;   // default log level
-const debugLevel = 0;   // default debug level
-
-import {Constants}  from "lib-constants.js";
-import {Logger}     from "log.js"
+// core files required for updater
+const files_list = ["file-list.js", "update-fetch.js", "lib-constants.js", "lib-log.js"];
 
 async function version(ns, port) {
     if (port !== undefined && port) {
-        const data = ns.sprintf("%d|%d|%s|%s", Date.now(), Constants.protocolVersion, Module, Version);
-        return ns.tryWritePort(Constants.updatePort, data);
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
     }
     ns.tprintf("version %s", Version);
     return;
@@ -28,9 +30,9 @@ function help(ns) {
 /** @param {NS} ns **/
 export async function main(ns) {
     const args = ns.flags([
-        [ 'version'         , false     ],
-        [ 'update-port'     , 0         ],
-        [ 'help'            , false     ]
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
     ]);
 
     if (args['version']) {
@@ -76,6 +78,7 @@ async function update(ns) {
         ns.tprintf("[%d/%d] %s uploaded", i+1, files_list.length, file);
     }
     ns.tprintf("run update-fetch to complite updating");
-    await ns.run("update-fetch.js", 1, baseUrl);
+    const pid = ns.run("update-fetch.js", 1, baseUrl);
+    if (pid == 0) return false;
     return true;
 }

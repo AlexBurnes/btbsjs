@@ -1,21 +1,18 @@
 const Module  = 'module.js'; // replace by name of new module
-const Version = '0.2.0';     // update this every time when edit the code!!!
+const Version = '0.2.1';     // update this every time when edit the code!!!
 
 /*
-    minimal application immplementation
+    minimal h3ml script immplementation
 
 */
 
-const logLevel   = 1;   // default log level
-const debugLevel = 0;   // default debug level
-
-import {Constants} from "lib-constants.js";
-import {Logger} from "log.js"
+import {Constants}  from "lib-constants.js";
+import {Logger}     from "lib-log.js"
 
 async function version(ns, port) {
     if (port !== undefined && port) {
-        const data = ns.sprintf("%d|%d|%s|%s", Date.now(), Constants.protocolVersion, Module, Version);
-        return ns.tryWritePort(Constants.updatePort, data);
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
     }
     ns.tprintf("version %s", Version);
     return;
@@ -31,9 +28,14 @@ function help(ns) {
 /** @param {NS} ns **/
 export async function main(ns) {
     const args = ns.flags([
-        [ 'version'         , false     ],
-        [ 'update-port'     , 0         ],
-        [ 'help'            , false     ]
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+
     ]);
 
     if (args['version']) {
@@ -42,7 +44,8 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    const lg = new Logger(ns, {logLevel : logLevel, debugLevel: debugLevel});
+    const l = new Logger(ns, {args: args});
+    l.g(1, "%s %s", Module, Version);
 
     return;
 }

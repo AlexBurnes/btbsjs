@@ -51,7 +51,7 @@ async function actionStart(lg, servers, time, data) {
             hostServer.endTime        = end;
         }
         const estimate = new Date(Date.now + end).toUTCString().substr(17, 8);
-        lg.ld(1, "start on host '%s' target '%s' action '%s' threads %d start time %d, %s, wait hosts %d",
+        l.d(1, "start on host '%s' target '%s' action '%s' threads %d start time %d, %s, wait hosts %d",
             host, server, method, threads, time, estimate, target.hosts.size
         );
     }
@@ -78,7 +78,7 @@ async function actionStop(lg, servers, time, data) {
             break;
     }
 
-    lg.ld(1, "stop on host '%s' target '%s' action '%s' threads %d result %s start time %d",
+    l.d(1, "stop on host '%s' target '%s' action '%s' threads %d result %s start time %d",
         host, server, method, threads, resultStr, eventTime
     );
 
@@ -86,7 +86,7 @@ async function actionStop(lg, servers, time, data) {
         const target = servers.get(server);
         const currentTarget = new Server(server);
 
-        lg.ld(1, "%s event time %d target action %s time %d host %s, wait hosts %d",
+        l.d(1, "%s event time %d target action %s time %d host %s, wait hosts %d",
             server, time, target.currentAction, target.actionTime, host, target.hosts.size);
 
         if (target.currentAction !== "" && target.startTime == eventTime) { // ignore event if action time is older
@@ -134,7 +134,7 @@ async function actionStop(lg, servers, time, data) {
 async function actionInfo(lg, servers, time, data) {
     const ns = lg.ns;
 
-    if (quietMode == 0) lg.lg(1, "%s", data.join(", "));
+    if (quietMode == 0) l.g(1, "%s", data.join(", "));
     return;
 }
 
@@ -147,7 +147,7 @@ function eventStopInfo(lg, server, method) {
     if (quietMode) return;
 
     if (method == "weaken") {
-        lg.lg(1, "<= '%s' %s => %s%.2f -> %.2f / %.2f in %.2f%s",
+        l.g(1, "<= '%s' %s => %s%.2f -> %.2f / %.2f in %.2f%s",
             server.name, method,
             server.diffSecuriry > 0
                 ? "+"
@@ -158,7 +158,7 @@ function eventStopInfo(lg, server, method) {
         );
     }
     else {
-        lg.lg(1, "<= '%s' %s => %s%.2f%s -> %.2f%s / %.2f%s in %.2f%s",
+        l.g(1, "<= '%s' %s => %s%.2f%s -> %.2f%s / %.2f%s in %.2f%s",
             server.name, method,
             server.diffAvailMoney.value > 0
                 ? "+"
@@ -181,7 +181,7 @@ async function actionCtrl(lg, servers, time, data) {
 
     const port = data.shift();
 
-    if (quietMode == 0) lg.lg(1, "ctrl receive %s, port %d", data[0], port);
+    if (quietMode == 0) l.g(1, "ctrl receive %s, port %d", data[0], port);
 
     switch (data[1]) {
         case "server-hacking-list":
@@ -221,7 +221,7 @@ async function ctrServerHackingList(lg, servers, time, data) {
         });
     const list = new Array();
     servers.forEach((server, key) => {
-        lg.ld(1, "server %s, action %s", server.name, server.currentAction);
+        l.d(1, "server %s, action %s", server.name, server.currentAction);
         if (
             ns.getServerMaxMoney(server.name) > 0 &&
             ns.hasRootAccess(server.name) &&
@@ -277,15 +277,15 @@ export async function main(ns) {
 
     // drop all old events
     let oldTime = Date.now();
-    lg.ld(1, "time %d", oldTime);
+    l.d(1, "time %d", oldTime);
 
     while (true) {
         const str = await ns.readPort(receivePort);
         if (str !== "NULL PORT DATA") {
-            lg.ld(1, "time %d", oldTime);
+            l.d(1, "time %d", oldTime);
             const [time, version, action, ...data] = str.split("|");
             if (time == undefined || version == undefined || version != protocolVersion) continue; //failed
-            lg.ld(1, "%d %s: %s", time, action, data.join(", "));
+            l.d(1, "%d %s: %s", time, action, data.join(", "));
             if (time < oldTime) continue; // do not read old events from port
             switch (action) {
                 case '<':

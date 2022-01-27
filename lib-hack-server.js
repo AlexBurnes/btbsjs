@@ -16,11 +16,11 @@ export function hackServersInfo(lg, botnet, servers, hacking_servers) {
     const ns = lg.ns;
 
     if (botnet.servers.length) {
-        lg.lg(2, "botnet list:");
+        l.g(2, "botnet list:");
         botnet.servers
             .sort(function (a, b) { a.workers - b.workers })
             .forEach(server => {
-                lg.lg(2, "\t%s %dGb / %dGb, allow worker threads %d",
+                l.g(2, "\t%s %dGb / %dGb, allow worker threads %d",
                     server.name, server.maxRam, server.usedRam, server.workers
                 );
             });
@@ -55,8 +55,8 @@ export function hackServersInfo(lg, botnet, servers, hacking_servers) {
         // need to find nearest > 2^n Gb server :)
         const allServersRam = Math.ceil(botnet.workerRam * allServerThreads);
         const oneServerRam = Math.ceil(botnet.workerRam * maxServerThreads);
-        lg.lg(1, "hacking %d/%d servers", hacking_servers.size, servers.length);
-        lg.lg(1, "for optimal hack require max single server size %dGb, total size %dGb", oneServerRam, allServersRam);
+        l.g(1, "hacking %d/%d servers", hacking_servers.size, servers.length);
+        l.g(1, "for optimal hack require max single server size %dGb, total size %dGb", oneServerRam, allServersRam);
 
         const table = new TableFormatter(ns,
             [
