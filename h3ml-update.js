@@ -65,18 +65,18 @@ async function update(ns) {
             ns.tprintf("[%d/%d] move %s to backup %s", i+1, files_list.length, file, file);
             ns.rm(`${backup_path}${file}`);
             if (ns.fileExists(`${backup_path}%{file}`, host)) {
-                ns.tprintf("[%d/%d] filed delete ${backup_path}%s", i+1, files_list.length, file);
+                ns.tprintf("[%d/%d] failed delete ${backup_path}%s", i+1, files_list.length, file);
                 return false;
             }
             ns.mv(host, file, `${backup_path}${file}`);
             if (ns.fileExists(file, host)) {
-                ns.tprintf("[%d/%d] filed move file %s to ${backup_path}%s", i+1, files_list.length, file, file);
+                ns.tprintf("[%d/%d] failed move file %s to ${backup_path}%s", i+1, files_list.length, file, file);
                 return false;
             }
         }
         await ns.wget(`${baseUrl}${file}`, file);
         if (!ns.fileExists(file, host)) {
-            ns.tprintf("[%d/%d] failed get file for update %s/%s", i+1, files_list.length, baseUrl, file);
+            ns.tprintf("[%d/%d] failed get %s%s", i+1, files_list.length, baseUrl, file);
             return false;
         }
         ns.tprintf("[%d/%d] %s uploaded", i+1, files_list.length, file);
