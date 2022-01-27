@@ -1,4 +1,4 @@
-const Module  = '/h3ml/{bin|lib}/module.js'; // replace by name of new module
+const Module  = '/h3ml/var/module.js'; // replace by name of new module
 const Version = '0.3.0'; // update this every time when edit the code!!!
 
 /*

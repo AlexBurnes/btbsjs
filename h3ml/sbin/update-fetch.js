@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.11'; // update this every time when edit the code!!!
+const Version = '0.3.0.12'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -19,13 +19,13 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(Constants.updatePort, data);
     }
-    ns.tprintf("version %s", Version);
+    l.g(1, "version %s", Version);
     return;
 }
 
 function help(ns) {
-    ns.tprintf("usage: %s [url] | [--version [--update-port]] | [--help]", Module);
-    ns.tprintf("update all scripts");
+    l.g(1, "usage: %s [url] | [--version [--update-port]] | [--help]", Module);
+    l.g(1, "update all scripts");
     return;
 }
 
@@ -101,21 +101,20 @@ async function update(l, baseUrl) {
 
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
-            ns.tprintf("[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
-            const [old_module_name, old_module_version] = await getModuleVersion(l, host_files.get(file));
-            l.g(1, "old module %s identify as %s version %s", file, old_module_name, old_module_version);
-            const [new_module_name, new_module_version] = await getModuleVersion(l, file);
-            l.g(1, "new module %s identify as %s version %s", file, new_module_version, new_module_version);
-            /* compare and do some actions */
+            l.g(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
             host_files.delete(file);
+            if (checkVersion(l, file, host_files.get(file))) {
+                l.e("inspect old %s file, compare it with new %s", host_files.get(file), file);
+            }
         }
         else {
-            ns.tprintf("[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
+            l.g(1, "[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
         }
 
         l.g(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
-
     }
+
+    //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
 
     if (host_files.has("h3ml-update.js")) {
         host_files.delete("h3ml-update.js");
@@ -128,6 +127,57 @@ async function update(l, baseUrl) {
                 l.g(1, "\t%s", file);
             });
     }
+}
+
+async function checkVersion(l, new_file, old_file) {
+    const ns = l.ns;
+
+    if (new_file == old_file) {
+        l.e("old and new file names equal, %s vs %s, bug?", new_file, old_file);
+        return false;
+    }
+
+    const [new_module_name, new_module_version] = await getModuleVersion(l, new_file);
+    l.g(1, "new module %s identify as %s version %s", file, new_module_name, new_module_version);
+    if (new_module_name == undefined || new_module_verson == undefined) {
+        l.e("new module %s return empty identity or/and version", new_file);
+        return false;
+    }
+    if (new_module_name !== new_file) {
+        l.e("new module identity %s not equal file name %s, something wrong", new_module_name, new_file);
+        return false;
+    }
+
+
+    const [old_module_name, old_module_version] = await getModuleVersion(l, old_file);
+    l.g(1, "old module %s identify as %s version %s", file, old_module_name, old_module_version);
+    if (old_module_name == undefined || old_module_verson == undefined) {
+        l.e("new module %s return empty identity or/and version", old_file);
+    }
+    if (old_module_name !== new_file) {
+        l.e("old module identity %s not equal file name %s, something wrong", old_module_name, new_file);
+        return false;
+    }
+
+    new_version_numbers = new_module_version.split(".");
+    old_version_numbers = old_module_version.split(".");
+
+    for(let i = 0; i < new_version_numbers.length; i++) {
+        if (i >= old_version_numbers) {
+            return true;
+        }
+        if (new_version_numbers[i] < old_version_numbers[i]) {
+            l.e("new module %s version %s is less old %s", file, new_module_version, old_version_module);
+            return false;
+        }
+    }
+    if (old_version_numbers.length > new_version_numbers) {
+        l.e("new module %s version %s is less old %s", file, new_module_version, old_version_module);
+        return false;
+    }
+
+
+    return true;
 }
 
 async function getModuleVersion(l, module) {

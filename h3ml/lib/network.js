@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/network.js';
-const Version = '0.3.0';
+const Version = '0.3.0.11';
 
 /*
     network interaction, read, write, listen
@@ -10,8 +10,8 @@ import {Constants} from "/h3ml/lib/constants.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
-        const socket = new Socket(ns, port);
-        return socket.write(Version);
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
     }
     ns.tprintf("version %s", Version);
 }
