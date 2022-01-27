@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.1.6'; // update this every time when edit the code!!!
+const Version = '0.3.1.7'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -17,7 +17,7 @@ const files_list = [
     "/h3ml/sbin/update-fetch.js",
     "/h3ml/lib/constants.js",
     "/h3ml/lib/log.js",
-    "/h3ml/etc/h3ml-settings.js"
+    "/h3ml/etc/settings.js"
 ];
 
 const backup_path = "/h3ml/var/backup";
