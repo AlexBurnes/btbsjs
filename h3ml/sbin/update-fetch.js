@@ -6,7 +6,7 @@ const Version = '0.3.0.4'; // update this every time when edit the code!!!
 
 */
 
-import {scriptFiles} from "/h3ml/var/filet.js";
+import {scriptFiles} from "/h3ml/var/files.js";
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
 
