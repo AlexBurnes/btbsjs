@@ -1,11 +1,11 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.0.18';
+const Version = '0.3.0.23';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
-        const data = ns.sprintf("%d|%d|%s|%s", Date.now(), Constants.protocolVersion, Module, Version);
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(Constants.updatePort, data);
     }
     ns.tprintf("version %s", Version);
