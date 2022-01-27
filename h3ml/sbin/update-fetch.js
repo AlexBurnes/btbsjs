@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.0.20'; // update this every time when edit the code!!!
+const Version = '0.3.0.21'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -120,11 +120,15 @@ async function update(l, baseUrl) {
     }
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
+    l.g(1, "check core files %d", core_files.length;)
     for(let i = 0; i < core_files.length; i++) {
         const file = core_files[i];
-        if (await checkVersion(l, file, `${backup_path}${file}`)) {
+        l.g(1, "[%d/%d] check core file %s",  i+1, core_files.length, file);
+        if (!await checkVersion(l, file, `${backup_path}${file}`)) {
             l.e("inspect old %s file, compare it with new %s", `${backup_path}${file}`, file);
+            continue;
         }
+        l.g(1, "[%d/%d] core file %s ok", i+1, core_files.length, file);
     }
 
     if (host_files.has("h3ml-update.js")) {
