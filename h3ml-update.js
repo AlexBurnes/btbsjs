@@ -7,7 +7,7 @@
 */
 
 const Module  = 'h3ml-update.js';
-const Version = '0.3.0.5'; // update this every time when edit the code!!!
+const Version = '0.3.0.6'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -62,7 +62,7 @@ async function update(ns) {
     for(let i = 0; i < files_list.length; i++) {
         const file = files_list[i];
         if (ns.fileExists(file, host)) {
-            ns.tprintf("[%d/%d] move %s to %s%s", i+1, files_list.length, file, back_path, file);
+            ns.tprintf("[%d/%d] move %s to %s%s", i+1, files_list.length, file, backup_path, file);
             ns.rm(`${backup_path}${file}`);
             if (ns.fileExists(`${backup_path}%{file}`, host)) {
                 ns.tprintf("[%d/%d] failed delete ${backup_path}%s", i+1, files_list.length, file);
