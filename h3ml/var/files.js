@@ -1,7 +1,7 @@
 const Module  = 'h3ml/var/files.js';
-const Version = '0.3.0';
+const Version = '0.3.0.4';
 
-import {Constants} from "h3ml/lib/constants.js";
+import {Constants} from "/h3ml/lib/constants.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -20,59 +20,59 @@ function help(ns) {
 
 export const scriptFiles = [
     // file list and aliases
-    "h3ml/etc/aliases.script",
-    "h3ml/var/files.js",
+    "/h3ml/etc/aliases.script",
+    "/h3ml/var/files.js",
 
     // libraries in order of dependencie
-    "h3ml/lib/constants.js",
-    "h3ml/lib/network.js",
-    "h3ml/lib/log.js",
+    "/h3ml/lib/constants.js",
+    "/h3ml/lib/network.js",
+    "/h3ml/lib/log.js",
 
-    /*"h3ml/lib/units.js",
-    "h3ml/lib/utils.js",
-    "h3ml/lib/server-list.js",
-    "h3ml/lib/target.js",
-    "h3ml/lib/botnet.js",
-    "h3ml/lib/server-info.js",
-    "h3ml/lib/server-info-full.js",
-    "h3ml/lib/hack-server.js",
-    "h3ml/lib/backdoor.js",
+    /*"/h3ml/lib/units.js",
+    "/h3ml/lib/utils.js",
+    "/h3ml/lib/server-list.js",
+    "/h3ml/lib/target.js",
+    "/h3ml/lib/botnet.js",
+    "/h3ml/lib/server-info.js",
+    "/h3ml/lib/server-info-full.js",
+    "/h3ml/lib/hack-server.js",
+    "/h3ml/lib/backdoor.js",
 
     // script skeleton
-    "h3ml/var/module.js",
+    "/h3ml/var/module.js",
 
     // scripts
-    "h3ml/bin/scan.js",
-    "h3ml/lib/scan-info-with-contracts.js",
-    "h3ml/lib/scan-info.js",
-    "h3ml/lib/scan-simple.js",
+    "/h3ml/bin/scan.js",
+    "/h3ml/lib/scan-info-with-contracts.js",
+    "/h3ml/lib/scan-info.js",
+    "/h3ml/lib/scan-simple.js",
 
-    "h3ml/bin/stop.js",
-    "h3ml/bin/backdoor.js",
-    "h3ml/bin/connect.js",
-    "h3ml/bin/worm.js",
+    "/h3ml/bin/stop.js",
+    "/h3ml/bin/backdoor.js",
+    "/h3ml/bin/connect.js",
+    "/h3ml/bin/worm.js",
 
-    "h3ml/bin/server-buy.js",
-    "h3ml/bin/server-rm.js",
-    "h3ml/bin/server-cost.js",
+    "/h3ml/bin/server-buy.js",
+    "/h3ml/bin/server-rm.js",
+    "/h3ml/bin/server-cost.js",
 
-    "h3ml/bin/h3ml.js",
-    "h3ml/bin/hack-net.js",
-    "h3ml/bin/hack-servers.js",
+    "/h3ml/bin/h3ml.js",
+    "/h3ml/bin/hack-net.js",
+    "/h3ml/bin/hack-servers.js",
 
-    "h3ml/bin/server-analyze.js",
-    "h3ml/bin/server-hack.js",
+    "/h3ml/bin/server-analyze.js",
+    "/h3ml/bin/server-hack.js",
 
-    "h3ml/bin/hack.js",
-    "h3ml/bin/grow.js",
-    "h3ml/bin/weak.js",
-    "h3ml/bin/worker.js",
+    "/h3ml/bin/hack.js",
+    "/h3ml/bin/grow.js",
+    "/h3ml/bin/weak.js",
+    "/h3ml/bin/worker.js",
 
-    "h3ml/bin/quiet.js",
-    "h3ml/bin/verbose.js",
-    "h3ml/bin/rm.js"
+    "/h3ml/bin/quiet.js",
+    "/h3ml/bin/verbose.js",
+    "/h3ml/bin/rm.js"
 
-    "h3ml/sbin/watcher.js",
+    "/h3ml/sbin/watcher.js",
     */
 
     "sbin/update.js",

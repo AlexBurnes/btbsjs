@@ -1,16 +1,16 @@
 const Module  = 'update-fetch.js';
-const Version = '0.2.1.3'; // update this every time when edit the code!!!
+const Version = '0.3.0.4'; // update this every time when edit the code!!!
 
 /*
     update all scripts
 
 */
 
-import {scriptFiles} from "h3ml/var/filet.js";
-import {Constants}   from "h3ml/lib/constants.js";
-import {Logger}      from "h3ml/lib/log.js";
+import {scriptFiles} from "/h3ml/var/filet.js";
+import {Constants}   from "/h3ml/lib/constants.js";
+import {Logger}      from "/h3ml/lib/log.js";
 
-
+const backup_path = "/h3ml/var/backup";
 const waitTimeout = 2000; //default wait timwout for version from module
 
 async function version(ns, port) {
@@ -66,7 +66,7 @@ async function update(l, baseUrl) {
     const host_files = new Map();
     ns.ls(host)
         .filter(file => file.match(/.*\.js|.*\.txt/))
-        .filter(file => !file.match(/^bk_.*\.js/))
+        .filter(file => !file.match(/^${backup_path}.*\.js/))
         .forEach(file => {host_files.set(file, file)});
 
     for (let i = 0; i < scriptFiles.length; i++) {
@@ -75,11 +75,11 @@ async function update(l, baseUrl) {
         l.g(1, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
 
         if (host_files.has(file)) {
-            ns.rm(`bk_${file}`);
+            ns.rm(`${backup_path}${file}`);
             if (ns.fileExists(file, host)) {
-                ns.mv(host, file, `bk_${file}`);
+                ns.mv(host, file, `${backup_path}${file}`);
             }
-            host_files.set(file, `bk_${file}`);
+            host_files.set(file, `${backup_path}${file}`);
         }
 
         await ns.wget(`${baseUrl}${file}`, file);
