@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.13'; // update this every time when edit the code!!!
+const Version = '0.3.0.14'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -103,7 +103,7 @@ async function update(l, baseUrl) {
         if (host_files.has(file)) {
             l.g(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
             host_files.delete(file);
-            if (await checkVersion(l, file, host_files.get(file))) {
+            if (!await checkVersion(l, file, host_files.get(file))) {
                 l.e("inspect old %s file, compare it with new %s", host_files.get(file), file);
             }
         }
@@ -144,12 +144,12 @@ async function checkVersion(l, new_file, old_file) {
         return false;
     }
 
-    if (ns.fileExists(new_file, host)) {
+    if (!ns.fileExists(new_file, host)) {
         l.e("new file %s do not exists, bug?");
         return false;
     }
 
-    if (ns.fileExists(old_file, host)) {
+    if (!ns.fileExists(old_file, host)) {
         l.e("old file %s do not exists, bug?");
         return false;
     }
