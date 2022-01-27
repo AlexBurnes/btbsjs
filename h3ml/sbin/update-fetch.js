@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.8'; // update this every time when edit the code!!!
+const Version = '0.3.0.9'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -49,8 +49,8 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    const l = new Logger(ns, {args: args});
     ns.tprint(Module, " ", Version);
+    const l = new Logger(ns, {args: args});
 
     await update(l, baseUrl)
 
@@ -101,16 +101,12 @@ async function update(l, baseUrl) {
 
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
-            // FIXME not all scripts supported updater
-            /*
-                ns.tprintf("[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
-                const [old_module_name, old_module_version] = await getModuleVersion(ns, socket, host_files.get(file), 2000);
-                l.g(1, "old module %s version %s", file, old_module_version);
-                const [new_module_name, new_module_version] = await getModuleVersion(ns, socket, file, 2000);
-                l.g(1, "new module %s version %s", file, new_module_version);
-
-                and compare with constants version as global update version!!!
-            */
+            ns.tprintf("[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
+            const [old_module_name, old_module_version] = await getModuleVersion(ns, socket, host_files.get(file), 2000);
+            l.g(1, "old module %s identify as %s version %s", file, old_module_name, old_module_version);
+            const [new_module_name, new_module_version] = await getModuleVersion(ns, socket, file, 2000);
+            l.g(1, "new module %s identify as %s version %s", file, new_module_version, new_module_version);
+            /* compare and do some actions */
             host_files.delete(file);
         }
         else {
@@ -121,12 +117,15 @@ async function update(l, baseUrl) {
 
     }
 
+    if (host_files.has("h3ml-update.js")) {
+        host_files.delete("h3ml-update.js");
+    }
+
     if (host_files.size > 0) {
         l.g(1, "not updated files:");
         host_files
             .forEach((file, key) => {
-                if (file !== "h3ml-update.js") {
-                    l.g(1, "\t%s", file);
+                l.g(1, "\t%s", file);
                 }
         });
     }
@@ -135,8 +134,9 @@ async function update(l, baseUrl) {
 async function getModuleVersion(ns, module) {
     // this will not save from show up errors, run modules and do what they do, but it helps do not break the job for this module!!!
     // every script that must updated by this module must be writed in module.js way!!!
-    await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
     const start = Date.now();
+    ns.clearPort(Constants.updatePort);
+    await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
     while (true) {
         const str = await ns.readPort(Constants.updatePort);
         if (str !== "NULL PORT DATA") {
