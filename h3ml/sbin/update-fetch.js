@@ -103,7 +103,7 @@ async function update(l, baseUrl) {
         if (host_files.has(file)) {
             l.g(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
             host_files.delete(file);
-            if (checkVersion(l, file, host_files.get(file))) {
+            if (await checkVersion(l, file, host_files.get(file))) {
                 l.e("inspect old %s file, compare it with new %s", host_files.get(file), file);
             }
         }
