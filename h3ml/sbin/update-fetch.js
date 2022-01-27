@@ -120,7 +120,7 @@ async function update(l, baseUrl) {
         if (await checkVersion(l, file, `${backup_path}${file}`)) {
             l.e("inspect old %s file, compare it with new %s", `${backup_path}${file}`, file);
         }
-    });
+    }
 
     if (host_files.has("h3ml-update.js")) {
         host_files.delete("h3ml-update.js");
