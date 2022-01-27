@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.2.0.4'; // update this every time when edit the code!!!
+const Version = '0.2.1.3'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -118,7 +118,6 @@ async function update(l, baseUrl) {
 }
 
 async function getModuleVersion(ns, module) {
-    const start = Date.now();
     // this will not save from show up errors, run modules and do what they do, but it helps do not break the job for this module!!!
     // every script that must updated by this module must be writed in module.js way!!!
     await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
