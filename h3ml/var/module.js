@@ -30,7 +30,7 @@ export async function main(ns) {
     const args = ns.flags([
         [ 'version'     , false ],
         [ 'update-port' , 0     ],
-        [ 'help'        , false ]
+        [ 'help'        , false ],
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'       , 0     ], // debug level
         [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
