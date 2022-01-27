@@ -8,6 +8,10 @@
 
     not yet ready, some of scripts are working, but need to correct path and run manualy
 
+# Version 
+
+    v0.0.3.0.5 update h3ml scripts
+
 # Change log 
 
     v0.3.0 - all scripts at /h3ml directory
