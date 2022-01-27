@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.1.3'; // update this every time when edit the code!!!
+const Version = '0.3.1.4'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -102,7 +102,10 @@ async function update(l, baseUrl) {
         }
 
         //do not check script and txt for version and etc, don't care about it
-        if (file.match(/^(?:.*\.script|.*\.txt)$/)) continue;
+        if (file.match(/^(?:.*\.script|.*\.txt)$/)) {
+            l.g(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
+            continue;
+        }
 
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
@@ -133,7 +136,7 @@ async function update(l, baseUrl) {
 
         //if everithing is ok get its version and memory requirement
         const [module_name, module_version] = await getModuleVersion(l, file);
-        l.g(1, "[%d/%d] got file %s success, version %s, memory require %dGb", i+1, scriptFiles.length, file, module_version, ns.getScriptRam(file, host));
+        l.g(1, "[%d/%d] got file %s success, version %s, memory require %.2fGb", i+1, scriptFiles.length, file, module_version, ns.getScriptRam(file, host));
     }
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
