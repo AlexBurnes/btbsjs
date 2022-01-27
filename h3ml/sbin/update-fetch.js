@@ -10,6 +10,7 @@ import {scriptFiles} from "/h3ml/var/files.js";
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
 
+const core_files = ["/h3ml/var/files.js", "/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
 const backup_path = "/h3ml/var/backup";
 const waitTimeout = 2000; //default wait timwout for version from module
 
@@ -68,10 +69,15 @@ async function update(l, baseUrl) {
         return help();
     }
 
+    const filter_files = new Map();
+    core_files.forEach(file => {filter_files.set(file, true);});
+    const filter_re = new Regexp(`^${backup_path}.*\\.js`);
+
     const host_files = new Map();
     ns.ls(host)
         .filter(file => file.match(/.*\.js|.*\.txt/))
-        .filter(file => !file.match(/^${backup_path}.*\.js/))
+        .filter(file => !filter_files.has(file))
+        .filter(file => !file.match(filter_re))
         .forEach(file => {host_files.set(file, file)});
 
     for (let i = 0; i < scriptFiles.length; i++) {
@@ -117,8 +123,10 @@ async function update(l, baseUrl) {
 
     if (host_files.size > 0) {
         l.g(1, "not updated files:");
-        host_files.forEach((file, key) => {
-            l.g(1, "\t%s", file);
+        host_files
+            .filter(file => file == "h3ml-update.js") // files at root directory listed without /
+            .forEach((file, key) => {
+                l.g(1, "\t%s", file);
         });
     }
 }
