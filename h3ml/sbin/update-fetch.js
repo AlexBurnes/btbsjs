@@ -6,9 +6,9 @@ const Version = '0.2.1.3'; // update this every time when edit the code!!!
 
 */
 
-import {scriptFiles} from "file-list.js";
-import {Constants}   from "lib-constants.js";
-import {Logger}      from "lib-log.js";
+import {scriptFiles} from "h3ml/var/filet.js";
+import {Constants}   from "h3ml/lib/constants.js";
+import {Logger}      from "h3ml/lib/log.js";
 
 
 const waitTimeout = 2000; //default wait timwout for version from module

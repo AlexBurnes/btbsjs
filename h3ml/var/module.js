@@ -1,13 +1,13 @@
-const Module  = 'module.js'; // replace by name of new module
-const Version = '0.2.1';     // update this every time when edit the code!!!
+const Module  = 'h3ml/{bin|lib}/module.js'; // replace by name of new module
+const Version = '0.3.0'; // update this every time when edit the code!!!
 
 /*
     minimal h3ml script immplementation
 
 */
 
-import {Constants}  from "lib-constants.js";
-import {Logger}     from "lib-log.js"
+import {Constants}  from "h3ml/lib/constants.js";
+import {Logger}     from "h3ml/lib/log.js"
 
 async function version(ns, port) {
     if (port !== undefined && port) {

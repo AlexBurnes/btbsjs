@@ -1,12 +1,12 @@
-const Module  = 'lib-network.js';
-const Version = '0.2.1';
+const Module  = 'h3ml/lib/network.js';
+const Version = '0.3.0';
 
 /*
     network interaction, read, write, listen
 
 */
 
-import {Constants} from "lib-constants.js";
+import {Constants} from "h3ml/lib/constants.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {

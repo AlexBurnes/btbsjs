@@ -1,7 +1,7 @@
 // scan-info.js
 // version 0.1.10
 
-import {Constants} from "lib-constants.js"
+import {Constants} from "h3ml/lib/constants.js"
 import {serversTree} from "lib-server-list.js"
 import {serverInfo} from "lib-server-info.js"
 import {LVS} from "lib-utils.js"

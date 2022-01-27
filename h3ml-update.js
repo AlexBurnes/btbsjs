@@ -1,18 +1,18 @@
 /*
-    update h3ml script, this module must not have any library dependency
+    h3ml update script, this module must not have any library dependency
     upload this script at home computer and run:
-        wget https://raw.githubusercontent.com/AlexBurnes/h3ml/devel/update.js update.js
-        run update.js --version
-        run update.js
+        wget https://raw.githubusercontent.com/AlexBurnes/h3ml/master/html3-update.js html3-update.js
+        run h3ml-update.js --version
+        run h3ml-update.js
 */
 
-const Module  = 'update.js'; // replace by name of new module
-const Version = '0.2.1.2';     // update this every time when edit the code!!!
+const Module  = 'h3ml-update.js';
+const Version = '0.3.0'; // update this every time when edit the code!!!
 
-const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel/";
+const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel-directory/";
 
 // core files required for updater
-const files_list = ["file-list.js", "update-fetch.js", "lib-constants.js", "lib-log.js"];
+const files_list = ["h3ml/var/files.js", "h3ml/sbin/update-fetch.js", "h3ml/lib/constants.js", "h3ml/lib/log.js"];
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -79,8 +79,8 @@ async function update(ns) {
         }
         ns.tprintf("[%d/%d] %s uploaded", i+1, files_list.length, file);
     }
-    ns.tprintf("run update-fetch to complite updating");
-    const pid = ns.run("update-fetch.js", 1, baseUrl);
+    ns.tprintf("run h3ml update-fetch to complite updating");
+    const pid = ns.run("h3ml/sbin/update-fetch.js", 1, baseUrl);
     if (pid == 0) return false;
     return true;
 }

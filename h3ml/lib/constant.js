@@ -1,5 +1,5 @@
-const Module  = 'lib-constants.js';
-const Version = '0.2.1'; // update this every time when edit the code!!!
+const Module  = 'h3ml/lib/constants.js';
+const Version = '0.3.0'; // update this every time when edit the code!!!
 
 const _rootKitFiles = {
     "BruteSSH.exe"  : 1,
@@ -12,7 +12,7 @@ const _rootKitFiles = {
 const _logLevel     = 1;    // default log level for all scripts
 const _debugLevel   = 0;    // default debug level for all scripts
 
-const _workerScriptFile = "worker.js";
+const _workerScriptFile = "h3ml/lib/worker.js";
 const _reserveRam = 0;
 
 const _protocolVersion  = 2; // version of protocol for iteract on botnet network
