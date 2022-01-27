@@ -48,7 +48,7 @@ export class Logger {
         this.ns = ns;
 
         this.debugLevel = options["debugLevel"] || Constants.debugLevel; //default debug level
-        this.logLevel   = options["logLevel"]   || constants.logLevel;   //default log level
+        this.logLevel   = options["logLevel"]   || Constants.logLevel;   //default log level
 
         if (options["args"]) {
             const args = options["args"];
