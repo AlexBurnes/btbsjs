@@ -71,7 +71,7 @@ async function update(l, baseUrl) {
 
     const filter_files = new Map();
     core_files.forEach(file => {filter_files.set(file, true);});
-    const filter_re = new Regexp(`^${backup_path}.*\\.js`);
+    const filter_re = new RegExp(`^${backup_path}.*\\.js`);
 
     const host_files = new Map();
     ns.ls(host)
