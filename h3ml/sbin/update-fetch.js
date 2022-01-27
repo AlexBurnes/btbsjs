@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.15'; // update this every time when edit the code!!!
+const Version = '0.3.0.16'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -161,7 +161,7 @@ async function checkVersion(l, new_file, old_file) {
     }
 
     const [new_module_name, new_module_version] = await getModuleVersion(l, new_file);
-    l.g(1, "new module %s identify as %s version %s", new_file, new_module_name, new_module_version);
+    l.d(1, "new module %s identify as %s version %s", new_file, new_module_name, new_module_version);
     if (new_module_name == undefined || new_module_verson == undefined) {
         l.e("new module %s return empty identity or/and version", new_file);
         return false;
@@ -173,7 +173,7 @@ async function checkVersion(l, new_file, old_file) {
 
 
     const [old_module_name, old_module_version] = await getModuleVersion(l, old_file);
-    l.g(1, "old module %s identify as %s version %s", new_file, old_module_name, old_module_version);
+    l.d(1, "old module %s identify as %s version %s", new_file, old_module_name, old_module_version);
     if (old_module_name == undefined || old_module_verson == undefined) {
         l.e("new module %s return empty identity or/and version", old_file);
     }
