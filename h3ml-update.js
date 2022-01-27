@@ -6,8 +6,8 @@
         run h3ml-update.js
 */
 "use strict";
-const Module  = '/h3ml-update.js';
-const Version = '0.3.0.20'; // update this every time when edit the code!!!
+const Module  = 'h3ml-update.js';
+const Version = '0.3.0.21'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
