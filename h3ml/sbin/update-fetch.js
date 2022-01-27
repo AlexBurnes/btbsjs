@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.1.5'; // update this every time when edit the code!!!
+const Version = '0.3.1.11'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -168,6 +168,12 @@ async function update(l, baseUrl) {
 
     if (host_files.has("h3ml-update.js")) {
         host_files.delete("h3ml-update.js");
+    }
+    if (host_files.has("h3ml-settings.js")) {
+        host_files.delete("h3ml-settings.js");
+    }
+    if (host_files.has("/h3ml/etc/settings.js")) {
+        host_files.delete("h3ml/etc/settings.js");
     }
 
     if (host_files.size > 0) {
