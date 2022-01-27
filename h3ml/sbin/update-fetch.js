@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.10'; // update this every time when edit the code!!!
+const Version = '0.3.0.11'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -102,9 +102,9 @@ async function update(l, baseUrl) {
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
             ns.tprintf("[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
-            const [old_module_name, old_module_version] = await getModuleVersion(ns, socket, host_files.get(file), 2000);
+            const [old_module_name, old_module_version] = await getModuleVersion(l, host_files.get(file));
             l.g(1, "old module %s identify as %s version %s", file, old_module_name, old_module_version);
-            const [new_module_name, new_module_version] = await getModuleVersion(ns, socket, file, 2000);
+            const [new_module_name, new_module_version] = await getModuleVersion(l, file);
             l.g(1, "new module %s identify as %s version %s", file, new_module_version, new_module_version);
             /* compare and do some actions */
             host_files.delete(file);
@@ -130,9 +130,10 @@ async function update(l, baseUrl) {
     }
 }
 
-async function getModuleVersion(ns, module) {
+async function getModuleVersion(l, module) {
     // this will not save from show up errors, run modules and do what they do, but it helps do not break the job for this module!!!
     // every script that must updated by this module must be writed in module.js way!!!
+    const ns = l.ns;
     const start = Date.now();
     ns.clearPort(Constants.updatePort);
     await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
