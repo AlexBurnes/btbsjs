@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.9'; // update this every time when edit the code!!!
+const Version = '0.3.0.10'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -126,8 +126,7 @@ async function update(l, baseUrl) {
         host_files
             .forEach((file, key) => {
                 l.g(1, "\t%s", file);
-                }
-        });
+            });
     }
 }
 
