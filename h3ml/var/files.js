@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.0.4';
+const Version = '0.3.0.6';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -18,15 +18,18 @@ function help(ns) {
     return;
 }
 
+//  this file not need to update, it's updated by h3ml-update.js
+//      /h3ml/var/files.js
+//      /h3ml/lib/constants.js
+//      /h3ml/lib/log.js
+
 export const scriptFiles = [
-    // file list and aliases
+    // aliases
     "/h3ml/etc/aliases.script",
-    "/h3ml/var/files.js",
 
     // libraries in order of dependencie
-    "/h3ml/lib/constants.js",
     "/h3ml/lib/network.js",
-    "/h3ml/lib/log.js",
+
 
     /*"/h3ml/lib/units.js",
     "/h3ml/lib/utils.js",
