@@ -1,7 +1,7 @@
 /*
     h3ml update script, this module must not have any library dependency
     upload this script at home computer and run:
-        wget https://raw.githubusercontent.com/AlexBurnes/h3ml/master/html3-update.js html3-update.js
+        wget https://raw.githubusercontent.com/AlexBurnes/h3ml/master/h3ml-update.js h3ml-update.js
         run h3ml-update.js --version
         run h3ml-update.js
 */
