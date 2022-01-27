@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.14'; // update this every time when edit the code!!!
+const Version = '0.3.0.15'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -102,10 +102,10 @@ async function update(l, baseUrl) {
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
             l.g(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
-            host_files.delete(file);
             if (!await checkVersion(l, file, host_files.get(file))) {
                 l.e("inspect old %s file, compare it with new %s", host_files.get(file), file);
             }
+            host_files.delete(file);
         }
         else {
             l.g(1, "[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
@@ -138,6 +138,12 @@ async function update(l, baseUrl) {
 async function checkVersion(l, new_file, old_file) {
     const ns = l.ns;
     const host = ns.getHostname();
+
+    l.d(1, `new file '${new_file}' old file '${old_file}'`);
+    if (new_file == undefined || old_file == undefined) {
+        l.e("new or old file is undefined, bug?");
+        return false;
+    }
 
     if (new_file == old_file) {
         l.e("old and new file names equal, %s vs %s, bug?", new_file, old_file);
