@@ -96,6 +96,8 @@ async function update(l, baseUrl) {
                 l.g(1, "old module %s version %s", file, old_module_version);
                 const [new_module_name, new_module_version] = await getModuleVersion(ns, socket, file, 2000);
                 l.g(1, "new module %s version %s", file, new_module_version);
+
+                and compare with constants version as global update version!!!
             */
             host_files.delete(file);
         }

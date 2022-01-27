@@ -33,6 +33,8 @@ class _Constants {
         return _Constants._instansce;
     }
 
+    get version()               {return Version;}
+
     get logLevel()              {return _logLevel;}
     get debugLevel()            {return _debugLevel;}
 
