@@ -84,7 +84,7 @@ async function update(l, baseUrl) {
 
         await ns.wget(`${baseUrl}${file}`, file);
         if (!ns.fileExists(file, host)) {
-            lg.le("[%d/%d] failed get file %s%s as %s", i+1, scriptFiles.length, baseUrl, file, file);
+            l.e("[%d/%d] failed get file %s%s as %s", i+1, scriptFiles.length, baseUrl, file, file);
             continue;
         }
 
