@@ -218,7 +218,8 @@ async function getModuleVersion(l, module) {
     const ns = l.ns;
     const start = Date.now();
     ns.clearPort(Constants.updatePort);
-    await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
+    const result = await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
+    if (!result) return;
     while (true) {
         const str = await ns.readPort(Constants.updatePort);
         if (str !== "NULL PORT DATA") {
@@ -241,8 +242,9 @@ async function getModuleVersion(l, module) {
  */
 async function tryCatchIgnore(lambda) {
     try {
-        await lambda();
+        return await lambda();
     } catch (e) {
-        // ignore
+        // ignore ?
+        return;
     }
 }
