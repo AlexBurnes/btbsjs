@@ -7,12 +7,14 @@
 */
 
 const Module  = 'h3ml-update.js';
-const Version = '0.3.0'; // update this every time when edit the code!!!
+const Version = '0.3.0.1'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel-directory/";
 
 // core files required for updater
 const files_list = ["h3ml/var/files.js", "h3ml/sbin/update-fetch.js", "h3ml/lib/constants.js", "h3ml/lib/log.js"];
+
+const backup_path = "h3ml/backup/";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -60,15 +62,15 @@ async function update(ns) {
     for(let i = 0; i < files_list.length; i++) {
         const file = files_list[i];
         if (ns.fileExists(file, host)) {
-            ns.tprintf("[%d/%d] move %s to bk_%s", i+1, files_list.length, file, file);
-            ns.rm(`bk_${file}`);
-            if (ns.fileExists(`bk_%{file}`, host)) {
-                ns.tprintf("[%d/%d] filed delete bk_%s", i+1, files_list.length, file);
+            ns.tprintf("[%d/%d] move %s to backup %s", i+1, files_list.length, file, file);
+            ns.rm(`${backup_path}${file}`);
+            if (ns.fileExists(`${backup_path}%{file}`, host)) {
+                ns.tprintf("[%d/%d] filed delete ${backup_path}%s", i+1, files_list.length, file);
                 return false;
             }
-            ns.mv(host, file, `bk_${file}`);
+            ns.mv(host, file, `${backup_path}${file}`);
             if (ns.fileExists(file, host)) {
-                ns.tprintf("[%d/%d] filed move file %s to bk_%s", i+1, files_list.length, file, file);
+                ns.tprintf("[%d/%d] filed move file %s to ${backup_path}%s", i+1, files_list.length, file, file);
                 return false;
             }
         }
