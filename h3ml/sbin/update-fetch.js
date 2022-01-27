@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.7'; // update this every time when edit the code!!!
+const Version = '0.3.0.8'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -50,7 +50,7 @@ export async function main(ns) {
         return help(ns);
     }
     const l = new Logger(ns, {args: args});
-    l.g(1, "%s %s", Module, Version);
+    ns.tprint(Module, " ", Version);
 
     await update(l, baseUrl)
 
