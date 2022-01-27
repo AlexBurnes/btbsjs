@@ -1,5 +1,7 @@
+
+"use strict";
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.17'; // update this every time when edit the code!!!
+const Version = '0.3.0.18'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -182,8 +184,8 @@ async function checkVersion(l, new_file, old_file) {
         return false;
     }
 
-    new_version_numbers = new_module_version.split(".");
-    old_version_numbers = old_module_version.split(".");
+    const new_version_numbers = new_module_version.split(".");
+    const old_version_numbers = old_module_version.split(".");
 
     for(let i = 0; i < new_version_numbers.length; i++) {
         if (i >= old_version_numbers) {
