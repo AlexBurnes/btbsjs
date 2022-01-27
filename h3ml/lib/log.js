@@ -1,12 +1,12 @@
-const Module  = 'h3ml/lib/log.js';
+const Module  = '/h3ml/lib/log.js';
 const Version = '0.3.0';  // update this every time when edit the code!!!
 
 /*
     logger
 */
 
-import {Constants} from "h3ml/lib/constants.js";
-import {Socket}    from "h3ml/lib/network.js"
+import {Constants} from "/h3ml/lib/constants.js";
+import {Socket}    from "/h3ml/lib/network.js"
 
 async function version(ns, port) {
     if (port !== undefined && port) {

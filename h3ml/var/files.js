@@ -1,4 +1,4 @@
-const Module  = 'h3ml/var/files.js';
+const Module  = '/h3ml/var/files.js';
 const Version = '0.3.0.4';
 
 import {Constants} from "/h3ml/lib/constants.js";
