@@ -1,5 +1,5 @@
 const Module  = 'update-fetch.js';
-const Version = '0.3.0.6'; // update this every time when edit the code!!!
+const Version = '0.3.0.7'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -124,9 +124,10 @@ async function update(l, baseUrl) {
     if (host_files.size > 0) {
         l.g(1, "not updated files:");
         host_files
-            .filter(file => file == "h3ml-update.js") // files at root directory listed without /
             .forEach((file, key) => {
-                l.g(1, "\t%s", file);
+                if (file !== "h3ml-update.js") {
+                    l.g(1, "\t%s", file);
+                }
         });
     }
 }
