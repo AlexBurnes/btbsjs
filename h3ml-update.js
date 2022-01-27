@@ -17,7 +17,7 @@ const files_list = [
     "/h3ml/sbin/update-fetch.js",
     "/h3ml/lib/constants.js",
     "/h3ml/lib/log.js",
-    "/h3ml/etc/settings.js"
+    "/h3ml/etc/h3ml-settings.js"
 ];
 
 const backup_path = "/h3ml/var/backup";
