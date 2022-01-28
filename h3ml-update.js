@@ -94,18 +94,6 @@ async function update(ns) {
         await ns.mv(host, "/h3ml/etc/settings.js", "h3ml-settings.js");
     }
 
-/*  //FIXME disable to down memory script requirement
-    const mem_require = ns.getScriptRam(update_fetch, host);
-    if (mem_require == 0) {
-        ns.tprintf("ERROR file %s require zero mem, syntax error?", update_fetch);
-        return false;
-    }
-    if (mem_require > ns.getServerRam(host) - ns.getServerUsedRam(host)) {
-        ns.tprintf("ERROR server %s does't have enough memory to run %s, require free mem %.2f", host, update_fetch, mem_require);
-        ns.tprintf("run it manualy: run %s %s", update_fetch, baseUrl);
-        return false;
-    }
-*/
     ns.tprintf("run h3ml update-fetch to complite updating");
     const pid = ns.run(update_fetch, 1, baseUrl, host);
     if (pid == 0) return false;
