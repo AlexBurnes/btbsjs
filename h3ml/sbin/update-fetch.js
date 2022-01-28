@@ -89,7 +89,7 @@ async function update(l, baseUrl) {
     const scripts = new Map();
     if (!ns.fileExists(ram_scripts_file, host)) {
         //create empty ram_scripts_file, its need by other scripts
-        await updateRamScriptsFile(l, scripts);
+        await updateRamScriptsFile(l, scripts, host);
     }
 
 
@@ -203,8 +203,9 @@ async function update(l, baseUrl) {
 
 /** @param {Logger} l
     @param {Map{String, Number}} scripts
+    @param {String} host
 **/
-async function updateRamScriptsFile(l, scripts) {
+async function updateRamScriptsFile(l, scripts, host) {
     const ns = l.ns;
     // if file exists delete it
     if (ns.fileExists(ram_scripts_file, host)) {
