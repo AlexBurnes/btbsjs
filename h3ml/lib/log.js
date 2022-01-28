@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/log.js';
-const Version = '0.3.1';  // update this every time when edit the code!!!
+const Version = '0.3.2.17';  // update this every time when edit the code!!!
 
 /*
     logger
@@ -53,8 +53,8 @@ export class Logger {
 
         if (options["args"]) {
             const args = options["args"];
-            this.debugLevel = args["debugLevel"] || this.debugLevel;
-            this.logLevel   = args["logLevel"]   || this.logLevel;
+            this.debugLevel = args["debug"] || this.debugLevel;
+            this.logLevel   = args["log"]   || this.logLevel;
             if (args["verbose"]) {
                 this.logLevel = 1;
             }
