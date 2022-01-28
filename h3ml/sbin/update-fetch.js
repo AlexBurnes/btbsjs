@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.3'; // update this every time when edit the code!!!
+const Version = '0.3.2.4'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -87,6 +87,11 @@ async function update(l, baseUrl) {
 
     // is it possible write file for script sizes?
     const scripts = new Map();
+    if (!ns.fileExists(ram_scripts_file, host)) {
+        //create empty ram_scripts_file, its need by other scripts
+        await updateRamScriptsFile(l, scripts);
+    }
+
 
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
