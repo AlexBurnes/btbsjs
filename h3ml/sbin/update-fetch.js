@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.16'; // update this every time when edit the code!!!
+const Version = '0.3.2.18'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -120,14 +120,14 @@ async function update(l, baseUrl, host) {
         scripts.set(file, ns.getScriptRam(file, host));
 
         if (scripts["get"](file) == 0) {
-            l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, scriptFiles.length, file, scripts["get"](file));
+            l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, scriptFiles.length, file);
             if (host_files.has(file)) host_files.delete(file);
             continue;
         }
 
-        const hostFreeRam = ns.getServerRam(host) - ns.getServerUsedRam(host);
+        const hostFreeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
         if (scripts["get"](file) > hostFreeRam) {
-            l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2G", i+1, scriptFiles.length, file, scripts["get"](file), hostFreeRam);
+            l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2fG", i+1, scriptFiles.length, file, scripts["get"](file), hostFreeRam);
             if (host_files.has(file)) host_files.delete(file);
             continue;
         }
@@ -171,14 +171,14 @@ async function update(l, baseUrl, host) {
         const file = core_files[i];
         scripts.set(file, ns.getScriptRam(file));
         if (scripts["get"](file) == 0) {
-            l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, core_files.length, file, scripts["get"](file));
+            l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, core_files.length, file);
             if (host_files.has(file)) host_files.delete(file);
             continue;
         }
 
-        const hostFreeRam = ns.getServerRam(host) - ns.getServerUsedRam(host);
+        const hostFreeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
         if (scripts["get"](file) > hostFreeRam) {
-            l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2G", i+1, core_files.length, file, scripts["get"](file), hostFreeRam);
+            l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2fG", i+1, core_files.length, file, scripts["get"](file), hostFreeRam);
             if (host_files.has(file)) host_files.delete(file);
             continue;
         }
@@ -325,16 +325,16 @@ async function getModuleVersion(l, host, module) {
         l.e("can't get %s version, script ram size if 0, syntax error?", module);
         return [];
     }
-    if (ns.getScriptRam(module, host) > ns.getServerRam(host) - ns.getServerUsedRam(host)) {
+    if (ns.getScriptRam(module, host) > ns.getServerMaxRam(host) - ns.getServerUsedRam(host)) {
         l.e("can't get %s version, script ram size require %.2f, host %s has free %.2f",
-            module, ns.getScriptRam(module, host), ns.getServerRam(host) - ns.getServerUsedRam(host)
+            module, ns.getScriptRam(module, host), host, ns.getServerMaxRam(host) - ns.getServerUsedRam(host)
         );
         return [];
     }
 
     const start = Date.now();
     ns.clearPort(Constants.updatePort);
-    const result = await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
+    const result = await tryCatchIgnore(async () => await ns.run(module, 1, "--version", "--update-port", Constants.updatePort));
     if (!result) return [];
     while (true) {
         const str = await ns.readPort(Constants.updatePort);
@@ -345,11 +345,13 @@ async function getModuleVersion(l, host, module) {
                 continue;
             }
             l.d(1, "module %s returns: %s", module, data.join(","));
+            await ns.sleep(1000);
             return data;
         }
         if (Date.now() - start >= waitTimeout) break;
         await ns.sleep(100);
     }
+    await ns.sleep(1000);
     return [];
 }
 
