@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.4'; // update this every time when edit the code!!!
+const Version = '0.3.2.5'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -118,8 +118,24 @@ async function update(l, baseUrl) {
             continue;
         }
 
+        scripts.set(file, ns.getScriptRam(file));
+
+        if (scripts.get(file) == 0) {
+            l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, scriptFiles.length, file, scripts.get(file));
+            if (host_files.has(file)) host_files.delete(file);
+            continue;
+        }
+
+        const hostFreeRam = ns.getServerRam(host) - ns.getServerUsedRam(host);
+        if (scripts.get(file) > hostFreeRam) {
+            l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2G", i+1, scriptFiles.length, file, scripts.get(file), hostFreeRam);
+            if (host_files.has(file)) host_files.delete(file);
+            continue;
+        }
+
         //FIXME compare file versions!!! inform user about
         if (host_files.has(file)) {
+
             l.d(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files.get(file));
             if (!await checkVersion(l, file, host_files.get(file))) {
                 l.e("inspect old %s file, compare it with new %s", host_files.get(file), file);
@@ -142,20 +158,32 @@ async function update(l, baseUrl) {
                 l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
                 continue;
             }
-            scripts.set(file, ns.getScriptRam(file));
             l.g(1, "[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
         }
 
         //if everithing is ok get its version and memory requirement
         const [module_name, module_version] = await getModuleVersion(l, file);
-        scripts.set(file, ns.getScriptRam(file));
-        l.g(1, "[%d/%d] got file %s success, version %s, memory require %.2fGb", i+1, scriptFiles.length, file, module_version, ns.getScriptRam(file, host));
+        l.g(1, "[%d/%d] got file %s success, version %s, memory require %.2fGb", i+1, scriptFiles.length, file, module_version, scripts.get(file));
     }
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
     l.g(1, "check core files %d", core_files.length);
     for(let i = 0; i < core_files.length; i++) {
         const file = core_files[i];
+        scripts.set(file, ns.getScriptRam(file));
+        if (scripts.get(file) == 0) {
+            l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, core_files.length, file, scripts.get(file));
+            if (host_files.has(file)) host_files.delete(file);
+            continue;
+        }
+
+        const hostFreeRam = ns.getServerRam(host) - ns.getServerUsedRam(host);
+        if (scripts.get(file) > hostFreeRam) {
+            l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2G", i+1, core_files.length, file, scripts.get(file), hostFreeRam);
+            if (host_files.has(file)) host_files.delete(file);
+            continue;
+        }
+
         l.g(1, "[%d/%d] check core file %s",  i+1, core_files.length, file);
         if (host_files.has(file)) {
             if (!await checkVersion(l, file, `${backup_path}${file}`)) {
@@ -176,7 +204,6 @@ async function update(l, baseUrl) {
             l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
             continue;
         }
-        scripts.set(file, ns.getScriptRam(file));
         l.g(1, "[%d/%d] core file %s ok, version %s, memory require %fGb", i+1, core_files.length, file, module_version, ns.getScriptRam(file, host));
     }
 
@@ -296,6 +323,17 @@ async function getModuleVersion(l, module) {
     // this will not save from show up errors, run modules and do what they do, but it helps do not break the job for this module!!!
     // every script that must updated by this module must be writed in module.js way!!!
     const ns = l.ns;
+    if (ns.getScriptRam(module, host) == 0) {
+        l.e("can't get %s version, script ram size if 0, syntax error?", module);
+        return;
+    }
+    if (ns.getScriptRam(module, host) > ns.getServerRam(host) - ns.getServerUsedRam(host)) {
+        l.e("can't get %s version, script ram size require %.2f, host %s has free %.2f",
+            module, ns.getScriptRam(module, host), ns.getServerRam(host) - ns.getServerUsedRam(host)
+        );
+        return;
+    }
+
     const start = Date.now();
     ns.clearPort(Constants.updatePort);
     const result = await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
