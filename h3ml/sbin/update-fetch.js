@@ -212,7 +212,7 @@ async function updateRamScriptsFile(l, scripts, host) {
         ns.rm(ram_scripts_file, host);
     }
     // prepare script source code
-    const scripts_data = "export const ScriptFiles = {";
+    let scripts_data = "export const ScriptFiles = {";
     let i = 0;
     scripts.forEach((value, key) => {
         if (i > 0) scripts_data += ",\n";
