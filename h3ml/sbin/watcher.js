@@ -1,21 +1,34 @@
-// watcher.js
-// version 0.1.10
+const Module  = '/h3ml/sbin/watcher.js';
+const Version = '0.3.2.20'; // update this every time when edit the code!!!
 
-const Module  = 'watcher.js';
-const Version = '0.2.0'
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js"
+import {Socket}     from "/h3ml/lib/network.js";
+import {Units}      from "/h3ml/lib/units.js"
+import {Servers}    from "/h3ml/lib/server-list.js"
+import {updateInfo} from "/h3ml/lib/server-info-full.js"
+
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
+
+function help(ns) {
+    ns.tprintf("usage: %s  ...args | --version [--update-port] | --help", Module);
+    ns.tprintf("its is a worker for h3ml to do action on target host: hack, grow, weakern '%s'");
+    ns.tprintf("this module is used by target library to spread work across targets");
+    return;
+}
 
 /*
     listen port and output events info
     watch for hack,grow,weaken actions and output server affected information
 
 */
-
-import {Constants} from "lib-constants.js";
-import {costFormat, timeFormat} from "lib-units.js"
-import {Server, serversList} from "lib-server-list.js"
-import {updateInfo} from "lib-server-info-full.js"
-import {Logger} from "log.js"
-
 
 const protocolVersion = Constants.protocolVersion;
 const watchPort       = Constants.watchPort;
@@ -27,17 +40,17 @@ let quietMode    = 0;
 
 async function actionStart(lg, servers, time, data) {
     const ns = lg.ns;
-    const [host, threads, server, method, end] = data;
+    const [host, start, threads, server, method, end] = data;
 
     if (servers["get"](server)) {
         const target = servers["get"](server);
-        if (target.actionTime <= time) {
-            if (target.actionTime < time) {     // new action group events
+        if (target.actionTime <= start) {
+            if (target.actionTime < start) {     // new action group events
                 target.currentAction  = method;
                 target.currentThreads = threads;
                 target.currentValue   = 0;
-                target.actionTime     = time;
-                target.startTime      = time;
+                target.actionTime     = start;
+                target.startTime      = start;
                 target.endTime        = end;
                 updateInfo(ns, target);
                 target.hosts = new Map();
@@ -47,7 +60,7 @@ async function actionStart(lg, servers, time, data) {
             hostServer.currentAction  = method;
             hostServer.currentThreads += threads;
             hostServer.currentValue   = 0;
-            hostServer.startTime      = time;
+            hostServer.startTime      = start;
             hostServer.endTime        = end;
         }
         const estimate = new Date(Date.now + end).toUTCString().substr(17, 8);
@@ -59,7 +72,7 @@ async function actionStart(lg, servers, time, data) {
 
 async function actionStop(lg, servers, time, data) {
     const ns = lg.ns;
-    const [host, threads, eventTime, server, method, result] = data;
+    const [host, eventTime, threads, server, method, result] = data;
     let resultStr = "";
     switch (method) {
         case "weaken":
@@ -220,8 +233,8 @@ async function actionCtrl(lg, servers, time, data) {
     */
 }
 
-async function actionInfo(lg, servers, time, data) {
-    const ns = lg.ns;
+async function actionInfo(l, servers, time, data) {
+    const ns = l.ns;
 
     if (quietMode == 0) l.g(1, "%s", data.join(", "));
     return;
@@ -229,7 +242,25 @@ async function actionInfo(lg, servers, time, data) {
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    const lg = new Logger(ns, {logLevel: logLevel, debugLevel: debugLevel});
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ],
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+
+    const l = new Logger(ns, {args: args});
+
     // run only at home and ctr-server
     if (!ns.getHostname().match(/home|ctrl-server/)) {
         ns.tprintf("could be run only on home or ctrl-server");
