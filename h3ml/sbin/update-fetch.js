@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.12'; // update this every time when edit the code!!!
+const Version = '0.3.2.14'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -212,8 +212,8 @@ async function update(l, baseUrl, host) {
     if (host_files.has("h3ml-settings.js")) {
         host_files.delete("h3ml-settings.js");
     }
-    if (host_files.has("/h3ml/etc/settings.js")) {
-        host_files.delete("h3ml/etc/settings.js");
+    if (host_files.has("/h3ml/etc/scripts.js")) {
+        host_files.delete("/h3ml/etc/scripts.js");
     }
 
     await updateRamScriptsFile(l, scripts);
@@ -323,19 +323,19 @@ async function getModuleVersion(l, host, module) {
     const ns = l.ns;
     if (ns.getScriptRam(module, host) == 0) {
         l.e("can't get %s version, script ram size if 0, syntax error?", module);
-        return;
+        return [];
     }
     if (ns.getScriptRam(module, host) > ns.getServerRam(host) - ns.getServerUsedRam(host)) {
         l.e("can't get %s version, script ram size require %.2f, host %s has free %.2f",
             module, ns.getScriptRam(module, host), ns.getServerRam(host) - ns.getServerUsedRam(host)
         );
-        return;
+        return [];
     }
 
     const start = Date.now();
     ns.clearPort(Constants.updatePort);
     const result = await tryCatchIgnore(async () => await ns.run(`${module}`, 1, "--version", "--update-port", Constants.updatePort));
-    if (!result) return;
+    if (!result) return [];
     while (true) {
         const str = await ns.readPort(Constants.updatePort);
         if (str !== "NULL PORT DATA") {
@@ -349,7 +349,7 @@ async function getModuleVersion(l, host, module) {
         if (Date.now() - start >= waitTimeout) break;
         await ns.sleep(100);
     }
-    return;
+    return [];
 }
 
 /**
