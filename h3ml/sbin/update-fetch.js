@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.15'; // update this every time when edit the code!!!
+const Version = '0.3.2.16'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -344,6 +344,7 @@ async function getModuleVersion(l, host, module) {
                 if (Date.now() - start >= waitTimeout) break;
                 continue;
             }
+            l.d(1, "module %s returns: %s", module, data.join(","));
             return data;
         }
         if (Date.now() - start >= waitTimeout) break;
