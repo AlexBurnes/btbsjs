@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/module.js'; // replace by name of new module
-const Version = '0.3.0'; // update this every time when edit the code!!!
+const Version = '0.3.2'; // update this every time when edit the code!!!
 
 /*
     minimal h3ml script immplementation
@@ -7,7 +7,7 @@ const Version = '0.3.0'; // update this every time when edit the code!!!
 */
 
 import {Constants}  from "/h3ml/lib/constants.js";
-import {Logger}     from "/h3ml/lib/log.js"
+import {Logger}     from "/h3ml/lib/log.js"         // this need only for modules
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -18,6 +18,10 @@ async function version(ns, port) {
     return;
 }
 
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] | --help", Module);
     ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
@@ -44,6 +48,10 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
+
+    help(ns);   // for libraries
+
+    // for modules
     const l = new Logger(ns, {args: args});
     l.g(1, "%s %s", Module, Version);
 

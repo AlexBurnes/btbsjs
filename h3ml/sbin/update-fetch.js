@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.1.11'; // update this every time when edit the code!!!
+const Version = '0.3.2'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -81,6 +81,8 @@ async function update(l, baseUrl) {
         .filter(file => !filter_files.has(file))
         .filter(file => !file.match(filter_re))
         .forEach(file => {host_files.set(file, file)});
+
+    l.g(1, "version of system is ", Constants.version());
 
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
