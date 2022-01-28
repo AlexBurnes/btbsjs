@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2'; // update this every time when edit the code!!!
+const Version = '0.3.2.1'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -14,6 +14,7 @@ import {Logger}      from "/h3ml/lib/log.js";
 
 const core_files = ["/h3ml/var/files.js", "/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
 const backup_path = "/h3ml/var/backup";
+const ram_scripts_file = "/h3ml/etc/scripts.js";
 const waitTimeout = 2000; //default wait timwout for version from module
 
 async function version(ns, port) {
@@ -84,6 +85,9 @@ async function update(l, baseUrl) {
 
     l.g(1, "version of system is ", Constants.version());
 
+    // is it possible write file for script sizes?
+    const scripts = new Map();
+
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
 
@@ -133,11 +137,13 @@ async function update(l, baseUrl) {
                 l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
                 continue;
             }
+            scripts.set(file, ns.getScriptRam(file));
             l.g(1, "[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
         }
 
         //if everithing is ok get its version and memory requirement
         const [module_name, module_version] = await getModuleVersion(l, file);
+        scripts.set(file, ns.getScriptRam(file));
         l.g(1, "[%d/%d] got file %s success, version %s, memory require %.2fGb", i+1, scriptFiles.length, file, module_version, ns.getScriptRam(file, host));
     }
 
@@ -165,6 +171,7 @@ async function update(l, baseUrl) {
             l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
             continue;
         }
+        scripts.set(file, ns.getScriptRam(file));
         l.g(1, "[%d/%d] core file %s ok, version %s, memory require %fGb", i+1, core_files.length, file, module_version, ns.getScriptRam(file, host));
     }
 
@@ -178,6 +185,8 @@ async function update(l, baseUrl) {
         host_files.delete("h3ml/etc/settings.js");
     }
 
+    await updateRamScriptsFile(l, scripts);
+
     if (host_files.size > 0) {
         l.g(1, "not updated files:");
         host_files
@@ -185,6 +194,28 @@ async function update(l, baseUrl) {
                 l.g(1, "\t%s", file);
             });
     }
+}
+
+/** @param {Logger} l
+    @param {Map{String, Number}} scripts
+**/
+async function updateRamScriptsFile(l, scripts) {
+    const ns = l.ns;
+    // if file exists delete it
+    if (ns.fileExists(ram_scripts_file, host)) {
+        ns.rm(ram_scripts_file, host);
+    }
+    // prepare script source code
+    const scripts_data = "export const ScriptFiles = {";
+    let i = 0;
+    scripts.forEach((value, key) => {
+        if (i > 0) scripts_data += ",\n";
+        scripts_data += "\"" + key + "\": " + value.parseToNumber() + "\n";
+    });
+    scripts_data += "};";
+    // write it
+    await ns.write(ram_scripts_file, scripts_data, "w");
+    return;
 }
 
 async function checkVersion(l, new_file, old_file) {
