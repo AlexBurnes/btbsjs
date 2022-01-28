@@ -216,7 +216,7 @@ async function updateRamScriptsFile(l, scripts, host) {
     let i = 0;
     scripts.forEach((value, key) => {
         if (i > 0) scripts_data += ",\n";
-        scripts_data += "\"" + key + "\": " + value.parseToNumber() + "\n";
+        scripts_data += "\"" + key + "\": " + value + "\n";
     });
     scripts_data += "};";
     // write it
