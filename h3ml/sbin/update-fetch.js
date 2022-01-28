@@ -83,7 +83,7 @@ async function update(l, baseUrl) {
         .filter(file => !file.match(filter_re))
         .forEach(file => {host_files.set(file, file)});
 
-    l.g(1, "version of system is ", Constants.version);
+    l.g(1, "version of system is %", Constants.version);
 
     // is it possible write file for script sizes?
     const scripts = new Map();
