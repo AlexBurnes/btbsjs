@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.1.10'; // update this every time when edit the code!!!
+const Version = '0.3.2.9'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -20,6 +20,7 @@ const files_list = [
     "/h3ml/etc/settings.js"
 ];
 
+const update_fetch = "/h3ml/sbin/update-fetch.js";
 const backup_path = "/h3ml/var/backup";
 
 async function version(ns, port) {
@@ -87,14 +88,25 @@ async function update(ns) {
         }
         ns.tprintf("[%d/%d] %s uploaded", i+1, files_list.length, file);
     }
-    ns.tprintf("run h3ml update-fetch to complite updating");
 
     // settings files, if not exists copy it, is user configurated file
     if (!ns.fileExists("h3ml-settings", host)) {
         await ns.mv(host, "/h3ml/etc/settings.js", "h3ml-settings.js");
     }
 
-    const pid = ns.run("/h3ml/sbin/update-fetch.js", 1, baseUrl);
+    const mem_require = ns.getScriptRam(update_fetch, host);
+    if (mem_require == 0) {
+        ns.tprintf("ERROR file %s require zero mem, syntax error?", update_fetch);
+        return false;
+    }
+    if (mem_require > ns.getServerRam(host) - ns.getServerUsedRam(host)) {
+        ns.tprintf("ERROR server %s does't have enough memory to run %s, require free mem %.2f", host, update_fetch, mem_require);
+        ns.tprintf("run it manualy: run %s %s", update_fetch, baseUrl);
+        return false;
+    }
+
+    ns.tprintf("run h3ml update-fetch to complite updating");
+    const pid = ns.run(update_fetch, 1, baseUrl);
     if (pid == 0) return false;
     return true;
 }

@@ -245,7 +245,7 @@ async function updateRamScriptsFile(l, scripts, host) {
         scripts_data += (i++ > 0 ? ",\n" : "\n");
         scripts_data += "\t\"" + key + "\": " + value;
     });
-    scripts_data += "};";
+    scripts_data += "\n};";
     // write it
     await ns.write(ram_scripts_file, scripts_data, "w");
     return;
