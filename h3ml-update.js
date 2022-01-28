@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.2.9'; // update this every time when edit the code!!!
+const Version = '0.3.2.12'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -94,6 +94,7 @@ async function update(ns) {
         await ns.mv(host, "/h3ml/etc/settings.js", "h3ml-settings.js");
     }
 
+/*  //FIXME disable to down memory script requirement
     const mem_require = ns.getScriptRam(update_fetch, host);
     if (mem_require == 0) {
         ns.tprintf("ERROR file %s require zero mem, syntax error?", update_fetch);
@@ -104,9 +105,9 @@ async function update(ns) {
         ns.tprintf("run it manualy: run %s %s", update_fetch, baseUrl);
         return false;
     }
-
+*/
     ns.tprintf("run h3ml update-fetch to complite updating");
-    const pid = ns.run(update_fetch, 1, baseUrl);
+    const pid = ns.run(update_fetch, 1, baseUrl, host);
     if (pid == 0) return false;
     return true;
 }

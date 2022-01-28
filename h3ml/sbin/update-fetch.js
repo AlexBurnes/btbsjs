@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.11'; // update this every time when edit the code!!!
+const Version = '0.3.2.12'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -27,7 +27,7 @@ async function version(ns, port) {
 }
 
 function help(ns) {
-    ns.tprintf("usage: %s [url] | [--version [--update-port]] | [--help]", Module);
+    ns.tprintf("usage: %s url host | [--version [--update-port]] | [--help]", Module);
     ns.tprintf("update all scripts");
     return;
 }
@@ -44,7 +44,7 @@ export async function main(ns) {
         [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
 
     ]);
-    const [baseUrl] = args["_"];
+    const [baseUrl, host] = args["_"];
 
     if (args['version']) {
         return version(ns, args['update-port']);
@@ -55,16 +55,15 @@ export async function main(ns) {
     ns.tprint(Module, " ", Version);
     const l = new Logger(ns, {args: args});
 
-    await update(l, baseUrl)
+    await update(l, baseUrl, host)
 
     return;
 }
 
 /** @param { Logger } lg **/
 /** @param { String } baseUrl **/
-async function update(l, baseUrl) {
+async function update(l, baseUrl, host) {
     const ns = l.ns;
-    const host = ns.getHostname();
     l.g(1, "update %d files", scriptFiles.length);
 
     if (baseUrl == undefined) {
@@ -137,7 +136,7 @@ async function update(l, baseUrl) {
         if (host_files.has(file)) {
 
             l.d(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files["get"](file));
-            if (!await checkVersion(l, file, host_files["get"](file))) {
+            if (!await checkVersion(l, host, file, host_files["get"](file))) {
                 l.e("inspect old %s file, compare it with new %s", host_files["get"](file), file);
                 l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
                 host_files.delete(file);
@@ -146,7 +145,7 @@ async function update(l, baseUrl) {
             host_files.delete(file);
         }
         else {
-            const [module_name, module_version] = await getModuleVersion(l, file);
+            const [module_name, module_version] = await getModuleVersion(l, host, file);
             l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
             if (module_name == undefined || module_version == undefined) {
                 l.e("new module %s return empty identity or/and version", file);
@@ -162,7 +161,7 @@ async function update(l, baseUrl) {
         }
 
         //if everithing is ok get its version and memory requirement
-        const [module_name, module_version] = await getModuleVersion(l, file);
+        const [module_name, module_version] = await getModuleVersion(l, host, file);
         l.g(1, "[%d/%d] got file %s success, version %s, memory require %.2fGb", i+1, scriptFiles.length, file, module_version, scripts["get"](file));
     }
 
@@ -186,12 +185,12 @@ async function update(l, baseUrl) {
 
         l.g(1, "[%d/%d] check core file %s",  i+1, core_files.length, file);
         if (host_files.has(file)) {
-            if (!await checkVersion(l, file, `${backup_path}${file}`)) {
+            if (!await checkVersion(l, host, file, `${backup_path}${file}`)) {
                 l.e("inspect old %s file, compare it with new %s", `${backup_path}${file}`, file);
                 continue;
             }
         }
-        const [module_name, module_version] = await getModuleVersion(l, file);
+        const [module_name, module_version] = await getModuleVersion(l, host, file);
         // FIXME DRY
         l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
         if (module_name == undefined || module_version == undefined) {
@@ -251,9 +250,8 @@ async function updateRamScriptsFile(l, scripts, host) {
     return;
 }
 
-async function checkVersion(l, new_file, old_file) {
+async function checkVersion(l, host, new_file, old_file) {
     const ns = l.ns;
-    const host = ns.getHostname();
 
     l.d(1, `new file '${new_file}' old file '${old_file}'`);
     if (new_file == undefined || old_file == undefined) {
@@ -276,7 +274,7 @@ async function checkVersion(l, new_file, old_file) {
         return false;
     }
 
-    const [new_module_name, new_module_version] = await getModuleVersion(l, new_file);
+    const [new_module_name, new_module_version] = await getModuleVersion(l, host, new_file);
     l.d(1, "new module %s identify as %s version %s", new_file, new_module_name, new_module_version);
     if (new_module_name == undefined || new_module_version == undefined) {
         l.e("new module %s return empty identity or/and version", new_file);
@@ -288,7 +286,7 @@ async function checkVersion(l, new_file, old_file) {
     }
 
 
-    const [old_module_name, old_module_version] = await getModuleVersion(l, old_file);
+    const [old_module_name, old_module_version] = await getModuleVersion(l, host, old_file);
     l.d(1, "old module %s identify as %s version %s", new_file, old_module_name, old_module_version);
     if (old_module_name == undefined || old_module_version == undefined) {
         l.e("new module %s return empty identity or/and version", old_file);
@@ -319,11 +317,10 @@ async function checkVersion(l, new_file, old_file) {
     return true;
 }
 
-async function getModuleVersion(l, module) {
+async function getModuleVersion(l, host, module) {
     // this will not save from show up errors, run modules and do what they do, but it helps do not break the job for this module!!!
     // every script that must updated by this module must be writed in module.js way!!!
     const ns = l.ns;
-    const host = ns.getHostname();
     if (ns.getScriptRam(module, host) == 0) {
         l.e("can't get %s version, script ram size if 0, syntax error?", module);
         return;
