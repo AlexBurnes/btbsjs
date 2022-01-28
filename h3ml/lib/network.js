@@ -45,9 +45,9 @@ export class Socket {
         }
         return [0, ""];
     }
-    write(data, options = {}) {
+    write(...data) {
         const ns = this.ns;
-        return ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data));
+        return ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data.join("|")));
     }
     /* @param {(time, string){}} collaback*/
     listen(collback, options = {}) {

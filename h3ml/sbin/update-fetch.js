@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.18'; // update this every time when edit the code!!!
+const Version = '0.3.2.19'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -35,13 +35,13 @@ function help(ns) {
 /** @param {NS} ns **/
 export async function main(ns) {
     const args = ns.flags([
-        [ 'version'     , false ],
-        [ 'update-port' , 0     ],
-        [ 'help'        , false ],
-        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
-        [ 'debug'       , 0     ], // debug level
-        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+        [ 'version'         , false ],
+        [ 'update-port'     , 0     ],
+        [ 'help'            , false ],
+        [ 'log'             , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'           , 0     ], // debug level
+        [ 'verbose'         , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'           , false ]  // quiet mode, short analog of --log-level 0
 
     ]);
     const [baseUrl, host] = args["_"];
@@ -225,6 +225,7 @@ async function update(l, baseUrl, host) {
                 l.g(1, "\t%s", file);
             });
     }
+    l.r("updating done");
 }
 
 /** @param {Logger} l

@@ -1,13 +1,34 @@
-// lib-botnet.js
-// version 0.1.10
-import {Constants} from "lib-constants.js";
-import {Server, serversList} from "lib-server-list.js";
+const Module  = '/h3ml/lib/botnet.js';
+const Version = '0.3.2.19';     // update this every time when edit the code!!!
+
+import {Constants} from "/h3ml/lib/constants.js";
+import {Servers}   from "/h3ml/lib/server-list.js";
+
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
+
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
+    return;
+}
+
 
 export class BotNet {
     constructor(ns) {
         this.ns = ns;
         this.workerScript = Constants.workerScriptFile;
-        this.workerRam = ns.getScriptRam(this.workerScript);
+        this.workerRam    = ns.getScriptRam(this.workerScript);
         this.update();
     }
     update() {
@@ -31,4 +52,22 @@ export class BotNet {
         this.maxWorkers = Math.floor(this.maxRam/this.workerRam);
         this.workers = Math.floor((this.maxRam - this.usedRam - Constants.reserveRam)/this.workerRam);
     }
+}
+
+/** @param {NS} ns **/
+export async function main(ns) {
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+    help();
+    return;
 }

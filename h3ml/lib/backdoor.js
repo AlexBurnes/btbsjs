@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/backdoor.js';
-const Version = '0.3.2';     // update this every time when edit the code!!!
+const Version = '0.3.2.19';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
@@ -36,6 +36,7 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
+    help();
     return;
 }
 
