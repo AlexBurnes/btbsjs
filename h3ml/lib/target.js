@@ -1,7 +1,7 @@
-// lib-targets.js
-// version 0.1.10
+const Module  = '/h3ml/lib/target.js';
+const Version = '0.3.2.21'; // update this every time when edit the code!!!
 
-import {Constants} from "lib-constants.js";
+import {Constants}  from "/h3ml/lib/constants.js";
 
 export class Target {
     /**
@@ -9,12 +9,12 @@ export class Target {
      * @param {string} name
      * @param {Array{server}} hosts
      */
-    constructor(logger, name, hosts) {
-        this.ns = logger.ns;
-        this.lg = logger;
-        this.name = name;
+    constructor(l, name, hosts) {
+        this.l     = l;
+        this.ns    = l.ns;
+        this.name  = name;
         this.hosts = hosts;
-        this.ns.print(`Target: ${this.name}`);
+
     }
 
     /**
@@ -156,4 +156,43 @@ export class Target {
             resolve();
         })
     }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// update support
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
+
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
+    return;
+}
+
+/** @param {NS} ns **/
+export async function main(ns) {
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+    help();
+    return;
 }

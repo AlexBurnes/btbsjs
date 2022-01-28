@@ -1,12 +1,18 @@
-// version 0.1.0
+const Module  = '/h3ml/lib/units.js';
+const Version = '0.3.2.21'; // update this every time when edit the code!!!
+
+import {Constants}  from "/h3ml/lib/constants.js";
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// memoryFormat
 
 const memoryUnits = ['b', 'k', 'M', 'G', 'T'];
 
 class MemoryFormatted {
     constructor(value, size, unit) {
-    this.value = value;
-    this.size = size;
-    this.unit = unit;
+        this.value = value;
+        this.size  = size;
+        this.unit  = unit;
     }
 }
 
@@ -20,23 +26,26 @@ export function memoryFormat(size) {
     return new MemoryFormatted(value, value >= 0 ? size : -size, memoryUnits[--unit]);
 }
 
-const costUnits   = ['',  'k', 'm', 'b'];
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// moneyFormat
 
-class CostFormatted {
-    constructor(value, cost, unit) {
-        this.value = value;
-        this.cost = cost;
-        this.unit = unit
+const moneyUnits   = ['',  'k', 'm', 'b', 't', 'q'];
+
+class moneyFormatted {
+    constructor(value, amount, unit) {
+        this.value  = value;
+        this.amount = amount;
+        this.unit   = unit
     }
 }
 
-export function costFormat(cost) {
-    const value = cost;
+export function moneyFormat(amount) {
+    const value = amount;
     let unit = 0;
     const base = 1000;
-    if (parseFloat(cost) == "Infinity") return CostFormatted(0, 0, '');
-    while (++unit < costUnits.length && Math.abs(cost) >= base) cost /= base;
-    return new CostFormatted(value, cost, costUnits[unit-1]);
+    if (parseFloat(amont) == "Infinity") return CostFormatted(0, 0, '');
+    while (++unit < costUnits.length && Math.abs(amount) >= base) amount /= base;
+    return new CostFormatted(value, amount, costUnits[unit-1]);
 }
 
 const timeUnits = ['s', 'm', 'h', 'D', 'M', 'Y'];
@@ -56,4 +65,43 @@ export function timeFormat(time) {
     if (parseFloat(time) == "Infinity") return TimeFormatted(0, 0, 's');
     while (++unit < timeUnits.length && Math.abs(time) >= timeBases[unit-1]) time /= timeBases[unit-1];
     return new TimeFormatted(value, time, timeUnits[unit-1]);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// update support
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
+
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
+    return;
+}
+
+/** @param {NS} ns **/
+export async function main(ns) {
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+    help();
+    return;
 }
