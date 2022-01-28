@@ -29,8 +29,8 @@ async function actionStart(lg, servers, time, data) {
     const ns = lg.ns;
     const [host, threads, server, method, end] = data;
 
-    if (servers.get(server)) {
-        const target = servers.get(server);
+    if (servers["get"](server)) {
+        const target = servers["get"](server);
         if (target.actionTime <= time) {
             if (target.actionTime < time) {     // new action group events
                 target.currentAction  = method;
@@ -78,8 +78,8 @@ async function actionStop(lg, servers, time, data) {
         host, server, method, threads, resultStr, eventTime
     );
 
-    if (servers.get(server)) {
-        const target = servers.get(server);
+    if (servers["get"](server)) {
+        const target = servers["get"](server);
         const currentTarget = new Server(server);
 
         l.d(1, "%s event time %d target action %s time %d host %s, wait hosts %d",

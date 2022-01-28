@@ -98,7 +98,7 @@ export function hackServersInfo(lg, botnet, servers, hacking_servers) {
 
         servers.forEach(server => {
             const moneyHackRate = costFormat(server.threadRate);
-            const hack_info = hacking_servers.has(server.name) ? hacking_servers.get(server.name) : undefined;
+            const hack_info = hacking_servers.has(server.name) ? hacking_servers["get"](server.name) : undefined;
             table.push(
                 server.name,
                 100 * server.analyzeChance,
