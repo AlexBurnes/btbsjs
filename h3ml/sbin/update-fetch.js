@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.2'; // update this every time when edit the code!!!
+const Version = '0.3.2.3'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -22,13 +22,13 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(Constants.updatePort, data);
     }
-    l.g(1, "version %s", Version);
+    ns.tprintf("version %s", Version);
     return;
 }
 
 function help(ns) {
-    l.g(1, "usage: %s [url] | [--version [--update-port]] | [--help]", Module);
-    l.g(1, "update all scripts");
+    ns.tprintf("usage: %s [url] | [--version [--update-port]] | [--help]", Module);
+    ns.tprintf("update all scripts");
     return;
 }
 
@@ -69,7 +69,7 @@ async function update(l, baseUrl) {
 
     if (baseUrl == undefined) {
         l.e("url to fetch from not specified");
-        return help();
+        return help(ns);
     }
 
     const filter_files = new Map();
