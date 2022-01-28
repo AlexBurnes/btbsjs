@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.7'; // update this every time when edit the code!!!
+const Version = '0.3.2.8'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -242,8 +242,8 @@ async function updateRamScriptsFile(l, scripts, host) {
     let scripts_data = "export const ScriptFiles = {";
     let i = 0;
     scripts.forEach((value, key) => {
-        scripts_data += i > 0 ? ",\n" : "\n";
-        scripts_data += "\t\"" + key + "\": " + value + "\n";
+        scripts_data += (i++ > 0 ? ",\n" : "\n");
+        scripts_data += "\t\"" + key + "\": " + value;
     });
     scripts_data += "};";
     // write it
