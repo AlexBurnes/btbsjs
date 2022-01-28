@@ -1,10 +1,5 @@
 // version 0.1.0
 
-/** @param {NS} ns **/
-export function autocomplete(data, args) {
-    return [...data.servers];
-}
-
 /**
  * @param {import("Ns").NS } ns
  * @returns {void}
@@ -46,4 +41,9 @@ export async function main(ns) {
     terminalInput[handler].onChange({target: terminalInput});
     // noinspection JSUnresolvedFunction
     terminalInput[handler].onKeyDown({keyCode: 13, preventDefault: () => null});
+}
+
+/** @param {NS} ns **/
+export function autocomplete(data, args) {
+    return [...data.servers];
 }

@@ -43,6 +43,6 @@ export async function main(ns) {
  * @param {import("Ns").NS } ns
  * @returns {void}
  */
-export async function main(ns) {
+export async function install(ns) {
     await ns.installBackdoor();
 }
