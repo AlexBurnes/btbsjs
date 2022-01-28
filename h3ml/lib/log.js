@@ -90,7 +90,7 @@ export class Logger {
         const text = this.ns.vsprintf(format, args);
         this.ns.tprintf("%s", text);
         if (Constants.toastLogResult) {
-            ns.toast(text, "info", Constants.toastInfoTimeout);
+            this.ns.toast(text, "info", Constants.toastInfoTimeout);
         }
         return;
     }
