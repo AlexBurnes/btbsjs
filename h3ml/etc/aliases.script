@@ -15,7 +15,8 @@ alias watch=run watcher.js
 alias grow=run grow.js
 alias weak=run weak.js
 alias server-analyze=run server-analyze.js
-alias hack-net=run hack-net.js
 alias hacking=run hacking.js
 alias verbose=run verbose.js
 alias quiet=run quiet.js
+
+alias hack-net=run /h3ml/bin/hack-net.js

@@ -1,19 +1,37 @@
-// hack-net.js
-// version 0.1.10
+const Module  = '/h3ml/var/hack-net.js';
+const Version = '0.3.2.22'; // update this every time when edit the code!!!
+
 /*
-
     Grow hacknet to max nodes
-
 */
 
-import {costFormat} from "lib-units.js"
-import {Logger} from "log.js";
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js"
+import {Settings}   from "h3ml-settings.js";
 
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    const [nodes] = ns.args;
-    const lg = new Logger(ns);
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ],
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+
+    const [nodes] = args["_"];
+    const l = new Logger(ns, {args: args});
 
     let numNodes = ns.hacknet.numNodes();
     let maxNumNodes =  nodes || 24;

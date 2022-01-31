@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.2.21';
+const Version = '0.3.2.22';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -34,6 +34,7 @@ export const scriptFiles = [
     "/h3ml/lib/utils.js",
     "/h3ml/lib/server-list.js",
     "/h3ml/lib/target.js",
+    "/h3ml/lib/scan-simple.js",
 
     // script skeleton
     "/h3ml/var/module.js",
@@ -47,7 +48,6 @@ export const scriptFiles = [
 
 
     // scripts
-    "/h3ml/bin/scan.js",
     "/h3ml/lib/scan-info-with-contracts.js",
     "/h3ml/lib/scan-info.js",
     "/h3ml/lib/scan-simple.js",
@@ -62,7 +62,6 @@ export const scriptFiles = [
     "/h3ml/bin/server-cost.js",
 
     "/h3ml/bin/h3ml.js",
-    "/h3ml/bin/hack-net.js",
     "/h3ml/bin/hack-servers.js",
 
     "/h3ml/bin/server-analyze.js",
@@ -78,6 +77,10 @@ export const scriptFiles = [
 
     ,
     */
+
+    "/h3ml/bin/hack-net.js",
+    "/h3ml/bin/scan.js",
+
     "/h3ml/sbin/watcher.js",
     "/h3ml/sbin/worker.js",
 

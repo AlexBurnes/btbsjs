@@ -1,26 +1,56 @@
-// scan-simple.js
-// version 0.1.0
+const Module  = '/h3ml/lib/scan-simple.js';
+const Version = '0.3.2.22'; // update this every time when edit the code!!!
 
-import {LVS} from "lib-utils.js"
-import {serversTree} from "lib-server-list.js"
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js"         // this need only for modules
+import {LVS}        from "/h3ml/lib/utils.js"
+import {Servers}    from "/h3ml/lib/server-list.js"
 
-export function serversTreePrint(ns, node, lvs) {
-    if (lvs == undefined) {
-        lvs = new LVS();
-        ns.tprintf("%s %s", lvs.empty(), node.name);
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
     }
-    for(let i=0; i < node.childs.length; i++) {
-        const child = node.childs[i];
-        ns.tprintf("%s %s",
-            lvs.pad(child.depth, i == node.childs.length-1 ? 1 : 0),
-            child.name
-        );
-    serversTreePrint(ns, child, lvs);
-    }
+    ns.tprintf("version %s", Version);
+    return;
 }
+
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
+    ns.tprintf("module description"); // in case of a module
+    return;
+}
+
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    const home = serversTree(ns);
-    serversTreePrint(ns, home);
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ],
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+
+    const l = new Logger(ns, {args: args});
+    l.g(1, "%s %s", Module, Version);
+
+    Servers.tree(ns, (lvs, server) => {
+        ns.tprintf("%s %s", lvs, server.name);
+    });
 }
