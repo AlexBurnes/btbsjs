@@ -1,13 +1,13 @@
 const Module  = '/h3ml/bin/scan.js';
-const Version = '0.3.2.23'; // update this every time when edit the code!!!
+const Version = '0.3.2.25'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"         // this need only for modules
 
 const scripts = [
-    '/h3ml/lib/scan-simple',
+    '/h3ml/lib/scan-info-with-contracts',
     '/h3ml/lib/scan-info',
-    '/h3ml/lib/scan-info-with-contracts'
+    '/h3ml/lib/scan-simple'
 ];
 
 async function version(ns, port) {

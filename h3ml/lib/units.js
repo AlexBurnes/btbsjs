@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/units.js';
-const Version = '0.3.2.21'; // update this every time when edit the code!!!
+const Version = '0.3.2.25'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
@@ -43,9 +43,9 @@ export function moneyFormat(amount) {
     const value = amount;
     let unit = 0;
     const base = 1000;
-    if (parseFloat(amont) == "Infinity") return CostFormatted(0, 0, '');
-    while (++unit < costUnits.length && Math.abs(amount) >= base) amount /= base;
-    return new CostFormatted(value, amount, costUnits[unit-1]);
+    if (parseFloat(amount) == "Infinity") return MoneyFormatted(0, 0, '');
+    while (++unit < moneyUnits.length && Math.abs(amount) >= base) amount /= base;
+    return new MoneyFormatted(value, amount, moneyUnits[unit-1]);
 }
 
 const timeUnits = ['s', 'm', 'h', 'D', 'M', 'Y'];
