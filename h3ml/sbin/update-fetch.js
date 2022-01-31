@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.19'; // update this every time when edit the code!!!
+const Version = '0.3.2.29'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -136,7 +136,7 @@ async function update(l, baseUrl, host) {
         if (host_files.has(file)) {
 
             l.d(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files["get"](file));
-            if (!await checkVersion(l, host, file, host_files["get"](file))) {
+            if (!await compareVersions(l, host, file, host_files["get"](file))) {
                 l.e("inspect old %s file, compare it with new %s", host_files["get"](file), file);
                 l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
                 host_files.delete(file);
@@ -145,15 +145,8 @@ async function update(l, baseUrl, host) {
             host_files.delete(file);
         }
         else {
-            const [module_name, module_version] = await getModuleVersion(l, host, file);
-            l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
-            if (module_name == undefined || module_version == undefined) {
-                l.e("new module %s return empty identity or/and version", file);
-                l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
-                continue;
-            }
-            if (module_name !== file) {
-                l.e("new module identity %s not equal file name %s, something wrong", module_name, file);
+
+            if (!await checkVersion(l, host, file)) {
                 l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
                 continue;
             }
@@ -190,20 +183,13 @@ async function update(l, baseUrl, host) {
                 continue;
             }
         }
-        const [module_name, module_version] = await getModuleVersion(l, host, file);
-        // FIXME DRY
-        l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
-        if (module_name == undefined || module_version == undefined) {
-            l.e("new module %s return empty identity or/and version", file);
-            l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
-            continue;
-        }
-        if (module_name !== file) {
-            l.e("new module identity %s not equal file name %s, something wrong", module_name, file);
+
+        if (!await checkVersion(l, host, file)) {
             l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
             continue;
         }
         l.g(1, "[%d/%d] core file %s ok, version %s, memory require %fGb", i+1, core_files.length, file, module_version, scripts["get"](file));
+
     }
 
     if (host_files.has("h3ml-update.js")) {
@@ -251,7 +237,21 @@ async function updateRamScriptsFile(l, scripts, host) {
     return;
 }
 
-async function checkVersion(l, host, new_file, old_file) {
+async function checkVersion(l, host, file) {
+    const [module_name, module_version] = await getModuleVersion(l, host, file);
+    l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
+    if (module_name == undefined || module_version == undefined) {
+        l.e("module %s return empty identity or/and version", file);
+        return false;
+    }
+    if (module_name !== file) {
+        l.e("module identity %s not equal file name %s, something wrong", module_name, file);
+        return false;
+    }
+    return true;
+}
+
+async function compareVersions(l, host, new_file, old_file) {
     const ns = l.ns;
 
     l.d(1, `new file '${new_file}' old file '${old_file}'`);
@@ -266,12 +266,12 @@ async function checkVersion(l, host, new_file, old_file) {
     }
 
     if (!ns.fileExists(new_file, host)) {
-        l.e("new file %s do not exists, bug?");
+        l.e("new file %s do not exists, bug?", new_file);
         return false;
     }
 
     if (!ns.fileExists(old_file, host)) {
-        l.e("old file %s do not exists, bug?");
+        l.e("old file %s do not exists, bug?", old_file);
         return false;
     }
 
@@ -286,11 +286,10 @@ async function checkVersion(l, host, new_file, old_file) {
         return false;
     }
 
-
     const [old_module_name, old_module_version] = await getModuleVersion(l, host, old_file);
     l.d(1, "old module %s identify as %s version %s", new_file, old_module_name, old_module_version);
     if (old_module_name == undefined || old_module_version == undefined) {
-        l.e("new module %s return empty identity or/and version", old_file);
+        l.e("old module %s return empty identity or/and version", old_file);
     }
     if (old_module_name !== new_file) {
         l.e("old module identity %s not equal file name %s, something wrong", old_module_name, new_file);
@@ -313,7 +312,6 @@ async function checkVersion(l, host, new_file, old_file) {
         l.e("new module %s version %s is less old %s", new_file, new_module_version, old_module_version);
         return false;
     }
-
 
     return true;
 }

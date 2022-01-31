@@ -19,7 +19,7 @@ async function version(ns, port) {
 
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] | --help", Module);
-    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
+    ns.tprintf("this module is a library, import {BotNet} from '%s'", Module); // in case of a library
     return;
 }
 

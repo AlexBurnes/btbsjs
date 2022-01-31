@@ -104,8 +104,8 @@ export function updateInfo(ns, target) {
 }
 
 // recalculate growth for max threads t
-export function calcGrowth(lg, server, ga, gr, gt, t) {
-    const ns = lg.ns;
+export function calcGrowth(l, server, ga, gr, gt, t) {
+    const ns = l.ns;
     l.d(1, "ga %f, gr %f, gt %d t %d", ga, gr, gt, t);
     if (gt <= t) {
         // nothing to recalc
@@ -134,8 +134,8 @@ export function calcGrowth(lg, server, ga, gr, gt, t) {
 }
 
 // recalculate hack for max threads t
-export function calcHack(lg, server, hm, ht, t) {
-    const ns = lg.ns;
+export function calcHack(l, server, hm, ht, t) {
+    const ns = l.ns;
     if (ht >= t) {
         // nothing to recalc
         return [hm, t];

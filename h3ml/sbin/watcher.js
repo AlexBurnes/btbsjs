@@ -39,8 +39,8 @@ const logLevel   = 1;
 
 let quietMode    = 0;
 
-async function actionStart(lg, servers, time, data) {
-    const ns = lg.ns;
+async function actionStart(l, servers, time, data) {
+    const ns = l.ns;
     const [host, start, threads, server, method, end] = data;
 
     if (servers["get"](server)) {
@@ -71,8 +71,8 @@ async function actionStart(lg, servers, time, data) {
     }
 }
 
-async function actionStop(lg, servers, time, data) {
-    const ns = lg.ns;
+async function actionStop(l, servers, time, data) {
+    const ns = l.ns;
     const [host, eventTime, threads, server, method, result] = data;
     let resultStr = "";
     switch (method) {
@@ -167,8 +167,8 @@ async function actionStop(lg, servers, time, data) {
 
 }
 
-async function actionCtrl(lg, servers, time, data) {
-    const ns = lg.ns;
+async function actionCtrl(l, servers, time, data) {
+    const ns = l.ns;
 
     const port = data[0];
 
@@ -324,19 +324,19 @@ export async function main(ns) {
             switch (action) {
                 case '<':
                     // stop method
-                    await actionStop(lg, servers, time, data);
+                    await actionStop(l, servers, time, data);
                     break;
                 case '>':
                     // start method
-                    await actionStart(lg, servers, time, data);
+                    await actionStart(l, servers, time, data);
                     break;
                 case '@':
                     // request stat
-                    await actionCtrl(lg, servers, time, data);
+                    await actionCtrl(l, servers, time, data);
                     break;
                 case '#':
                     //info to output
-                    await actionInfo(lg, servers, time, data);
+                    await actionInfo(l, servers, time, data);
             }
             continue;
         }

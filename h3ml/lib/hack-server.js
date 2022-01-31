@@ -8,8 +8,8 @@ import { Table }            from "/h3ml/lib/utils.js";
 import { updateInfo }       from "/h3ml/lib/server-info.js";
 import { moneyFormat, timeFormat } from "/h3ml/lib/units.js"
 
-export function hackServersInfo(lg, botnet, servers, hacking_servers) {
-    const ns = lg.ns;
+export function hackServersInfo(l, botnet, servers, hacking_servers) {
+    const ns = l.ns;
 
     if (botnet.servers.length) {
         l.g(2, "botnet list:");

@@ -1,33 +1,46 @@
-// hack-servers.js
-// version 0.2.0
+const Module  = '/h3ml/var/module.js';
+const Version = '0.3.2'; // update this every time when edit the code!!!
 
-///////////////////////////////
-// FIXME move to constants!  //
-const protocolVersion   = 2; //
-const receivePort       = 1; //
-const ctrlPort          = 2; //
-const listenPort        = 3; //
-///////////////////////////////
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js";
+import {Server}     from "/h3ml/lib/server-list.js"
+import {BotNet}     from "/h3ml/lib/botnet.js"
+import {Target}     from "/h3ml/lib/target.js"
+import {Table}      from "/h3ml/lib/utils.js"
+import {updateInfo} from "/h3ml/lib/server-info.js"
+import {hackServersInfo} from "/h3ml/lib/hack-server.js"
+import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
 
-const debugLevel        = 0;
-const logLevel          = 1;
+const protocolVersion   = Constants.protocolVersion;
+const watchPort         = Constants.infoPort;
+const ctrlPort          = Constants.ctrlPort;
+const infoPort        = Constants.infoPort;
 
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
 
-import { Logger } from "log.js"
-import { serversList } from "lib-server-list.js"
-import { BotNet } from "lib-botnet.js"
-import { Target } from "target.js"
-import { moneyFormat, timeFormat } from "lib-units.js"
-import { Table } from "lib-utils.js"
-import { updateInfo } from "lib-server-info-full.js"
-import { hackServersInfo } from "lib-hack-server.js"
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("module description");
+    return;
+}
 
-async function listHackingServers(lg, timeout) {
-    const ns = lg.ns;
+async function listHackingServers(l, timeout) {
+    const ns = l.ns;
     const start = Date.now();
-    await ns.tryWritePort(1, ns.sprintf("%d|%d|@|%d|server-hacking-list", start, protocolVersion, listenPort));
+    await ns.tryWritePort(1, ns.sprintf("%d|%d|@|%d|server-hacking-list", start, protocolVersion, infoPort));
     while (Date.now() - start < timeout) { //wait 5 seconds
-        const str = await ns.readPort(listenPort);
+        const str = await ns.readPort(infoPort);
         if (str !== "NULL PORT DATA") {
             const [time, version, action, ...data] = str.split("|");
             if (time == undefined || version == undefined || version != protocolVersion) continue;
@@ -51,9 +64,29 @@ async function listHackingServers(lg, timeout) {
 
 /** @param {NS} ns **/
 export async function main(ns) {
-    const lg = new Logger(ns);
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ],
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
 
-    const hacking_list = await listHackingServers(lg, 5000);
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+
+    // for modules
+    const l = new Logger(ns, {args: args});
+    l.g(1, "%s %s", Module, Version);
+
+    const hacking_list = await listHackingServers(l, 5000);
     const hacking_servers = new Map();
     hacking_list.forEach(item => {
         const server = item.split(",");
@@ -76,7 +109,7 @@ export async function main(ns) {
         hacking_servers.set(server[0], hack_info);
     });
 
-    const servers = serversList(ns)
+    const servers = Servers.list(ns)
         .filter(server => server.name !== 'home') // not home
         .filter(server => ns.getServerMaxMoney(server.name)) // has money
         .filter(server => ns.hasRootAccess(server.name)) // with root access
@@ -88,6 +121,6 @@ export async function main(ns) {
         botnet.usedRam, 100 * botnet.usedRam / botnet.maxRam
     );
 
-    hackServersInfo(lg, botnet, servers, hacking_servers);
+    hackServersInfo(l, botnet, servers, hacking_servers);
 
 }

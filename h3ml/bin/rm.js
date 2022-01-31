@@ -1,19 +1,53 @@
-// rm.js
-// version 0.1.6
+const Module  = '/h3ml/bin/rm.js';
+const Version = '0.3.2.29'; // update this every time when edit the code!!!
 
-/*
-    rm files by filter pattern
-*/
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js";
 
-import {Logger} from "log.js"
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
+
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+function help(ns) {
+    ns.tprintf("usage: %s pattern [host] | --version [--update-port] | --help", Module);
+    ns.tprintf("delete files with names like regex pattern on host");
+    return;
+}
 
 /** @param {NS} ns **/
-/** @param {String} filter */
-/** @param {String} host */
-
 export async function main(ns) {
-    const [filter, host = ns.getHostname()] = ns.args;
-    const lg = new Logger(ns);
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ],
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+
+    // for modules
+    const l = new Logger(ns, {args: args});
+    l.g(1, "%s %s", Module, Version);
+
+    const [filter, host = ns.getHostname()] = args["_"];
 
     if (filter == undefined) {
         l.g(1, "usage: rm pattern [host]");
@@ -34,3 +68,5 @@ export async function main(ns) {
             }
         });
 }
+
+// FIXME autocomplite for second argument

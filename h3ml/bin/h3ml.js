@@ -1,17 +1,10 @@
-const Module  = 'module.js'; // replace by name of new module
-const Version = '0.2.0';     // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/h3ml.js';
+const Version = '0.3.2.29'; // update this every time when edit the code!!!
 
-/*
-    h3ml - hack them all, start server-hack for hackable targets
-*/
-
-const debugLevel = 0;
-const logLevel   = 1;
-
-import {Constants} from "lib-constants.js";
-import {Socket} from "lib-network.js"
-import {Servers} from "lib-server-list.js"
-import {Logger} from "log.js";
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js";
+import {Socket}     from "/h3ml/lib/network.js"
+import {Servers}    from "/h3ml/lib/server-list.js"
 
 const protocolVersion   = Constants.protocolVersion;
 const watchPort         = Constants.watchPort;
@@ -19,21 +12,25 @@ const infoPort          = Constants.infoPort;
 
 async function version(ns, port) {
     if (port !== undefined && port) {
-        const socket = new Socket(ns, port);
-        return socket.write(Version);
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
     }
     ns.tprintf("version %s", Version);
     return;
 }
 
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] [--help]", Module);
     ns.tprintf("start server-hack script for hackable servers on 'home' or 'hack-server' if exists");
     return;
 }
 
-async function listHackingServers(lg, timeout) {
-    const ns = lg.ns;
+async function listHackingServers(l, timeout) {
+    const ns = l.ns;
     const start = Date.now();
     await ns.tryWritePort(watchPort, ns.sprintf("%d|%d|@|%d|server-hacking-list", start, protocolVersion, infoPort));
     while (Date.now() - start < timeout) { //wait 5 seconds
@@ -75,14 +72,14 @@ export async function main(ns) {
     }
     const lg = new Logger(ns, {logLevel : logLevel, debugLevel: debugLevel});
 
-    const hacking_list = await listHackingServers(lg, 5000);
+    const hacking_list = await listHackingServers(l, 5000);
     const hacking_servers = new Map();
     hacking_list.forEach(server => {hacking_servers.set(server, true);})
 
     //server-hack script could be started only on hack-server or home :)
     const hack_server = ns.serverExists("hack-server-0") ? "hack-server-0" : "home";
 
-    serversList(ns)
+    Servers.list(ns)
         .filter(server => server.name !== 'home') // not home
         .filter(server => server.name !== 'ctrl-server') // not home
         .filter(server => ns.getServerMaxMoney(server.name)) // has money
