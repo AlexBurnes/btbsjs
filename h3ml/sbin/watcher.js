@@ -1,12 +1,13 @@
 const Module  = '/h3ml/sbin/watcher.js';
-const Version = '0.3.2.26'; // update this every time when edit the code!!!
+const Version = '0.3.2.28'; // update this every time when edit the code!!!
 
-import {Constants}  from "/h3ml/lib/constants.js";
-import {Logger}     from "/h3ml/lib/log.js"
-import {Socket}     from "/h3ml/lib/network.js";
-import {Units}      from "/h3ml/lib/units.js"
-import {Servers}    from "/h3ml/lib/server-list.js"
-import {updateInfo} from "/h3ml/lib/server-info.js"
+import {Constants}      from "/h3ml/lib/constants.js";
+import {Logger}         from "/h3ml/lib/log.js"
+import {Socket}         from "/h3ml/lib/network.js";
+import {moneyFormat, timeFormat}
+                        from "/h3ml/lib/units.js"
+import {Servers}        from "/h3ml/lib/server-list.js"
+import {updateInfo}     from "/h3ml/lib/server-info.js"
 
 async function version(ns, port) {
     if (port !== undefined && port) {
