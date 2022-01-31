@@ -1,9 +1,8 @@
 const Module  = '/h3ml/lib/scan-simple.js';
-const Version = '0.3.2.22'; // update this every time when edit the code!!!
+const Version = '0.3.2.23'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
-import {Logger}     from "/h3ml/lib/log.js"         // this need only for modules
-import {LVS}        from "/h3ml/lib/utils.js"
+import {Logger}     from "/h3ml/lib/log.js"
 import {Servers}    from "/h3ml/lib/server-list.js"
 
 async function version(ns, port) {
@@ -21,8 +20,7 @@ async function version(ns, port) {
 **/
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] | --help", Module);
-    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
-    ns.tprintf("module description"); // in case of a module
+    ns.tprintf("scan servers and output as tree, output name only");
     return;
 }
 
@@ -50,7 +48,7 @@ export async function main(ns) {
     const l = new Logger(ns, {args: args});
     l.g(1, "%s %s", Module, Version);
 
-    Servers.tree(ns, (lvs, server) => {
-        ns.tprintf("%s %s", lvs, server.name);
+    Servers.tree(ns, (pad, server) => {
+        ns.tprintf("%s %s", pad, server.name);
     });
 }

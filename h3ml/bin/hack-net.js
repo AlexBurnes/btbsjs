@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/hack-net.js';
-const Version = '0.3.2.22'; // update this every time when edit the code!!!
+const Version = '0.3.2.23'; // update this every time when edit the code!!!
 
 /*
     Grow hacknet to max nodes
@@ -9,6 +9,25 @@ import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"
 import {Settings}   from "h3ml-settings.js";
 
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
+
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("this module is a library, import {some} from '%s'", Module); // in case of a library
+    ns.tprintf("module description"); // in case of a module
+    return;
+}
 
 /** @param {NS} ns **/
 export async function main(ns) {

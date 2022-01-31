@@ -1,7 +1,11 @@
-// lib-serer-info-full.js
-// version 0.1.10
+const Module  = '/h3ml/lib/scan-info-full.js';
+const Version = '0.3.2.23'; // update this every time when edit the code!!!
 
-import {costFormat, timeFormat} from "lib-units.js"
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js"         // this need only for modules
+import {Servers}    from "/h3ml/lib/server-list.js"
+
+import {costFormat, timeFormat} from "/h3ml/lib/units.js"
 
 /** @param {NS} ns
  *  @param {Target||Server} target

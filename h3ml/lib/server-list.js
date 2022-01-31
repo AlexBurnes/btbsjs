@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-list.js';
-const Version = '0.3.2.21';     // update this every time when edit the code!!!
+const Version = '0.3.2.23';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {LVS}        from "/h3ml/lib/utils.js";
@@ -35,7 +35,7 @@ class _Servers {
         const queue = Object.keys(visited);
         while (queue.length > 0) {
             const host = queue.pop();
-            const current = new Host(host);
+            const current = new Server(host);
             list.push(current);
             ns.scan(current.name)
                 .reverse()
@@ -50,7 +50,8 @@ class _Servers {
 
     /**
     * @param {import("Ns").NS } ns
-    * @returns {void}, this function need for dump tree
+    * @param {({String}, {Node} [, {LVS}]) =>{}} lambda
+    * @returns {void}, this function build and walk tree call lambda for each node
     */
     tree(ns, lambda) {
         const root = new Node('home', 0);
@@ -62,33 +63,33 @@ class _Servers {
             ns.scan(host)
                 .filter(e => !visited[e])
                 .forEach(child => {
-                    const server = new Server(child, node.depth+1);
+                    const server = new Node(child, node.depth+1);
                     queue.push(server.name);
                     node.childs.push(server);
                     visited[server.name] = server;
                 });
         }
         if (lambda !== undefined) {
-            treeWalk(ns, root, lambda);
+            treeWalk(root, lambda);
         }
         return root;
     }
     host(name) {
         return new Host(name);
     }
-})
+}
 
 export const Servers = new _Servers();
 
-function treeWalk(ns, node, lambda, lvs) {
+function treeWalk(node, lambda, lvs) {
     if (lvs == undefined) {
         lvs = new LVS();
-        lambda(lvs.empty, node);
+        lambda(lvs.empty, node, lvs);
     }
     for(let i=0; i < node.childs.length; i++) {
         const child = node.childs[i];
-        lambda(lvs.pad(child.depth, i == node.childs.length-1 ? 1 : 0), child)
-        treeWalk(ns, child, lambda, lvs);
+        lambda(lvs.pad(child.depth, i == node.childs.length-1 ? 1 : 0), child, lvs)
+        treeWalk(child, lambda, lvs);
     }
 }
 
@@ -125,7 +126,7 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    help();
+    help(ns);
     return;
 }
 
