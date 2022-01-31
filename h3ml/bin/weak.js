@@ -1,5 +1,5 @@
-const Module  = '/h3ml/var/weak.js';
-const Version = '0.3.2.24'; // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/weak.js';
+const Version = '0.3.2.27'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";

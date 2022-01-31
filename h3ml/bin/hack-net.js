@@ -1,5 +1,5 @@
-const Module  = '/h3ml/var/hack-net.js';
-const Version = '0.3.2.24'; // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/hack-net.js';
+const Version = '0.3.2.27'; // update this every time when edit the code!!!
 
 /*
     Grow hacknet to max nodes
