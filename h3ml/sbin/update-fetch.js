@@ -55,7 +55,7 @@ export async function main(ns) {
     ns.tprint(Module, " ", Version);
     const l = new Logger(ns, {args: args});
 
-    await update(l, baseUrl, host)
+    await update(l, baseUrl, host);
 
     return;
 }

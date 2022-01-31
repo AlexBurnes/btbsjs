@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.2.29';
+const Version = '0.3.2.30';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -54,7 +54,7 @@ export const scriptFiles = [
     "/h3ml/bin/weak.js",
 
     "/h3ml/bin/hack-servers.js",
-    "/h3ml/bin/sharing-power.js"
+    "/h3ml/bin/sharing-power.js",
 
     "/h3ml/bin/stop.js",
     "/h3ml/bin/quiet.js",
