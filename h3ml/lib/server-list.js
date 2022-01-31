@@ -2,7 +2,7 @@ const Module  = '/h3ml/lib/server-list.js';
 const Version = '0.3.2.23';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
-import {LVS}        from "/h3ml/lib/utils.js";
+import {Lvs}        from "/h3ml/lib/utils.js";
 
 export class Server {
     constructor(name) {
@@ -50,7 +50,7 @@ class _Servers {
 
     /**
     * @param {import("Ns").NS } ns
-    * @param {({String}, {Node} [, {LVS}]) =>{}} lambda
+    * @param {({String}, {Node} [, {Lvs}]) =>{}} lambda
     * @returns {void}, this function build and walk tree call lambda for each node
     */
     tree(ns, lambda) {
@@ -83,7 +83,7 @@ export const Servers = new _Servers();
 
 function treeWalk(node, lambda, lvs) {
     if (lvs == undefined) {
-        lvs = new LVS();
+        lvs = new Lvs();
         lambda(lvs.empty, node, lvs);
     }
     for(let i=0; i < node.childs.length; i++) {

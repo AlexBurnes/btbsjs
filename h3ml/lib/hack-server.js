@@ -1,18 +1,14 @@
-// lib-hack-server
-// version 0.2.0
-/*
-    functions for hack strategy and show hack servers info
-*/
+const Module  = '/h3ml/lib/hack-server.js';
+const Version = '0.3.2.24';     // update this every time when edit the code!!!
 
-import { serversList } from "lib-server-list.js"
-import { BotNet } from "lib-botnet.js"
-import { Target } from "target.js"
-import { costFormat, timeFormat } from "lib-units.js"
-import { TableFormatter } from "lib-utils.js"
-import { updateInfo } from "lib-server-info-full.js"
+import { Constants }        from "/h3ml/lib/constants.js";
+import { Servers }          from "/h3ml/lib/server-list.js";
+import { BotNet }           from "/h3ml/lib/botnet.js";
+import { Table }            from "/h3ml/lib/utils.js";
+import { updateInfo }       from "/h3ml/lib/server-info.js";
+import { moneyFormat, timeFormat } from "/h3ml/lib/units.js"
 
 export function hackServersInfo(lg, botnet, servers, hacking_servers) {
-
     const ns = lg.ns;
 
     if (botnet.servers.length) {
@@ -58,7 +54,7 @@ export function hackServersInfo(lg, botnet, servers, hacking_servers) {
         l.g(1, "hacking %d/%d servers", hacking_servers.size, servers.length);
         l.g(1, "for optimal hack require max single server size %dGb, total size %dGb", oneServerRam, allServersRam);
 
-        const table = new TableFormatter(ns,
+        const table = new Table(ns,
             [
                 ["    Name" , "%s"      ],  // server name
                 ["Chance"   , "%.2f%%"  ],  // hack  chance
@@ -97,15 +93,15 @@ export function hackServersInfo(lg, botnet, servers, hacking_servers) {
         );
 
         servers.forEach(server => {
-            const moneyHackRate = costFormat(server.threadRate);
+            const moneyHackRate = moneyFormat(server.threadRate);
             const hack_info = hacking_servers.has(server.name) ? hacking_servers["get"](server.name) : undefined;
             table.push(
                 server.name,
                 100 * server.analyzeChance,
                 server.minSecurity,
                 server.currentSecurity,
-                [server.availMoney.cost, server.availMoney.unit],
-                [server.maxMoney.cost, server.maxMoney.unit],
+                [server.availMoney.amount, server.availMoney.unit],
+                [server.maxMoney.amount, server.maxMoney.unit],
                 server.moneyRatio,
                 server.serverGrowth,
                 [server.hackTime.time, server.hackTime.unit],
@@ -118,22 +114,60 @@ export function hackServersInfo(lg, botnet, servers, hacking_servers) {
                 server.growThreads,
                 server.weakThreads,
                 //server.maxHackSecurityThreads,
-                [server.optmalMaxHackMoney.cost, server.optmalMaxHackMoney.unit],
+                [server.optmalMaxHackMoney.amount, server.optmalMaxHackMoney.unit],
                 //server.serverMaxGrowthThreads,
                 //server.maxGrowSecutiryThreads,
                 //server.optimalMaxThreads,
-                //[moneyHackRate.cost, moneyHackRate.unit],
+                //[moneyHackRate.amount, moneyHackRate.unit],
                 //server.threadRate / totalRate * 100,
                 //botnet.workers * server.threadRate / totalRate
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
                 hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
-                hack_info !== undefined ? [hack_info[3] == "hack" ? "-" : "+", hack_info[4].cost, hack_info[4].unit] : ["", 0, ""],
+                hack_info !== undefined ? [hack_info[3] == "hack" ? "-" : "+", hack_info[4].amount, hack_info[4].unit] : ["", 0, ""],
                 hack_info !== undefined ? hack_info[5] : "",
-                hack_info !== undefined ? [hack_info[6].cost, hack_info[6].unit] : [0, ""]
+                hack_info !== undefined ? [hack_info[6].amount, hack_info[6].unit] : [0, ""]
             );
         });
         table.print();
     }
     return;
 }
+
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
+
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("this module is a library, import {hackServersInfo} from '%s'", Module);
+    return;
+}
+
+/** @param {NS} ns **/
+export async function main(ns) {
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+    help(ns);
+    return;
+}
+

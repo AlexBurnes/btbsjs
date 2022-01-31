@@ -6,7 +6,7 @@ import {Logger}     from "/h3ml/lib/log.js"
 import {Socket}     from "/h3ml/lib/network.js";
 import {Units}      from "/h3ml/lib/units.js"
 import {Servers}    from "/h3ml/lib/server-list.js"
-import {updateInfo} from "/h3ml/lib/server-info-full.js"
+import {updateInfo} from "/h3ml/lib/server-info.js"
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -82,8 +82,8 @@ async function actionStop(lg, servers, time, data) {
             resultStr = ns.sprintf("%.2f", result);
             break;
         case "hack":
-            const amount = costFormat(result);
-            resultStr = ns.sprintf("%.2f%s", amount.cost, amount.unit);
+            const amount = moneyFormat(result);
+            resultStr = ns.sprintf("%.2f%s", amount.amount, amount.unit);
             break;
     }
 
@@ -111,7 +111,7 @@ async function actionStop(lg, servers, time, data) {
                 currentTarget.currentValue = result;
                 currentTarget.actionTime = Date.now();
                 currentTarget.lastAction = target.currentAction;
-                currentTarget.diffAvailMoney = costFormat(Math.abs(currentTarget.availMoney.value - target.availMoney.value));
+                currentTarget.diffAvailMoney = moneyFormat(Math.abs(currentTarget.availMoney.value - target.availMoney.value));
                 currentTarget.totalAmount = target.totalAmount + (target.currentAction == "hack" ? currentTarget.diffAvailMoney.value : 0);
                 currentTarget.diffSecuriry   = currentTarget.currentSecurity - target.currentSecurity;
                 currentTarget.diffHackChance = currentTarget.hackChances/target.hackChances;
@@ -140,16 +140,16 @@ async function actionStop(lg, servers, time, data) {
                                 : currentTarget.availMoney.value == target.availMoney.value
                                     ? ""
                                     : "-",
-                            currentTarget.diffAvailMoney.cost, currentTarget.diffAvailMoney.unit,
-                            currentTarget.availMoney.cost, currentTarget.diffAvailMoney.unit,
-                            currentTarget.maxMoney.cost,   currentTarget.maxMoney.unit,
+                            currentTarget.diffAvailMoney.amount, currentTarget.diffAvailMoney.unit,
+                            currentTarget.availMoney.amount, currentTarget.diffAvailMoney.unit,
+                            currentTarget.maxMoney.amount,   currentTarget.maxMoney.unit,
                             timeSpent.time, timeSpent.unit
                        );
                     }
                 }
                 //FIXME need caclulate timeout depends on money value
                 if (method == "hack" && currentTarget.diffAvailMoney.value > 0) {
-                    const text = ns.sprintf("%s +%.2f%s", server, currentTarget.diffAvailMoney.cost, currentTarget.diffAvailMoney.unit);
+                    const text = ns.sprintf("%s +%.2f%s", server, currentTarget.diffAvailMoney.amount, currentTarget.diffAvailMoney.unit);
                     let timeout = Math.log10(currentTarget.diffAvailMoney.value/1000000)*5;
                     if (timeout < 5) timeout = 5;
                     if (timeout > 60) timeout = 60;
@@ -298,7 +298,7 @@ export async function main(ns) {
             server.actionTime     = Date.now();
             server.hosts          = new Map();
             server.lastAction     = "";
-            server.diffAvailMoney = costFormat(0);
+            server.diffAvailMoney = moneyFormat(0);
             server.totalAmount    = 0;
             server.diffSecuriry   = 0;
             server.startTime      = 0;

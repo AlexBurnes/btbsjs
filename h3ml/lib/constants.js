@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.2.23'; // update this every time when edit the code!!!
+const Version = '0.3.2.24'; // update this every time when edit the code!!!
 
 const _rootKitFiles = {
     "BruteSSH.exe"  : 1,

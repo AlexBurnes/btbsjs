@@ -1,4 +1,4 @@
-const Module  = '/h3ml/lib/scan-info.js';
+const Module  = '/h3ml/lib/scan-info-with-contracts.js';
 const Version = '0.3.2.23'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
@@ -57,16 +57,16 @@ export async function main(ns) {
         const rooted   = ns.hasRootAccess(server.name) ? "🞕" : rootable ? "🞖" : "🞎";
         const hacked   = ns.getServer().backdoorInstalled == true ? "🞕" : hackable ? "🞖" : "🞎";
 
-        const moneyAvail = costFormat(ns.getServerMoneyAvailable(name));
-        const moneyMax   = costFormat(ns.getServerMaxMoney(name));
+        const moneyAvail = moneyFormat(ns.getServerMoneyAvailable(name));
+        const moneyMax   = moneyFormat(ns.getServerMaxMoney(name));
 
         const info = [
             "[",    ns.getServerRequiredHackingLevel(name),
             ", ",   ns.getServerNumPortsRequired(name),     "]",
             " ",    ns.getServerUsedRam(name),
             "/ ",   ns.getServerMaxRam(name),               " Gb",
-            " $ ",  round(moneyAvail.cost, 2), moneyAvail.unit,
-            " / ",  round(moneyMax.cost, 2), moneyMax.unit,
+            " $ ",  round(moneyAvail.amount, 2), moneyAvail.unit,
+            " / ",  round(moneyMax.amount, 2), moneyMax.unit,
             " (",   moneyMax ? round((100 * moneyAvail.value / moneyMax.value), 2) : 0,
             "%)"
         ].join("");

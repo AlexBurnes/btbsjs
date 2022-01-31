@@ -1,12 +1,58 @@
-// version 0.1.0
+const Module  = '/h3ml/var/backdoor.js';
+const Version = '0.3.2.24'; // update this every time when edit the code!!!
+
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js";
+
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("version %s", Version);
+    return;
+}
 
 /**
- * @param {import("Ns").NS } ns
- * @returns {void}
- */
+    @param {NS} ns
+    @param {Number} port
+**/
+function help(ns) {
+    ns.tprintf("usage: %s target | --version [--update-port] | --help", Module);
+    ns.tprintf("install backdoor on target");
+    return;
+}
 
+/** @param {NS} ns **/
 export async function main(ns) {
-    const [target] = ns.args;
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ],
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+
+    ]);
+
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+
+    // for modules
+    const l = new Logger(ns, {args: args});
+    l.g(1, "%s %s", Module, Version);
+
+    const [target] = args["_"];
+    if (target == undefined) {
+        l.e("target is undefined");
+        help(ns);
+    }
+
     const paths = {'home': []};
     const queue = Object.keys(paths);
 
@@ -21,15 +67,9 @@ export async function main(ns) {
     }
 
     if (!paths[target]) {
-        ns.tprint(`No path found to node ${target}`);
+        l.e("No path found to node %s", target);
         return;
     }
-
-    /*ns.connect("home");
-    paths[target].forEach(host => {
-        ns.connect(host);
-    });
-    */
 
     const terminalCommand = `home; ${paths[target].map(e => `connect ${e}`).join(';')}; backdoor;`
 

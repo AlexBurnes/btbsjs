@@ -10,7 +10,7 @@ const graphContinue = ' │  ';
 const graphItem     = ' ├──';
 const graphLast     = ' └──';
 
-export class LVS {
+export class Lvs {
     constructor() {
     this.lvs = [];
     this.level = 0;
@@ -36,7 +36,7 @@ export class LVS {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// TableFormatter
+// Table
 /*  @param {array[array[string]]} rows
     first row could be column names
     rows of column row
@@ -50,7 +50,7 @@ export class LVS {
 ╚═╧═╩═╝
 */
 
-export class TableFormatter {
+export class Table {
 
     constructor(ns, columns) {
         this.ns = ns;

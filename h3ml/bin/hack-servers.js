@@ -17,8 +17,8 @@ import { Logger } from "log.js"
 import { serversList } from "lib-server-list.js"
 import { BotNet } from "lib-botnet.js"
 import { Target } from "target.js"
-import { costFormat, timeFormat } from "lib-units.js"
-import { TableFormatter } from "lib-utils.js"
+import { moneyFormat, timeFormat } from "lib-units.js"
+import { Table } from "lib-utils.js"
 import { updateInfo } from "lib-server-info-full.js"
 import { hackServersInfo } from "lib-hack-server.js"
 
@@ -60,8 +60,8 @@ export async function main(ns) {
         const timeout = server[2] - Date.now() + parseInt(server[3]);
         const now = Date.now();
         const estimate = timeFormat(server[1] !== undefined && timeout > 0 ? timeout/1000 : 0);
-        const diff_amount = costFormat(server[5]);
-        const total_amount = costFormat(server[6]);
+        const diff_amount = moneyFormat(server[5]);
+        const total_amount = moneyFormat(server[6]);
         const diff_security = server[7];
         const hack_info = [
             server[0],

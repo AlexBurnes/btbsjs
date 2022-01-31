@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/hack-net.js';
-const Version = '0.3.2.23'; // update this every time when edit the code!!!
+const Version = '0.3.2.24'; // update this every time when edit the code!!!
 
 /*
     Grow hacknet to max nodes
@@ -7,7 +7,7 @@ const Version = '0.3.2.23'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"
-import {Settings}   from "h3ml-settings.js";
+import {settings}   from "h3ml-settings.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -137,8 +137,8 @@ export async function main(ns) {
 
         if (nodeCost > 0 && (nodeCost < minUpgradeCost || minUpgradeCost == -1)) {
             if (nodeCost < availMoney) {
-                const price = costFormat(nodeCost);
-                l.d(1, "purchase node for %.2f%s$", price.cost, price.unit);
+                const price = moneyFormat(nodeCost);
+                l.d(1, "purchase node for %.2f%s$", price.amount, price.unit);
                 ns.hacknet.purchaseNode();
                 minUpgradeNode = -1;
                 minUpgradeCost = -1;
@@ -149,18 +149,18 @@ export async function main(ns) {
         }
         else {
             if (minUpgradeCost < availMoney) {
-                const price = costFormat(minUpgradeCost);
+                const price = moneyFormat(minUpgradeCost);
                 switch(minUpgradeWhat) {
                     case 0:
-                        l.d(1, "upgrade node %d level for %.2f%s$", minUpgradeNode, price.cost, price.unit);
+                        l.d(1, "upgrade node %d level for %.2f%s$", minUpgradeNode, price.amount, price.unit);
                         ns.hacknet.upgradeLevel(minUpgradeNode, 1);
                         break;
                     case 1:
-                        l.d(1, "upgrade node %d ram for %.2f%s$", minUpgradeNode, price.cost, price.unit);
+                        l.d(1, "upgrade node %d ram for %.2f%s$", minUpgradeNode, price.amount, price.unit);
                         ns.hacknet.upgradeRam(minUpgradeNode, 1);
                         break;
                     case 2:
-                        l.d(1, "upgrade node %d cpu for %.2f%s$", minUpgradeNode, price.cost, price.unit);
+                        l.d(1, "upgrade node %d cpu for %.2f%s$", minUpgradeNode, price.amount, price.unit);
                         ns.hacknet.upgradeCore(minUpgradeNode, 1);
                         break;
                 }

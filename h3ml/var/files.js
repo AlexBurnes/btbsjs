@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.2.23';
+const Version = '0.3.2.24';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -33,6 +33,7 @@ export const scriptFiles = [
     "/h3ml/lib/units.js",
     "/h3ml/lib/utils.js",
     "/h3ml/lib/server-list.js",
+    "/h3ml/lib/server-info.js",
     "/h3ml/lib/target.js",
 
     "/h3ml/lib/scan-simple.js",
@@ -45,39 +46,35 @@ export const scriptFiles = [
     /*
 
     "/h3ml/lib/botnet.js",
-    "/h3ml/lib/server-info-full.js",
     "/h3ml/lib/hack-server.js",
 
     // scripts
-
-    "/h3ml/bin/stop.js",
-    "/h3ml/bin/backdoor.js",
-    "/h3ml/bin/connect.js",
-    "/h3ml/bin/worm.js",
-
     "/h3ml/bin/server-buy.js",
     "/h3ml/bin/server-rm.js",
     "/h3ml/bin/server-cost.js",
 
     "/h3ml/bin/h3ml.js",
     "/h3ml/bin/hack-servers.js",
-
-    "/h3ml/bin/server-analyze.js",
     "/h3ml/bin/server-hack.js",
+
+    "/h3ml/bin/rm.js"
+
+    ,
+    */
+    "/h3ml/bin/backdoor.js",
+    "/h3ml/bin/connect.js",
+    "/h3ml/bin/hack-net.js",
+    "/h3ml/bin/scan.js",
+    "/h3ml/bin/worm.js",
 
     "/h3ml/bin/hack.js",
     "/h3ml/bin/grow.js",
     "/h3ml/bin/weak.js",
 
+    "/h3ml/bin/stop.js",
     "/h3ml/bin/quiet.js",
     "/h3ml/bin/verbose.js",
-    "/h3ml/bin/rm.js"
 
-    ,
-    */
-
-    "/h3ml/bin/hack-net.js",
-    "/h3ml/bin/scan.js",
 
     "/h3ml/sbin/watcher.js",
     "/h3ml/sbin/worker.js",

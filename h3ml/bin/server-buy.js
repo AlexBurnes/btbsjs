@@ -1,7 +1,7 @@
 // server-buy.js
 // version 0.1.0
 
-import {memoryFormat, costFormat} from "lib-units.js";
+import {memoryFormat, moneyFormat} from "lib-units.js";
 import {serversList} from "lib-server-list.js";
 
 const UnitGb = Math.pow(2, 30);
@@ -32,9 +32,9 @@ export async function main(ns) {
     }
 
     const serverPrice = ns.getPurchasedServerCost(requestSizeGb);
-    const priceFmt = costFormat(serverPrice);
+    const priceFmt = moneyFormat(serverPrice);
 
-    const promptText = ns.vsprintf("buy server size of %dGb price is %.2f%s?", [requestSizeGb, priceFmt.cost, priceFmt.unit]);
+    const promptText = ns.vsprintf("buy server size of %dGb price is %.2f%s?", [requestSizeGb, priceFmt.amount, priceFmt.unit]);
     if (await ns.prompt(promptText)) {
         const server_name = ns.purchaseServer(name, requestSizeGb);
         if (server_name !== "") {
