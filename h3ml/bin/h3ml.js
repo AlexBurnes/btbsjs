@@ -10,7 +10,7 @@ const logLevel   = 1;
 
 import {Constants} from "lib-constants.js";
 import {Socket} from "lib-network.js"
-import {serversList} from "lib-server-list.js"
+import {Servers} from "lib-server-list.js"
 import {Logger} from "log.js";
 
 const protocolVersion   = Constants.protocolVersion;

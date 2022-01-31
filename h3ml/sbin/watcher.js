@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watcher.js';
-const Version = '0.3.2.20'; // update this every time when edit the code!!!
+const Version = '0.3.2.26'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"
@@ -289,7 +289,7 @@ export async function main(ns) {
     }
 
     const servers = new Map();
-    serversList(ns)
+    Servers.list(ns)
         .forEach(server => {
             server.currentAction  = "";
             server.currentThreads = 0;

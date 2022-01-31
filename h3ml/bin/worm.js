@@ -1,9 +1,9 @@
 const Module  = '/h3ml/var/worm.js';
-const Version = '0.3.2.24'; // update this every time when edit the code!!!
+const Version = '0.3.2.26'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js";
-import {serversList}    from "/h3ml/lib/server-list.js";
+import {Servers}        from "/h3ml/lib/server-list.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
