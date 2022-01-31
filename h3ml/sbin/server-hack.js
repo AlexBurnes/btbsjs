@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack.js';
-const Version = '0.3.2.29'; // update this every time when edit the code!!!
+const Version = '0.3.2.31'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -174,7 +174,7 @@ async function hackServer(l, target, once, analyze, port) {
                 target, wt, server.weakTime.time, server.weakTime.unit, ws, server.currentSecurity - ws
             );
             server.hackAction = actionWeak;
-            if (!analyze) await server.weaken(wt, {await: true});
+            if (!analyze) await server["weaken"](wt, {await: true});
             await ns.sleep(1000); // just in case
             botnet.update();
             server.hosts = botnet.servers;
@@ -224,14 +224,14 @@ async function hackServer(l, target, once, analyze, port) {
                     target, wt, server.weakTime.time, server.weakTime.unit, ws, server.currentSecurity - ws
                 );
                 server.hackAction = actionWeak;
-                if (!analyze) await server.weaken(wt, {await: true});
+                if (!analyze) await server["weaken"](wt, {await: true});
             }
             else {
                 await writeToPort(l, port, "=> '%s' grow << %d >> %.2f%s => +%.2f%s -> %.2f%s",
                     target, gpt, server.hackTime.time, server.hackTime.unit, gaf.amount, gaf.unit, gmf.amount, gmf.unit
                 );
                 server.hackAction = actionGrow;
-                if (!analyze) await server.grow(gpt, {await: true, growRate: gpr});
+                if (!analyze) await server["grow"](gpt, {await: true, growRate: gpr});
             }
         }
         else if (a == m || (gr < 1.01 && gr > 1.00) || gt == 0) {
@@ -254,14 +254,14 @@ async function hackServer(l, target, once, analyze, port) {
                     target, wt, server.weakTime.time, server.weakTime.unit, ws, server.currentSecurity - ws
                 );
                 server.hackAction = actionWeak;
-                if (!analyze) await server.weaken(wt, {await: true});
+                if (!analyze) await server["weaken"](wt, {await: true});
             }
             else {
                 await writeToPort(l, port, "=> '%s' hack << %d >> %.2f%s => -%.2f%s -> %.2f%s",
                     target, hpt, server.hackTime.time, server.hackTime.unit, hma.amount, hma.unit, sma.amount, sma.unit
                 );
                 server.hackAction = actionHack;
-                if (!analyze) await server.hack(hpt, {await: true});
+                if (!analyze) await server["hack"](hpt, {await: true});
             }
         }
         // more complex a is more then grow amount to max, and hack anount will be more then grow amount
@@ -293,21 +293,21 @@ async function hackServer(l, target, once, analyze, port) {
                     target, wt, server.weakTime.time, server.weakTime.unit, ws, server.currentSecurity - ws
                 );
                 server.hackAction = actionWeak;
-                if (!analyze) await server.weaken(wt, {await: true});
+                if (!analyze) await server["weaken"](wt, {await: true});
             }
             else if ( hpm > m - a) {
                 await writeToPort(l, port, "=> '%s' hack << %d >> %.2f%s => -%.2f%s -> %.2f%s",
                     target, hpt, server.hackTime.time, server.hackTime.unit, hma.amount, hma.unit, sma.amount, sma.unit
                 );
                 server.hackAction = actionHack;
-                if (!analyze) await server.hack(hpt, {await: true});
+                if (!analyze) await server["hack"](hpt, {await: true});
             }
             else {
                 await writeToPort(l, port, "=> '%s' grow << %d >> %.2f%s => +%.2f%s -> %.2f%s",
                     target, ght, server.hackTime.time, server.hackTime.unit, gaf.amount, gaf.unit, gmf.amount, gmf.unit
                 );
                 server.hackAction = actionGrow;
-                if (!analyze) await server.grow(ght, {await: true, growRate: ghr});
+                if (!analyze) await server["grow"](ght, {await: true, growRate: ghr});
             }
         }
         else {
@@ -337,7 +337,7 @@ async function hackServer(l, target, once, analyze, port) {
                     target, wt, server.weakTime.time, server.weakTime.unit, server.currentSecurity - server.minSecurity, server.minSecurity
                 );
                 server.hackAction = actionWeak;
-                if (!analyze) await server.weaken(wt, {await: true});
+                if (!analyze) await server["weaken"](wt, {await: true});
             }
             else {
                 // first must grow, next must hack and repeat
@@ -346,14 +346,14 @@ async function hackServer(l, target, once, analyze, port) {
                         target, grt, server.hackTime.time, server.hackTime.unit, gaf.amount, gaf.unit, gmf.amount, gmf.unit
                     );
                     server.hackAction = actionGrow;
-                    if (!analyze) await server.grow(grt, {await: true, growRate: grr});
+                    if (!analyze) await server["grow"](grt, {await: true, growRate: grr});
                 }
                 else {
                     await writeToPort(l, port, "=> '%s' hack << %d >> %.2f%s => -%.2f%s -> %.2f%s",
                         target, hpt, server.hackTime.time, server.hackTime.unit, hma.amount, hma.unit, sma.amount, sma.unit
                     );
                     server.hackAction = actionHack;
-                    if (!analyze) await server.hack(hpt, {await: true});
+                    if (!analyze) await server["hack"](hpt, {await: true});
                 }
             }
 
@@ -368,14 +368,14 @@ async function hackServer(l, target, once, analyze, port) {
 
 /** @param {NS} ns **/
 export async function main(ns) {
-     const data = ns.flags([
+     const args = ns.flags([
         [ 'version'      , false ],
         [ 'update-port'  , 0     ],
         [ 'help'         , false ],
         [ 'log'          , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'        , 0     ], // debug level
         [ 'verbose'      , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'        , false ]  // quiet mode, short analog of --log-level 0
+        [ 'quiet'        , false ], // quiet mode, short analog of --log-level 0
         [ 'once'         , false ],
         [ 'analyze'      , false ]
 
