@@ -72,7 +72,7 @@ export const scriptFiles = [
     "/h3ml/bin/server-cost.js",
 
     "/h3ml/sbin/watcher.js",
-    "/h3ml/sbin/watcher-min.js",
+    "/h3ml/sbin/watch-min.js",
     "/h3ml/sbin/worker.js",
     "/h3ml/sbin/sharing.js",
     "/h3ml/sbin/server-hack.js",
