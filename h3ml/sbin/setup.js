@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.3.12'; // update this every time when edit the code!!!
+const Version = '0.3.3.13'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -46,15 +46,15 @@ export async function main(ns) {
     await ns.sleep(500); // just wait while caller free memory :)
     l.g(1, "setup system on host %s", host);
     l.g(1, "\tgather servers data");
-    const pid_1 = await ns.exec(Constants.serversFile, host, 1, host);
+    const pid_1 = await ns.exec("/h3ml/sbin/gather-servers-data.js", host, 1, host);
     if (!pid_1) {
-        l.e("failed run %s", Constants.serversFile);
+        l.e("failed run %s", "/h3ml/sbin/gather-servers-data.js");
     }
     await ns.sleep(200);
     l.g(1, "\tgather security data");
-    const pid_2 = await ns.exec(Constants.securityFile, host, 1, host);
+    const pid_2 = await ns.exec("/h3ml/sbin/gather-security-data.js", host, 1, host);
     if (!pid_1) {
-        l.e("failed run %s", Constants.securityFile);
+        l.e("failed run %s", "/h3ml/sbin/gather-security-data.js");
     }
     await ns.sleep(200);
     l.g(1, "setup done");

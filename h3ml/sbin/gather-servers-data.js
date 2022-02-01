@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gahter-servers-data.js';
-const Version = '0.3.3.12'; // update this every time when edit the code!!!
+const Version = '0.3.3.13'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -29,23 +29,31 @@ async function updateServersFile(l, host) {
     let i = 0;
     Servers.list(ns)
         .forEach(server => {
-            data += i++ ? ", " : "";
-            data += "\t'" + server.name+ "': {\n";
+            data += i++ ? ",\n" : "";
+            data += "    '" + server.name+ "': {\n";
             const serverData = ns.getServer(server.name);
-            data += "\t\t'serverGrowth': "      + serverData.serverGrowth + ",\n";
-            data += "\t\t'maxRam': "            + ns.getServerMaxRam(server.name) + ",\n";
-            data += "\t\t'minSecutiry': "       + ns.getServerMinSecurityLevel(server.name) + ",\n";
-            data += "\t\t'maxMoney': "          + ns.getServerMaxMoney(server.name) + ",\n";
-            data += "\t\t'hackDifficulty': "    + ns.getServerRequiredHackingLevel(server.name) + ",\n";
-            data += "\t\t'factionServer': "     +
+            data += "        'serverGrowth': "      + serverData.serverGrowth + ",\n";
+            data += "        'maxRam': "            + ns.getServerMaxRam(server.name) + ",\n";
+            data += "        'minSecutiry': "       + ns.getServerMinSecurityLevel(server.name) + ",\n";
+            data += "        'maxMoney': "          + ns.getServerMaxMoney(server.name) + ",\n";
+            data += "        'hackDifficulty': "    + ns.getServerRequiredHackingLevel(server.name) + ",\n";
+            data += "        'factionServer': "     +
                 (
                     ns.getServerMaxRam(server.name) >= 0 &&
                     ns.getServerMaxMoney(server.name) == 0 &&
                     ns.getServerRequiredHackingLevel(server.name) > 1
                     ? 1
                     : 0
+                ) + ",\n";
+            data += "        'ownServer': "     +
+                (
+                    ns.getServerMaxRam(server.name) > 0 &&
+                    ns.getServerMaxMoney(server.name) == 0 &&
+                    ns.getServerRequiredHackingLevel(server.name) == 1
+                    ? 1
+                    : 0
                 );
-            data += "\n\t}";
+            data += "\n    }";
         });
     data += "\n};";
     // write it
