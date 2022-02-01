@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.2.30';
+const Version = '0.3.3.2';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -43,7 +43,7 @@ export const scriptFiles = [
 
     // script skeleton
     "/h3ml/var/module.js",
-    "/h3ml/var/library.js"
+    "/h3ml/var/library.js",
 
     // scripts
 
