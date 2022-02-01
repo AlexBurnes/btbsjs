@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gahter-servers-data.js';
-const Version = '0.3.3.4'; // update this every time when edit the code!!!
+const Version = '0.3.3.8'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -27,14 +27,14 @@ async function updateServersFile(l, host) {
     // prepare script source code
     let data = "export const serversData = {\n";
     let i = 0;
-    Servers.list()
+    Servers.list(ns)
         .forEach(server => {
             data += i++ ? ", " : "";
-            data += "\t'" + server.name+ "': ";
+            data += "\t'" + server.name+ "': {\n";
             const serverData = ns.getServer(server.name);
             data += "\t\t'serverGrowth': "      + serverData.serverGrowth + ",\n";
             data += "\t\t'maxRam': "            + ns.getServerMaxRam(server.name) + ",\n";
-            data += "\t\t'minSecutiry': "       + ns.getServerMinSecurity(server.name) + ",\n";
+            data += "\t\t'minSecutiry': "       + ns.getServerMinSecurityLevel(server.name) + ",\n";
             data += "\t\t'maxMoney': "          + ns.getServerMaxMoney(server.name) + ",\n";
             data += "\t\t'hackDifficulty': "    + ns.getServerRequiredHackingLevel(server.name) + ",\n";
             data += "\t\t'factionServer': "     + ns.getServerMaxRam(server.name) == 0 && ns.getServerMaxMoney(server.name) == 0 ? 1 : 0;
@@ -69,6 +69,7 @@ export async function main(ns) {
         return help(ns);
     }
 
+    const l = new Logger(ns, {args: args});
     const [host] = args["_"];
     if (host == undefined) {
         return l.e("host is undefined");

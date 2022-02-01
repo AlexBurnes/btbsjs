@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gather-security-data.js';
-const Version = '0.3.3.4'; // update this every time when edit the code!!!
+const Version = '0.3.3.8'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -65,5 +65,5 @@ export async function main(ns) {
         return l.e("host is undefined");
     }
 
-    await updateSecutiryFile(l, host);
+    await updateSecurityFile(l, host);
 }
