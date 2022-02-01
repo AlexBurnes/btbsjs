@@ -3,8 +3,8 @@ const Version = '0.3.3'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
-import {serversData}    from "/h3ml/etc/servers.js";
-import {securityData}   from "/h3ml/etc/security.js";
+import {serversData}    from Constants.serversFile;
+import {securityData}   from Constants.securityFile;
 
 
 /** @param {NS} ns
