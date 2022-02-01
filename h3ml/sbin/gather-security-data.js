@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gather-security-data.js';
-const Version = '0.3.3.8'; // update this every time when edit the code!!!
+const Version = '0.3.3.12'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -27,11 +27,11 @@ async function updateSecurityFile(l, host) {
     // prepare script source code
     let data = "export const securityData = {\n";
     data += "\t'growRate': " + ns.growthAnalyzeSecurity(1) + ", 'hackRate': " + ns.hackAnalyzeSecurity(1) + ",\n";
-    data += "\t'weakRate': [\n";
+    data += "\t'weakRate': [";
     for(let i = 0; i < maxCpuCores; i++) {
-        data += i == 0 ? "\t\t" : "\t\t, " + ns.weakenAnalyze(1, i) + "\n";
+        data += (i == 0 ? "\n\t\t" : "\n,\t\t") + ns.weakenAnalyze(1, i);
     }
-    data += "\t]\n};";
+    data += "\n\t]\n};";
     // write it
     await ns.write(securityFile, data, "w");
     return;

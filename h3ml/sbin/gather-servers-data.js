@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gahter-servers-data.js';
-const Version = '0.3.3.8'; // update this every time when edit the code!!!
+const Version = '0.3.3.12'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -37,8 +37,15 @@ async function updateServersFile(l, host) {
             data += "\t\t'minSecutiry': "       + ns.getServerMinSecurityLevel(server.name) + ",\n";
             data += "\t\t'maxMoney': "          + ns.getServerMaxMoney(server.name) + ",\n";
             data += "\t\t'hackDifficulty': "    + ns.getServerRequiredHackingLevel(server.name) + ",\n";
-            data += "\t\t'factionServer': "     + ns.getServerMaxRam(server.name) == 0 && ns.getServerMaxMoney(server.name) == 0 ? 1 : 0;
-            data += "\t}";
+            data += "\t\t'factionServer': "     +
+                (
+                    ns.getServerMaxRam(server.name) >= 0 &&
+                    ns.getServerMaxMoney(server.name) == 0 &&
+                    ns.getServerRequiredHackingLevel(server.name) > 1
+                    ? 1
+                    : 0
+                );
+            data += "\n\t}";
         });
     data += "\n};";
     // write it
