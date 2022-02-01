@@ -211,6 +211,11 @@ async function update(l, baseUrl, host) {
             }
         });
 
+    // special file
+    if (host_files.has("/h3ml-update.js")) {
+        host_files.delete("/h3ml-update.js");
+    }
+
     await updateRamScriptsFile(l, scripts);
 
     if (host_files.size > 0) {
