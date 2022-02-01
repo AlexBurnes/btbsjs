@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.2.24';     // update this every time when edit the code!!!
+const Version = '0.3.3';     // update this every time when edit the code!!!
 
 import { Constants }        from "/h3ml/lib/constants.js";
 import { Servers }          from "/h3ml/lib/server-list.js";
@@ -37,7 +37,7 @@ export function hackServersInfo(l, botnet, servers, hacking_servers) {
         });
 
         //sort by hacking chance descending
-        //servers.sort(function(a, b){return ns.hackAnalyzeChance(b.name) - ns.hackAnalyzeChance(a.name)});
+        //servers.sort(function(a, b){return ns.hackhackChances(b.name) - ns.hackhackChances(a.name)});
 
         // sort by hackin level ascending
         // servers.sort(function(a, b){return ns.getServerRequiredHackingLevel(a.name) - ns.getServerRequiredHackingLevel(b.name)});
@@ -97,7 +97,7 @@ export function hackServersInfo(l, botnet, servers, hacking_servers) {
             const hack_info = hacking_servers.has(server.name) ? hacking_servers["get"](server.name) : undefined;
             table.push(
                 server.name,
-                100 * server.analyzeChance,
+                100 * server.hackChances,
                 server.minSecurity,
                 server.currentSecurity,
                 [server.availMoney.amount, server.availMoney.unit],

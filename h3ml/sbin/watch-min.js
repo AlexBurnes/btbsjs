@@ -1,4 +1,4 @@
-const Module  = '/h3ml/sbin/watcher.js';
+const Module  = '/h3ml/sbin/watch-min.js';
 const Version = '0.3.3'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
@@ -24,8 +24,7 @@ function help(ns) {
 }
 
 /*
-    listen port and output events info
-    watch for hack,grow,weaken actions and output server affected information
+    minimal watcher implementation without ctrl list
 
 */
 
@@ -196,50 +195,6 @@ async function actionStop(l, servers, time, data) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// list of hacking servers
-async function serversHackList(l, servers, port) {
-    const ns = l.ns;
-    const scripts = new Map();
-    Servers.list().forEach(server => {
-        const procs = ns.ps(server.name);
-        procs
-            .filter(proc => proc.filename == "server-hack.js")
-            .forEach(proc => {
-                proc.args
-                    .filter(arg => !arg.match(/^--/))
-                    .forEach(arg => {scripts.set(arg, true)})
-            });
-    });
-    const list = new Array();
-    servers.forEach((server, key) => {
-        l.d(1, "server %s, action %s", server.name, server.currentAction);
-        if (
-            ns.getServerMaxMoney(server.name) > 0 &&
-            ns.hasRootAccess(server.name) &&
-            ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel() &&
-            scripts.has(server.name)
-        ) {
-            list.push(server);
-        }
-    });
-
-    if (port > 0)  {
-        const info =
-            list
-                .map(
-                    s =>
-                        ns.sprintf("%s,%s,%d,%d,%s,%f,%f,%f",
-                            s.name, s.currentAction, s.startTime, s.endTime,
-                            s.lastAction, s.diffAvailMoney.value, s.totalAmount, s.diffSecuriry
-                        )
-                )
-                .join(";");
-        await ns.tryWritePort(port, ns.sprintf("%d|%d|#|server-hacking-list|%s", Date.now(), protocolVersion, info));
-    }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ctrl
 async function actionCtrl(l, servers, time, data) {
     const ns = l.ns;
@@ -249,9 +204,6 @@ async function actionCtrl(l, servers, time, data) {
     if (quietMode == 0) l.g(1, "ctrl receive %s, port %d", data[1], data[0]);
 
     switch (data[1]) {
-        case "server-hacking-list":
-            serversHackList(l, servers, port);
-            break;
         case "quiet":
             quietMode = 1;
             break;
@@ -299,36 +251,6 @@ export async function main(ns) {
     ns.disableLog("ALL");
 
     const l = new Logger(ns, {args: args});
-
-    // run only at home and ctr-server
-    if (!ns.getHostname().match(/home|ctrl-server/)) {
-        ns.tprintf("could be run only on home or ctrl-server");
-        return;
-    }
-    //check that we do not run on home or ctrl-server
-    const is_home_run =
-        ns.getHostname() != "home" &&
-        ns.ps("home").filter(proc => proc.filename == Module).length
-        ? true
-        : false;
-
-    const is_ctrl_run =
-        ns.getHostname() != "ctrl-server" &&
-        ns.serverExists("ctrl-server") &&
-        ns.ps("ctrl-server").filter(proc => proc.filename == Module).length
-        ? true
-        : false;
-
-    if (is_home_run || is_ctrl_run){
-        ns.tprintf("module is already running on %s", is_home_run ? "home" : "ctrl-server");
-        return;
-    }
-
-    if (ns.getHostname() !== "ctrl-server" && ns.serverExists("ctrl-server")) {
-        l.g(1, "start watcher on 'ctrl-server'");
-        ns.exec(Module, "ctrl-server", 1);
-        return;
-    }
 
     const servers = new Map();
     Servers.list(ns)

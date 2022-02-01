@@ -1,11 +1,10 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.2.33'; // update this every time when edit the code!!!
+const Version = '0.3.3'; // update this every time when edit the code!!!
 
 /*
     update all scripts
-
 */
 
 import {scriptFiles} from "/h3ml/var/files.js";
@@ -13,6 +12,7 @@ import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
 
 const core_files = ["/h3ml/var/files.js", "/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
+const etc_files  = ["h3ml-update.js", "h3ml-settings.js", "/h3ml/etc/scripts.js", Constants.serversFile, Constants.securityFile];
 const backup_path = "/h3ml/var/backup";
 const ram_scripts_file = "/h3ml/etc/scripts.js";
 const waitTimeout = 5000; //default wait timwout for version from module
@@ -74,6 +74,8 @@ async function update(l, baseUrl, host) {
     const filter_files = new Map();
     core_files.forEach(file => {filter_files.set(file, true);});
     const filter_re = new RegExp(`^${backup_path}.*\\.js`);
+
+    etc_files.forEach(file => {filter_files.set(file, true);});
 
     const host_files = new Map();
     ns.ls(host)
@@ -194,15 +196,12 @@ async function update(l, baseUrl, host) {
 
     }
 
-    if (host_files.has("h3ml-update.js")) {
-        host_files.delete("h3ml-update.js");
-    }
-    if (host_files.has("h3ml-settings.js")) {
-        host_files.delete("h3ml-settings.js");
-    }
-    if (host_files.has("/h3ml/etc/scripts.js")) {
-        host_files.delete("/h3ml/etc/scripts.js");
-    }
+    etc_files
+        .forEach(name => {
+            if (host_files.has(name)) {
+                host_files.delete(name);
+            }
+        });
 
     await updateRamScriptsFile(l, scripts);
 
@@ -214,6 +213,13 @@ async function update(l, baseUrl, host) {
             });
     }
     l.r("updating done");
+
+    // gather meta
+    l.g(1, "gather servers data into %s", Constants.serversFile);
+    await ns.run("/h3ml/sbin/gather-servers-data.js", 1, host);
+    l.g(1, "gather security data into %s", Constants.securityFile);
+    await ns.run("/h3ml/sbin/gather-security-data.js", 1, host);
+
 }
 
 /** @param {Logger} l

@@ -7,7 +7,6 @@ import {Server}     from "/h3ml/lib/server-list.js"
 import {BotNet}     from "/h3ml/lib/botnet.js"
 import {Target}     from "/h3ml/lib/target.js"
 import {Table}      from "/h3ml/lib/utils.js"
-import {updateInfo} from "/h3ml/lib/server-info.js"
 import {hackServersInfo} from "/h3ml/lib/hack-server.js"
 import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
 

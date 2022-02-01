@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.2.33'; // update this every time when edit the code!!!
+const Version = '0.3.3'; // update this every time when edit the code!!!
 
 const _rootKitFiles = {
     "BruteSSH.exe"  : 1,
@@ -14,7 +14,11 @@ const _logLevel     = 1;    // default log level for all scripts
 const _debugLevel   = 0;    // default debug level for all scripts
 
 const _workerScriptFile = "/h3ml/lib/worker.js";
-const _reserveRam = 0;
+const _securityFile     = "/h3ml/etc/security.js";
+const _serversFile      = "/h3ml/etc/servers.js";
+
+const _reserveRam       = 0;
+const _maxHomeCpuCores  = 8;
 
 const _protocolVersion  = 2; // version of protocol for iteract on botnet network
 const _watchPort        = 1; // port number for updater
@@ -38,9 +42,13 @@ class _Constants {
     get logLevel()              {return _logLevel;}
     get debugLevel()            {return _debugLevel;}
 
-    get workerScriptFile()      {return _workerScriptFile};
-    get rootKitFiles()          {return _rootKitFiles};
+    get workerScriptFile()      {return _workerScriptFile;}
+    get securityFile()          {return _securityFile;}
+    get serversFile()           {return _serversFile;}
+
+    get rootKitFiles()          {return _rootKitFiles;}
     get reserveRam()            {return _reserveRam;}
+    get maxHomeCpuCores()       {return _maxHomeCpuCores;}
 
     get protocolVersion()       {return _protocolVersion;}
     get watchPort()             {return _watchPort;}

@@ -21,6 +21,8 @@ function help(ns) {
 export const scriptFiles = [
     // aliases
     "/h3ml/etc/aliases.script",
+    "/h3ml/etc/servers.js",
+    "/h3ml/etc/security.js",
 
     // libraries in order of dependencie
     "/h3ml/lib/network.js",
@@ -29,8 +31,10 @@ export const scriptFiles = [
     "/h3ml/lib/utils.js",
     "/h3ml/lib/server-list.js",
     "/h3ml/lib/server-info.js",
+    "/h3ml/lib/server-info-min.js",
     "/h3ml/lib/botnet.js",
     "/h3ml/lib/target.js",
+    "/h3ml/lib/target-min.js",
     "/h3ml/lib/hack-server.js",
 
     "/h3ml/lib/scan-simple.js",
@@ -39,6 +43,7 @@ export const scriptFiles = [
 
     // script skeleton
     "/h3ml/var/module.js",
+    "/h3ml/var/library.js"
 
     // scripts
 
@@ -67,9 +72,12 @@ export const scriptFiles = [
     "/h3ml/bin/server-cost.js",
 
     "/h3ml/sbin/watcher.js",
+    "/h3ml/sbin/watcher-min.js",
     "/h3ml/sbin/worker.js",
     "/h3ml/sbin/sharing.js",
     "/h3ml/sbin/server-hack.js",
+    "/h3ml/sbin/gather-security-data.js",
+    "/h3ml/sbin/gather-serevers-data.js",
 
     "/h3ml-update.js"
 

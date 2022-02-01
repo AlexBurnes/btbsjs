@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/log.js';
-const Version = '0.3.2.20';  // update this every time when edit the code!!!
+const Version = '0.3.3';  // update this every time when edit the code!!!
 
 /*
     logger
@@ -81,7 +81,10 @@ export class Logger {
     g(level, format, ...args) {
         if (typeof(level) !== "number") throw Error("BUG: wrong usage of Logger.log(level, format, ..args), wrong type of argument level, expected number");
         if (this.logLevel == 0 || level > this.logLevel) return;
-        this.ns.tprintf("%s", this.ns.vsprintf(format, args));
+        //how about to log into log ?
+        const text = this.ns.vsprintf(format, args);
+        this.ns.tprintf("%s", text);
+        this.ns.print(text);  //???
     }
     // log result, always without level, and this may be toasted
     /** @param {String} format sprintf **/

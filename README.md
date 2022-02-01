@@ -8,13 +8,15 @@
 
     not yet ready, some of scripts are working, but need to correct path and run manualy
 
-# Version 
+# Version
 
-    v0.3.1 update h3ml scripts, core files work properly
+    0.3.3 prepare for automate h3ml
 
-# Change log 
+# Change log
 
-    v0.3.0 - all scripts at /h3ml directory
+    0.3.0 all scripts at /h3ml directory
+    0.3.1 update h3ml scripts, core files work properly
+    0.3.2 all scripts support updater
 
 
 

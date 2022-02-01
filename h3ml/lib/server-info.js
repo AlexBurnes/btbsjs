@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info.js';
-const Version = '0.3.2.23'; // update this every time when edit the code!!!
+const Version = '0.3.3'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
@@ -8,34 +8,33 @@ import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
  *  @param {Target||Server} target
 **/
 export function updateInfo(ns, target) {
-    if (!ns.serverExists(target.name)) return;
+
     //FIXME use h3ml/ect/servers instead
+    // find another way to prepare this information
+    // like server.json
     const server = ns.getServer(target.name); // 2G usage, must expensive function here
-    target.backdoor = server.backdoorInstalled;
     target.serverGrowth = server.serverGrowth;
 
-    target.serverMaxGrowthThreads = server.serverGrowth > 1 ? Math.ceil(ns.growthAnalyze(target.name, server.serverGrowth)) : 0;
-    target.hackingLevel = ns.getServerRequiredHackingLevel(target.name);
-    target.numPorts = ns.getServerNumPortsRequired(target.name);
-    target.analyzeChance = ns.hackAnalyzeChance(target.name);
-    target.rootAccess = ns.hasRootAccess(target.name);
-    target.usedRam = ns.getServerUsedRam(target.name);
-    target.maxRam  = ns.getServerMaxRam(target.name);
-    target.availRam = target.maxRam - target.usedRam;
-    target.minSecurity = ns.getServerMinSecurityLevel(target.name);
-    target.currentSecurity = ns.getServerSecurityLevel(target.name);
+    //FIXME this information need gather before, for different, but if this information is player depended?
     target.weakSecurityRate = ns.weakenAnalyze(1);
+    target.hackSecurity = ns.hackAnalyzeSecurity(1);    // security grow on hack by one thread
+    target.growSecurity = ns.growthAnalyzeSecurity(1);  // security groe on hack by one thread
+
+    target.serverMaxGrowthThreads = server.serverGrowth > 1 ? Math.ceil(ns.growthAnalyze(target.name, server.serverGrowth)) : 0;
+
+    target.minSecurity      = ns.getServerMinSecurityLevel(target.name);
+    target.currentSecurity  = ns.getServerSecurityLevel(target.name);
+
+    target.maxMoney = moneyFormat(ns.getServerMaxMoney(target.name));
+    target.availMoney = moneyFormat(ns.getServerMoneyAvailable(target.name));
+
+    target.hackChances = ns.hackAnalyzeChances(target.name);
+    target.hackMoney = ns.hackAnalyze(target.name); // part of amount hacked by one thread
 
     target.weakThreads = Math.ceil((target.currentSecurity - target.minSecurity) / target.weakSecurityRate);
     target.weakMaxThreads = Math.ceil((100 - target.minSecurity) / target.weakSecurityRate);
 
-    target.maxMoney = moneyFormat(ns.getServerMaxMoney(target.name));
-    target.availMoney = moneyFormat(ns.getServerMoneyAvailable(target.name));
-    target.hackChances = ns.hackAnalyzeChance(target.name);
-    target.hackMoney = ns.hackAnalyze(target.name); // part of amount hacked by one thread
     target.hackMaxThreads = Math.floor(1 / target.hackMoney); //max threads to hack maxMoney
-    target.hackSecurity = ns.hackAnalyzeSecurity(1);    // security grow on hack by one thread
-    target.growSecurity = ns.growthAnalyzeSecurity(1);  // security groe on hack by one thread
     target.maxHackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity
     target.maxGrowSecutiryThreads = (100 - target.minSecurity)/target.growSecurity
 
@@ -77,7 +76,6 @@ export function updateInfo(ns, target) {
         : 0
     );
     target.weakAmount = target.weakThreads * target.weakSecurityRate;
-
 
     // calculate sycle
     // target.serverMaxGrowthThreads
