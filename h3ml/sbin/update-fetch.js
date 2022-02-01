@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.3.4'; // update this every time when edit the code!!!
+const Version = '0.3.3.9'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -228,10 +228,8 @@ async function update(l, baseUrl, host) {
     l.r("updating done");
 
     // gather meta
-    l.g(1, "gather servers data into %s", Constants.serversFile);
-    await ns.run("/h3ml/sbin/gather-servers-data.js", 1, host);
-    l.g(1, "gather security data into %s", Constants.securityFile);
-    await ns.run("/h3ml/sbin/gather-security-data.js", 1, host);
+    l.g(1, "run setup on host %s", host);
+    ns.run("/h3ml/sbin/setup.js", 1, host);
 
 }
 
