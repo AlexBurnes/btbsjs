@@ -1,10 +1,10 @@
 const Module  = '/h3ml/lib/server-info-min.js';
-const Version = '0.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.3.3'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
-import {serversData}    from Constants.serversFile;
-import {securityData}   from Constants.securityFile;
+import {serversData}    from "/h3ml/etc/servers.js";
+import {securityData}   from "/h3ml/etc/security.js";
 
 
 /** @param {NS} ns
@@ -18,7 +18,7 @@ export function updateInfo(ns, target) {
     const server = serversData[target.name];
     const security = securityData[0];
 
-    target.serverGrowth     = server.serverGrowth > 1 : server.serverGrowth : 2;
+    target.serverGrowth     = server.serverGrowth > 1 ? server.serverGrowth : 2;
 
     //FIXME this information need gather before, for different, but if this information is player depended?
     target.weakSecurityRate = security.weakSecutiryRate;

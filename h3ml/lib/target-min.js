@@ -1,9 +1,9 @@
 const Module  = '/h3ml/lib/target-min.js';
-const Version = '0.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.3.3'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
-import {ScriptFiles} from Constants.scriptsFile;
-import {serversData} from Constants.serversFile;
+import {ScriptFiles} from "/h3ml/etc/scripts.js";
+import {serversData} from "/h3ml/etc/servers.js";
 
 const scriptRamRequire = ScriptFiles[Constants.workerScriptFile];
 
