@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/target-min.js';
-const Version = '0.3.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.3.5'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {ScriptFiles} from "/h3ml/etc/scripts.js";
@@ -30,7 +30,7 @@ export class Target {
     hack(threads, options = {}) {
         return this.execute('hack', threads, {
             ...options,
-            await: options.await && 1000;
+            await: options.await && 1000
         });
     }
 
@@ -43,7 +43,7 @@ export class Target {
     weaken(threads, options = {}) {
         return this.execute('weaken', threads, {
             ...options,
-            await: options.await && 1000;
+            await: options.await && 1000
         });
     }
 
@@ -56,7 +56,7 @@ export class Target {
     grow(threads, options = {}) {
         return this.execute('grow', threads, {
             ...options,
-            await: options.await && 1000;
+            await: options.await && 1000
         });
     }
 
