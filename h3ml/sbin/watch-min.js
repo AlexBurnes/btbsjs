@@ -1,11 +1,14 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.3.6'; // update this every time when edit the code!!!
+const Version = '0.3.3.14'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
 import {Socket}         from "/h3ml/lib/network.js";
-import {moneyFormat ,timeFormat}    from "/h3ml/lib/units.js"
-import {Servers}        from "/h3ml/lib/server-list.js"
+import {moneyFormat ,timeFormat}    from "/h3ml/lib/units.js";
+import {serversData}    from "/h3ml/etc/servers.js";
+import {updateInfo}     from "/h3ml/lib/server-info-min.js";
+import {Target}         from "/h3ml/lib/target-min.js"
+import {BotNet}         from "/h3ml/lib/botnet-min.js"
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -68,10 +71,11 @@ class WatchTarget {
     }
     info() {
         const ns = this.ns;
+        const server = serversData[this.name];
         this.currentSecurity = ns.getServerSecurityLevel(this.name);
-        this.minSecurity     = ns.getServerMinSecurityLevel(this.name);
+        this.minSecurity     = server.minSecurity;
         this.availMoney      = moneyFormat(ns.getServerMoneyAvailable(this.name));
-        this.maxMoney        = moneyFormat(ns.getServerMaxMoney(this.name));
+        this.maxMoney        = moneyFormat(server.maxMoney);
     }
 }
 
@@ -253,10 +257,13 @@ export async function main(ns) {
     const l = new Logger(ns, {args: args});
 
     const servers = new Map();
-    Servers.list(ns)
-        .forEach(server => {
-            servers.set(server.name, new WatchTarget(ns, name));
+    serversData
+        .forEach((server, name) => {
+            if (server.maxMoney > 0) {
+                servers.set(name, new WatchTarget(ns, name));
+            }
         });
+
 
     // drop all old events
     let oldTime = Date.now();

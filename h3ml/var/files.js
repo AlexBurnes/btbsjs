@@ -33,6 +33,7 @@ export const scriptFiles = [
     "/h3ml/lib/server-info.js",
     "/h3ml/lib/server-info-min.js",
     "/h3ml/lib/botnet.js",
+    "/h3ml/lib/botnet-min.js",
     "/h3ml/lib/target.js",
     "/h3ml/lib/target-min.js",
     "/h3ml/lib/hack-server.js",
