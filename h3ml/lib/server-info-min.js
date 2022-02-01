@@ -73,11 +73,11 @@ export function updateInfo(ns, target) {
 
     // how mach money could be stolen to grow once to max
     const ha =  target.maxMoney.value * (1-1/target.serverGrowth);
-    const ht =  target.hackMoney >0 ? ha/(target.maxMoney.value * target.hackMoney) : 0;
+    const ht =  target.hackMoney >0 ? target.hackMaxThreads * ha/(target.maxMoney.value * target.hackMoney) : 0;
 
     //optimal hack threads
     target.optimalHackMoney = moneyFormat(ha);
-    target.optimalHackTreads = ns.hackAnalyzeThreads(target.name, ha);
+    target.optimalHackTreads = ht;
 
 }
 

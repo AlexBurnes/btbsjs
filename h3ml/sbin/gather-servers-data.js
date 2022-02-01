@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gahter-servers-data.js';
-const Version = '0.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.3.4'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -24,23 +24,22 @@ function help(ns) {
 
 async function updateServersFile(l, host) {
     const ns = l.ns;
-    // if file exists delete it
-    if (ns.fileExists(serversFile, host)) {
-        ns.rm(serversFile, host);
-    }
     // prepare script source code
     let data = "export const serversData = {\n";
     let i = 0;
-    Servers.list().forEach(server => {
-        data += i++ ? ", " : "";
-        data += "\t'" + server.name+ "': ";
-        const serverData = ns.getServer(server.name);
-        data += "\t\t'serverGrowth': " + serverData.serverGrowth + ",\n";
-        data += "\t\t'maxRam': " + ns.getServerMaxRam(server.name) + ",\n";
-        data += "\t\t'hackDifficulty': " + ns.getServerRequiredHackingLevel(server.name) + ",\n";
-        data += "\t\t'factionServer': " + ns.getServerMaxRam(server.name) == 0 && ns.getServerMaxMoney(server.name) == 0 ? 1 : 0;
-        data += "\t}";
-    });
+    Servers.list()
+        .forEach(server => {
+            data += i++ ? ", " : "";
+            data += "\t'" + server.name+ "': ";
+            const serverData = ns.getServer(server.name);
+            data += "\t\t'serverGrowth': "      + serverData.serverGrowth + ",\n";
+            data += "\t\t'maxRam': "            + ns.getServerMaxRam(server.name) + ",\n";
+            data += "\t\t'minSecutiry': "       + ns.getServerMinSecurity(server.name) + ",\n";
+            data += "\t\t'maxMoney': "          + ns.getServerMaxMoney(server.name) + ",\n";
+            data += "\t\t'hackDifficulty': "    + ns.getServerRequiredHackingLevel(server.name) + ",\n";
+            data += "\t\t'factionServer': "     + ns.getServerMaxRam(server.name) == 0 && ns.getServerMaxMoney(server.name) == 0 ? 1 : 0;
+            data += "\t}";
+        });
     data += "\n};";
     // write it
     await ns.write(serversFile, data, "w");

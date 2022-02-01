@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gather-security-data.js';
-const Version = '0.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.3.4'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -24,17 +24,13 @@ function help(ns) {
 
 async function updateSecurityFile(l, host) {
     const ns = l.ns;
-    // if file exists delete it
-    if (ns.fileExists(securityFile, host)) {
-        ns.rm(securityFile, host);
-    }
     // prepare script source code
     let data = "export const securityData = {\n";
-    data += "\t'growRate': " + growthAnalyzeSecurity(1) + ", 'hackRate': " + hackAnalyzeSecurity(1) + ",\n";
+    data += "\t'growRate': " + ns.growthAnalyzeSecurity(1) + ", 'hackRate': " + ns.hackAnalyzeSecurity(1) + ",\n";
     data += "\t'weakRate': [\n";
-    for(let i = 0; i < maxCpuCores: i++;) {
+    for(let i = 0; i < maxCpuCores; i++) {
         data += i == 0 ? "\t\t" : "\t\t, " + ns.weakenAnalyze(1, i) + "\n";
-    });
+    }
     data += "\t]\n};";
     // write it
     await ns.write(securityFile, data, "w");
@@ -63,6 +59,7 @@ export async function main(ns) {
         return help(ns);
     }
 
+    const l = new Logger(ns, {args: args});
     const [host] = args["_"];
     if (host == undefined) {
         return l.e("host is undefined");
