@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-buy.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.3.18'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -74,20 +74,37 @@ export async function main(ns) {
         l.e("bought maximum servers %d", maxServers);
     }
 
-    const serverPrice = ns.getPurchasedServerCost(requestSizeGb);
-    const priceFmt = Units.money(serverPrice);
-
-    const promptText = ns.vsprintf("buy server size of %dGb price is %.2f%s?", [requestSizeGb, priceFmt.amount, priceFmt.unit]);
-    if (await ns.prompt(promptText)) {
-        const server_name = ns.purchaseServer(name, requestSizeGb);
-        if (server_name !== "") {
-            l.r("ok new server %s", server_name);
-        }
-        else {
-            l.e("failed to buy server");
+    let [_, size, unit] = requestSizeGb.match(/^(\d+)(g|t|G|T|p|P)?/);
+    if (unit !== undefined) {
+        switch (unit) {
+            case 'G':
+            case 'g':
+                break;
+            case 'T':
+            case 't':
+                size *= 1024;
+            case 'P':
+            case 'p':
+                size *= 1024*1024;
         }
     }
+
+    const serverPrice = ns.getPurchasedServerCost(size);
+    if (serverPrice == undefined) {
+        l.e("no price for server such size %s => %dG", requestSizeGb, size);
+        return;
+    }
+    const priceFmt = Units.price(serverPrice);
+
+    l.g("request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.cost, priceFmt.unit);
+
+    const server_name = ns.purchaseServer(name, size);
+
+    if (server_name !== "") {
+        l.r("ok new server %s", server_name);
+        ns.exec("worm.js", "home", 1);
+    }
     else {
-        l.w("user cancel buy");
+        l.e("failed to buy server");
     }
 }
