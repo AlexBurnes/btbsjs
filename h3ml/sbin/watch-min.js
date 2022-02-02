@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.3.20'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -75,10 +75,10 @@ class WatchTarget {
 
 class _Watcher {
     constructor() {
-        if (!_Constants._instance) {
-            _Constants._instance = this
+        if (!_Watcher._instance) {
+            _Watcher._instance = this
         }
-        return _Constants._instansce;
+        return _Watcher._instansce;
     }
 
     init(l) {

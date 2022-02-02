@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.3.9'; // update this every time when edit the code!!!
+const Version = '0.3.3.20'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -12,7 +12,7 @@ import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
 
 const core_files = ["/h3ml/var/files.js", "/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
-const etc_files  = ["h3ml-update.js", "h3ml-settings.js", "/h3ml/etc/scripts.js", Constants.serversFile, Constants.securityFile];
+const etc_files  = ["/h3ml-update.js", "/h3ml-settings.js", "/h3ml/etc/scripts.js", Constants.serversFile, Constants.securityFile];
 const backup_path = "/h3ml/var/backup";
 const ram_scripts_file = Constants.scriptsFile;
 const waitTimeout = 5000; //default wait timwout for version from module

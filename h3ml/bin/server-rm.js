@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-rm.js';
-const Version = '0.3.3.19'; // update this every time when edit the code!!!
+const Version = '0.3.3.20'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -58,7 +58,7 @@ export async function main(ns) {
         let prompt = true;
         if (!args["y"]) {
             const promptText = ns.vsprintf("delete server '%s' size of %dGb?", [name, ns.getServerMaxRam(name)]);
-            prompt = await ns.prompt(promptText));
+            prompt = await ns.prompt(promptText);
         }
         if (prompt) {
             if (ns.deleteServer(name)) {

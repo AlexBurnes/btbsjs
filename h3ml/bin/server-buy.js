@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-buy.js';
-const Version = '0.3.3.19'; // update this every time when edit the code!!!
+const Version = '0.3.3.20'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -101,7 +101,7 @@ export async function main(ns) {
 
     let prompt = true;
     if (!args["y"]) {
-        prompt = await ns.prompt(ns.sprintf("Buy server size %s => %dG, price %.2f%s?", requestSizeGb, size, priceFmt.cost, priceFmt.unit)));
+        prompt = await ns.prompt(ns.sprintf("Buy server size %s => %dG, price %.2f%s?", requestSizeGb, size, priceFmt.cost, priceFmt.unit));
     }
     if (prompt) {
         const server_name = ns.purchaseServer(name, size);
