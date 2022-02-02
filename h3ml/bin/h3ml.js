@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/h3ml.js';
-const Version = '0.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.3.26'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -41,7 +41,7 @@ async function listHackingServers(l, timeout) {
             l.d(1, "%d %s: %s", time, action, data.join(", "));
             if (action == "#") {
                 if (data[0] == "server-hacking-list") {
-                    const list = data[1].split(",").filter(server => !server.match(/^$/));
+                    const list = data[1].split(";").filter(server => !server.match(/^$/));
                     l.d(1, "hacking servers %d", list.length);
                     if (list.length > 0) {
                         list.forEach(server => l.d(1, "\t%s", server));
@@ -74,10 +74,13 @@ export async function main(ns) {
 
     const hacking_list = await listHackingServers(l, 5000);
     const hacking_servers = new Map();
-    hacking_list.forEach(server => {hacking_servers.set(server, true);})
+    hacking_list.forEach(list => {
+        data = list.split(',');
+        hacking_servers.set(data[0], true);
+    });
 
     //server-hack script could be started only on hack-server or home :)
-    const hack_server = ns.serverExists("hack-server-0") ? "hack-server-0" : "home";
+    const hack_server = ns.serverExists("hack-server") ? "hack-server" : "home";
 
     Servers.list(ns)
         .filter(server => server.name !== 'home') // not home
@@ -87,11 +90,16 @@ export async function main(ns) {
         .filter(server => ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel())
         .forEach(server => {
             if (hacking_servers.has(server.name)) {
-                l.g(1, "%s already haking", server.name);
+                l.g(2, "%s already haking", server.name);
             }
             else {
                 const pid = ns.exec("server-hack.js", hack_server, 1, server.name);
-                l.g(1, "%s start hacking at '%s' pid %d", server.name, hack_server, pid);
+                if (pid) {
+                    l.g(1, "%s start hacking at '%s' pid %d", server.name, hack_server, pid);
+                }
+                else {
+                    l.e("failed start haking %s at %s", server.name, hack_server);
+                }
             }
         });
 
