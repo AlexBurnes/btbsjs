@@ -1,8 +1,8 @@
 const Module  = '/h3ml/lib/server-min.js';
-const Version = '0.3.3.16';     // update this every time when edit the code!!!
+const Version = '0.3.3.19';     // update this every time when edit the code!!!
 
 import {Units} from "/h3ml/lib/units.js";
-import {serversData} from "/h3ml/lib/units.js";
+import {serversData} from "/h3ml/etc/servers.js";
 
 export class Server {
     constructor(ns, name) {
@@ -14,10 +14,10 @@ export class Server {
             data = {
                 maxRam: 0,
                 maxMoney: 0,
-                minSecurity: 0;
+                minSecurity: 0,
                 hackDifficulty: 1,
-                factionServer: false;
-                purshacedServer: false;
+                factionServer: false,
+                purshacedServer: false
             }
         }
     }

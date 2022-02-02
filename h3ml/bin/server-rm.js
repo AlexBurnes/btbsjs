@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-rm.js';
-const Version = '0.3.2.29'; // update this every time when edit the code!!!
+const Version = '0.3.3.19'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -35,7 +35,8 @@ export async function main(ns) {
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'       , 0     ], // debug level
         [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+        [ 'quiet'       , false ], // quiet mode, short analog of --log-level 0
+        [ 'y'           , false ]  // auto prompt
 
     ]);
 
@@ -54,20 +55,22 @@ export async function main(ns) {
 
     const servers = ns.getPurchasedServers();
     if (servers.filter(s => s == name).length) {
-
-    const promptText = ns.vsprintf("delete server '%s' size of %dGb?", [name, ns.getServerMaxRam(name)]);
-    if (await ns.prompt(promptText)) {
-        if (ns.deleteServer(name)) {
-        l.r("ok server '%s' removed", name);
+        let prompt = true;
+        if (!args["y"]) {
+            const promptText = ns.vsprintf("delete server '%s' size of %dGb?", [name, ns.getServerMaxRam(name)]);
+            prompt = await ns.prompt(promptText));
+        }
+        if (prompt) {
+            if (ns.deleteServer(name)) {
+                l.r("ok server '%s' removed", name);
+            }
+            else {
+                l.e("failed to delete server '%s'", name);
+            }
         }
         else {
-        l.e("failed to delete server '%s'", name);
+            l.e("user cancel delete server %s", name);
         }
-    }
-    else {
-        l.e("user cancel delete server %s", name);
-    }
-    return;
     }
 
     l.e("threre is no server with this name %s", name);

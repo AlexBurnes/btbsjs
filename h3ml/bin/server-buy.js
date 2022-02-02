@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-buy.js';
-const Version = '0.3.3.18'; // update this every time when edit the code!!!
+const Version = '0.3.3.19'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -37,7 +37,8 @@ export async function main(ns) {
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'       , 0     ], // debug level
         [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+        [ 'quiet'       , false ], // quiet mode, short analog of --log-level 0
+        [ 'y'           , false ]
 
     ]);
 
@@ -98,13 +99,22 @@ export async function main(ns) {
 
     l.g("request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.cost, priceFmt.unit);
 
-    const server_name = ns.purchaseServer(name, size);
+    let prompt = true;
+    if (!args["y"]) {
+        prompt = await ns.prompt(ns.sprintf("Buy server size %s => %dG, price %.2f%s?", requestSizeGb, size, priceFmt.cost, priceFmt.unit)));
+    }
+    if (prompt) {
+        const server_name = ns.purchaseServer(name, size);
 
-    if (server_name !== "") {
-        l.r("ok new server %s", server_name);
-        ns.exec("worm.js", "home", 1);
+        if (server_name !== "") {
+            l.r("ok new server %s", server_name);
+            ns.exec("worm.js", "home", 1);
+        }
+        else {
+            l.e("failed to buy server");
+        }
     }
     else {
-        l.e("failed to buy server");
+        l.w("user cancel buy server");
     }
 }

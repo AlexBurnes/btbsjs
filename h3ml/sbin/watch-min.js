@@ -5,7 +5,7 @@ import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
 import {Socket}         from "/h3ml/lib/network.js";
 import {Units}          from "/h3ml/lib/units.js";
-import {serversData}    from "/h3ml/etc/Watcher.targets.js";
+import {serversData}    from "/h3ml/etc/servers.js";
 import {updateInfo}     from "/h3ml/lib/server-info-min.js";
 import {Target}         from "/h3ml/lib/target-min.js"
 import {BotNet}         from "/h3ml/lib/botnet-min.js"

@@ -1,10 +1,9 @@
 const Module  = '/h3ml/lib/botnet-min.js';
-const Version = '0.3.3.16';     // update this every time when edit the code!!!
+const Version = '0.3.3.19';     // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
-//import {serversData}    from "/h3ml/etc/servers.js";
 import {ScriptFiles}    from "/h3ml/etc/scripts.js";
-import {Server}         from "/h3ml/etc/server-min.js";
+import {Server}         from "/h3ml/lib/server-min.js";
 
 /**
     @param {NS} ns
