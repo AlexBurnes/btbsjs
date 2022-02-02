@@ -1,9 +1,7 @@
-const Module  = '/h3ml/bin/server-buy.js';
+const Module  = '/h3ml/bin/server-buy-min.js';
 const Version = '0.3.3.24'; // update this every time when edit the code!!!
 
 import {Logger}     from "/h3ml/lib/log.js";
-import {Units}      from "/h3ml/lib/units.js";
-import {Servers}    from "/h3ml/lib/server-list.js";
 
 //FIXME move to constants
 const UnitGb = Math.pow(2, 30);
@@ -36,8 +34,7 @@ export async function main(ns) {
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'       , 0     ], // debug level
         [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'       , false ], // quiet mode, short analog of --log-level 0
-        [ 'y'           , false ]
+        [ 'quiet'       , false ] // quiet mode, short analog of --log-level 0
 
     ]);
 
@@ -60,29 +57,6 @@ export async function main(ns) {
         return;
     }
 
-    const maxServers = ns.getPurchasedServerLimit();
-    const servers = Servers.list(ns)
-        .filter(
-            server => ns.getServerMaxRam(server.name) > 1 && ns.getServerMaxMoney(server.name) == 0
-        );
-    if (servers.filter(s => s == name).length) {
-        l.e("already have server this name %s", name);
-        return;
-    }
-
-    const hosts = Servers.list(ns);
-    if (hosts.filter(s => s.name == name).length) {
-        l.e("threre is a server with this name %s", name);
-        return;
-    }
-
-    if (servers.length - 1 < maxServers) {
-        l.e("could buy %d more servers", maxServers - (servers.length - 1));
-    }
-    else {
-        l.e("bought maximum servers %d", maxServers);
-    }
-
     let [_, size, unit] = requestSizeGb.match(/^(\d+)(g|t|G|T|p|P)?/);
     if (unit !== undefined) {
         switch (unit) {
@@ -98,31 +72,14 @@ export async function main(ns) {
         }
     }
 
-    const serverPrice = ns.getPurchasedServerCost(size);
-    if (serverPrice == undefined) {
-        l.e("no price for server such size %s => %dG", requestSizeGb, size);
-        return;
-    }
-    const priceFmt = Units.price(serverPrice);
-
     l.g("request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.cost, priceFmt.unit);
 
-    let prompt = true;
-    if (!args["y"]) {
-        prompt = await ns.prompt(ns.sprintf("Buy server size %s => %dG, price %.2f%s?", requestSizeGb, size, priceFmt.cost, priceFmt.unit));
-    }
-    if (prompt) {
-        const server_name = ns.purchaseServer(name, size);
+    const server_name = ns.purchaseServer(name, size);
 
-        if (server_name !== "") {
-            l.r("ok new server %s", server_name);
-            ns.exec("worm.js", "home", 1);
-        }
-        else {
-            l.e("failed to buy server");
-        }
+    if (server_name !== "") {
+        l.r("ok new server %s", server_name);
     }
     else {
-        l.w("user cancel buy server");
+        l.e("failed to buy server");
     }
 }

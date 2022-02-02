@@ -1,11 +1,10 @@
 const Module  = '/h3ml/bin/server-cost.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.3.24'; // update this every time when edit the code!!!
 
-import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
 import {Units}      from "/h3ml/lib/units.js";
+import {Table}      from "/h3ml/lib/utils.js"
 
-//FIXME move to constants
 const UnitGb = Math.pow(2, 30);
 
 async function version(ns, port) {
@@ -55,12 +54,24 @@ export async function main(ns) {
 
     const minSizeGb = typeof (requestSizeGb) === 'number' ? requestSizeGb : 1;
     const maxSizeGb = typeof (requestSizeGb) === 'number' ? requestSizeGb : Math.pow(2, 20);
+
+    const table = new Table(ns, [
+        ["Size",    "%d%s"],
+        ["2^n",     "2^%d"],
+        ["Size Gb", "%d"],
+        ["Price",   "%0.2f%s"]
+    ]);
+
     let i = 0;
     for(let sizeGb=minSizeGb; sizeGb <= maxSizeGb; sizeGb*=2) {
         const costFmt = Units.money(ns.getPurchasedServerCost(sizeGb));
         const sizeFmt = Units.size(sizeGb * UnitGb);
-        l.g("\t%d%s (2^%d %dG) cost %0.2f%s",
-            sizeFmt.size, sizeFmt.unit, i++, sizeGb, costFmt.amount, costFmt.unit
+        table.push(
+            [sizeFmt.size, sizeFmt.unit],
+            i++,
+            sizeGb,
+            [costFmt.amount, costFmt.unit]
         );
     }
+    table.print();
 }

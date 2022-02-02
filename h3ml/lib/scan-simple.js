@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/scan-simple.js';
-const Version = '0.3.2.23'; // update this every time when edit the code!!!
+const Version = '0.3.2.24'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"
@@ -49,8 +49,8 @@ export async function main(ns) {
     l.g(1, "%s %s", Module, Version);
 
     Servers.tree(ns, (pad, server) => {
-        ns.tprintf("%s %s %s [%d] %.2fGb %.2f%s$",
-            pad, server.name, server.faction ? "☣" : server.purshaced ? "☮" : ""
+        ns.tprintf("%s %s %s [%d] %dGb %.2f%s$",
+            pad, server.faction ? "☮" : server.purshaced ? "⚒" : "", server.name,
             server.hackLevel, server.maxRam, server.maxMoney.amount, server.maxMoney.unit
         );
     });

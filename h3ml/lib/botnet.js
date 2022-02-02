@@ -1,8 +1,9 @@
 const Module  = '/h3ml/lib/botnet.js';
-const Version = '0.3.2.26';     // update this every time when edit the code!!!
+const Version = '0.3.3.24';     // update this every time when edit the code!!!
 
 import {Constants} from "/h3ml/lib/constants.js";
 import {Servers}   from "/h3ml/lib/server-list.js";
+import {ScriptFiles} from "/h3ml/etc/scripts.js"
 
 /**
     @param {NS} ns
@@ -28,7 +29,7 @@ export class BotNet {
     constructor(ns) {
         this.ns = ns;
         this.workerScript = Constants.workerScriptFile;
-        this.workerRam    = ns.getScriptRam(this.workerScript);
+        this.workerRam    = ScriptFiles[this.workerScript];
         this.update();
     }
     update() {

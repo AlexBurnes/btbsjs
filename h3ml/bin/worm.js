@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/worm.js';
-const Version = '0.3.2.27'; // update this every time when edit the code!!!
+const Version = '0.3.3.24'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js";
@@ -56,7 +56,7 @@ export async function main(ns) {
     const servers = Servers.list(ns)
         .filrer(server => server.name != "home")
         .filter(server =>
-            (source == "home" && !server.name.match(/^devel-/)) ||
+            (source == "home" && !server.name.match(/^(?:devel-|share-)/)) ||
             ((dest !== undefined && server.name == dest) || (dest == undefined))
         );
 

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-rm.js';
-const Version = '0.3.3.20'; // update this every time when edit the code!!!
+const Version = '0.3.3.24'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -52,8 +52,17 @@ export async function main(ns) {
     l.g(1, "%s %s", Module, Version);
 
     const [name] = args["_"];
+    if (name == undefined) {
+        l.e("name is undefined");
+        help(ns);
+        return;
+    }
 
-    const servers = ns.getPurchasedServers();
+    const servers = Servers.list(ns)
+        .filter(
+            server => ns.getServerMaxRam(server.name) > 1 && ns.getServerMaxMoney(server.name) == 0
+        );
+
     if (servers.filter(s => s == name).length) {
         let prompt = true;
         if (!args["y"]) {

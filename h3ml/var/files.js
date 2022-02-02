@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.3.16';
+const Version = '0.3.3.24';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -21,6 +21,7 @@ function help(ns) {
 export const scriptFiles = [
     // aliases
     "/h3ml/etc/aliases.script",
+    "/h3ml/etc/aliases-min.script",
     "/h3ml/etc/servers.js",
     "/h3ml/etc/security.js",
 
@@ -71,6 +72,7 @@ export const scriptFiles = [
     "/h3ml/bin/rm.js",
 
     "/h3ml/bin/server-buy.js",
+    "/h3ml/bin/server-buy-min.js",
     "/h3ml/bin/server-rm.js",
     "/h3ml/bin/server-cost.js",
 

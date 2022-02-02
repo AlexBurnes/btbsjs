@@ -1,0 +1,24 @@
+alias scan-deep=run /h3ml/bin/scan-simple.js
+alias server-buy=run /h3ml/bin/server-buy-min.js
+alias server-rm=run /h3ml/bin/server-rm.js
+alias server-cost=run /h3ml/bin/server-cost.js
+
+alias worm=run /h3ml/bin/worm.js
+
+alias hack=run /h3ml/bin/hack.js
+alias grow=run /h3ml/bin/grow.js
+alias weak=run /h3ml/bin/weak.js
+
+unalias server-stat
+unalias server-hack
+unalias hack-servers
+unalias share
+unalias hack-net
+
+alias watch=run /h3ml/sbin/watch-min.js
+alias start=run /h3ml/sbin/watcher.js
+alias stop=run /h3ml/bin/stop.js
+alias verbose=run /h3ml/bin/verbose.js
+alias quiet=run /h3ml/bin/quiet.js
+
+

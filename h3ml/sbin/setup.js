@@ -57,5 +57,15 @@ export async function main(ns) {
         l.e("failed run %s", "/h3ml/sbin/gather-security-data.js");
     }
     await ns.sleep(200);
+
+    /*
+    if (ns.getServerMaxRam(host) < 32) {
+        await ns.exec("/h3ml/etc/aliases-min.script", host, 1);
+    }
+    else {
+        await ns.exec("/h3ml/etc/aliases.script", host, 1);
+    }*/
+
+
     l.g(1, "setup done");
 }
