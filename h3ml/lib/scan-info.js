@@ -1,9 +1,10 @@
 const Module  = '/h3ml/lib/scan-info.js';
-const Version = '0.3.2.25'; // update this every time when edit the code!!!
+const Version = '0.3.3.16'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
+import {Server}     from "/h3ml/lib/server.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -51,13 +52,13 @@ export async function main(ns) {
     const rootKits = ns.ls('home').filter(f => Constants.rootKitFiles[f]).length;
 
     Servers.tree(ns, (pad, server) => {
-        const hackable = ns.getHackingLevel() > ns.getServerRequiredHackingLevel(server.name) ? 1 : 0
+        const hackable = ns.getHackingLevel() > server.hackLevel ? 1 : 0
         const rootable = rootKits >= ns.getServerNumPortsRequired(server.name) ? 1 : 0;
         const rooted   = ns.hasRootAccess(server.name) ? "🞕" : rootable ? "🞖" : "🞎";
         const hacked   = ns.getServer().backdoorInstalled == true ? "🞕" : hackable ? "🞖" : "🞎";
 
-        const moneyAvail = moneyFormat(ns.getServerMoneyAvailable(server.name));
-        const moneyMax   = moneyFormat(ns.getServerMaxMoney(server.name));
+        const moneyAvail = Units.money(ns.getServerMoneyAvailable(server.name));
+        const moneyMax   = Units.money(ns.getServerMaxMoney(server.name));
 
         const info = [
             "[",    ns.getServerRequiredHackingLevel(server.name),
@@ -71,6 +72,6 @@ export async function main(ns) {
         ].join("");
 
         ns.tprintf("%s %s %s %s %s", pad, rooted, hacked, server.name, info);
-    });
+    },  Server.prototype.constructor);
 
 }

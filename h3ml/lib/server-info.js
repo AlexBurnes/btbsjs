@@ -1,8 +1,8 @@
 const Module  = '/h3ml/lib/server-info.js';
-const Version = '0.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.3.16'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
-import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
+import {Units}      from "/h3ml/lib/units.js"
 
 /** @param {NS} ns
  *  @param {Target||Server} target
@@ -25,8 +25,8 @@ export function updateInfo(ns, target) {
     target.minSecurity      = ns.getServerMinSecurityLevel(target.name);
     target.currentSecurity  = ns.getServerSecurityLevel(target.name);
 
-    target.maxMoney = moneyFormat(ns.getServerMaxMoney(target.name));
-    target.availMoney = moneyFormat(ns.getServerMoneyAvailable(target.name));
+    target.maxMoney = Units.money(ns.getServerMaxMoney(target.name));
+    target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
 
     target.hackChances = ns.hackAnalyzeChances(target.name);
     target.hackMoney = ns.hackAnalyze(target.name); // part of amount hacked by one thread
@@ -38,9 +38,9 @@ export function updateInfo(ns, target) {
     target.maxHackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity
     target.maxGrowSecutiryThreads = (100 - target.minSecurity)/target.growSecurity
 
-    target.growTime = timeFormat(ns.getGrowTime(target.name)/1000);
-    target.hackTime = timeFormat(ns.getHackTime(target.name)/1000);
-    target.weakTime = timeFormat(ns.getWeakenTime(target.name)/1000);
+    target.growTime = Units.time(ns.getGrowTime(target.name)/1000);
+    target.hackTime = Units.time(ns.getHackTime(target.name)/1000);
+    target.weakTime = Units.time(ns.getWeakenTime(target.name)/1000);
 
     target.gapSecurity = 100 - target.currentSecurity;
     target.growSecurityThreads = Math.floor(target.gapSecurity/target.growSecurity); // how many threads affected by grow to up to high value
@@ -70,8 +70,8 @@ export function updateInfo(ns, target) {
     target.hackThreads = Math.min(target.hackSecurityThreads, target.hackMaxThreads);
     target.growThreads = Math.min(target.growSecurityThreads, target.growMaxThreads);
 
-    target.hackAmount = moneyFormat(target.hackThreads * (target.availMoney.value * target.hackMoney));
-    target.growAmount = moneyFormat(target.moneyRatio > 1 && target.growMaxThreads > 0
+    target.hackAmount = Units.money(target.hackThreads * (target.availMoney.value * target.hackMoney));
+    target.growAmount = Units.money(target.moneyRatio > 1 && target.growMaxThreads > 0
         ? (target.growThreads / target.growMaxThreads) * (target.maxMoney.value - target.availMoney.value)
         : 0
     );
@@ -84,7 +84,7 @@ export function updateInfo(ns, target) {
     const ht =  target.hackMoney >0 ? ha/(target.maxMoney.value * target.hackMoney) : 0;
 
     //optimal hack threads
-    target.optmalMaxHackMoney = moneyFormat(ha);
+    target.optmalMaxHackMoney = Units.money(ha);
     target.optimalMaxHackTreads = ht;
     target.optimalHackThreads = Math.min(ht, target.maxHackSecurityThreads);
 

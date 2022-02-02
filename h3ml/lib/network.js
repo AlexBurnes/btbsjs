@@ -50,18 +50,25 @@ export class Socket {
         return ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data.join("|")));
     }
     /* @param {(time, string){}} collaback*/
-    listen(collback, options = {}) {
-        guardTime = Date.now();
+    async listen(collback, options = {}) {
+        const timeout = options.timeout || 100;
         while(true) {
-            const str = ns.readPort(receivePort);
-            if (str !== "NULL PORT DATA") {
-                const [time, version, ...data] = str.split("|");
-                if (time == undefined || version == undefined || version != this.version) continue; //failed
-                if (time < this.time) continue; // do not read old events from port
-                callback(time, data);
+            const start = Date.now();
+            while (true) {
+                const str = ns.readPort(receivePort);
+                if (str !== "NULL PORT DATA") {
+                    const [time, version, ...data] = str.split("|");
+                    if (time == undefined || version == undefined || version != this.version) continue; //failed
+                    if (time < this.time) continue; // do not read old events from port
+                    await callback(time, data);
+                    if (options.idle && Date.now() - start > timeout) await options.idle();
+                    continue;
+                }
             }
             this.time = Date.now();
-            ns.sleep(100);
+            if (options.idle) await options.idle();
+            if (Date.now() - start > timeout) continue;
+            await ns.sleep(timeout);
         }
     }
 }

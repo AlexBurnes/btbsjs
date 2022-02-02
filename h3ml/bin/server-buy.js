@@ -1,10 +1,9 @@
 const Module  = '/h3ml/bin/server-buy.js';
-const Version = '0.3.2.29'; // update this every time when edit the code!!!
+const Version = '0.3.3.16'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
-import {memoryFormat, moneyFormat}
-                        from "/h3ml/lib/units.js";
+import {Units}      from "/h3ml/lib/units.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
 
 //FIXME move to constants
@@ -76,7 +75,7 @@ export async function main(ns) {
     }
 
     const serverPrice = ns.getPurchasedServerCost(requestSizeGb);
-    const priceFmt = moneyFormat(serverPrice);
+    const priceFmt = Units.money(serverPrice);
 
     const promptText = ns.vsprintf("buy server size of %dGb price is %.2f%s?", [requestSizeGb, priceFmt.amount, priceFmt.unit]);
     if (await ns.prompt(promptText)) {

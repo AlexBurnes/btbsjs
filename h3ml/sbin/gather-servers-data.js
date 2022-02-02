@@ -45,7 +45,7 @@ async function updateServersFile(l, host) {
                     ? 1
                     : 0
                 ) + ",\n";
-            data += "        'ownServer': "     +
+            data += "        'purshacedServer': "     +
                 (
                     ns.getServerMaxRam(server.name) > 0 &&
                     ns.getServerMaxMoney(server.name) == 0 &&

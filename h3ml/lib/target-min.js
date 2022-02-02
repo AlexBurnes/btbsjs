@@ -78,6 +78,8 @@ export class Target {
 
         if (this.hosts.length == 0) return Promise.resolve(); // FIXME return error
 
+        //FIXME need to provide Server class with method maxRam, usedRam
+
         this.hosts.sort(function(a, b){
             return (serversData[b.name].maxRam - ns.getServerUsedRam(b.name)) -
                 (serversData[b.name].maxRam - ns.getServerUsedRam(a.name))

@@ -137,7 +137,7 @@ export async function main(ns) {
 
         if (nodeCost > 0 && (nodeCost < minUpgradeCost || minUpgradeCost == -1)) {
             if (nodeCost < availMoney) {
-                const price = moneyFormat(nodeCost);
+                const price = Units.money(nodeCost);
                 l.d(1, "purchase node for %.2f%s$", price.amount, price.unit);
                 ns.hacknet.purchaseNode();
                 minUpgradeNode = -1;
@@ -149,7 +149,7 @@ export async function main(ns) {
         }
         else {
             if (minUpgradeCost < availMoney) {
-                const price = moneyFormat(minUpgradeCost);
+                const price = Units.money(minUpgradeCost);
                 switch(minUpgradeWhat) {
                     case 0:
                         l.d(1, "upgrade node %d level for %.2f%s$", minUpgradeNode, price.amount, price.unit);

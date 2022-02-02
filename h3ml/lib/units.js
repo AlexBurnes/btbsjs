@@ -1,29 +1,49 @@
 const Module  = '/h3ml/lib/units.js';
-const Version = '0.3.2.25'; // update this every time when edit the code!!!
+const Version = '0.3.3.16'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
+class _Units {
+    constructor() {
+        if (!_Units._instance) {
+            _Units._instance = this
+        }
+        return _Units._instansce;
+    }
+    money(value) {
+        return new Units.money(value);
+    }
+    time(value) {
+        return new Units.time(value);
+    }
+    size(value) {
+        return new Units.size(value);
+    }
+}
+import const Units = new _Units();
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// memoryFormat
+// sizeFormat
 
 const memoryUnits = ['b', 'k', 'M', 'G', 'T'];
 
-class MemoryFormatted {
+class sizeFormatted {
     constructor(value, size, unit) {
         this.value = value;
         this.size  = size;
         this.unit  = unit;
     }
+    valueOf() {return this.value};
 }
 
-export function memoryFormat(size) {
+export function Units.size(size) {
     const value = size;
     size = size;
     let unit = 0;
     const base = 1024;
-    if (parseFloat(size) == "Infinity") return MemoryFormatted(0, 0, 'b');
+    if (parseFloat(size) == "Infinity") return sizeFormatted(0, 0, 'b');
     while (++unit < memoryUnits.length && Math.abs(size) >= base) size /= base;
-    return new MemoryFormatted(value, value >= 0 ? size : -size, memoryUnits[--unit]);
+    return new sizeFormatted(value, value >= 0 ? size : -size, memoryUnits[--unit]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -37,9 +57,10 @@ class moneyFormatted {
         this.amount = amount;
         this.unit   = unit
     }
+    valueOf() {return this.value};
 }
 
-export function moneyFormat(amount) {
+export function Units.money(amount) {
     const value = amount;
     let unit = 0;
     const base = 1000;
@@ -57,9 +78,10 @@ class TimeFormatted {
         this.time = time;
         this.unit = unit;
     }
+    valueOf() {return this.value};
 }
 
-export function timeFormat(time) {
+export function Units.time(time) {
     const value = time;
     let unit = 0;
     if (parseFloat(time) == "Infinity") return TimeFormatted(0, 0, 's');

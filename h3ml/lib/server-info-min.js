@@ -1,8 +1,8 @@
 const Module  = '/h3ml/lib/server-info-min.js';
-const Version = '0.3.3.14'; // update this every time when edit the code!!!
+const Version = '0.3.3.16'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
-import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
+import {Units}          from "/h3ml/lib/units.js"
 import {serversData}    from "/h3ml/etc/servers.js";
 import {securityData}   from "/h3ml/etc/security.js";
 
@@ -28,8 +28,8 @@ export function updateInfo(ns, target) {
     target.minSecurity      = server.minSecurity;
     target.currentSecurity  = ns.getServerSecurityLevel(target.name);
 
-    target.maxMoney   = moneyFormat(server.maxMoney);
-    target.availMoney = moneyFormat(ns.getServerMoneyAvailable(target.name));
+    target.maxMoney   = Units.money(server.maxMoney);
+    target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
 
     target.hackChances = ns.hackAnalyzeChances(target.name);
     target.hackMoney = ns.hackAnalyze(target.name); // part of amount hacked by one thread
@@ -64,8 +64,8 @@ export function updateInfo(ns, target) {
     target.hackThreads = Math.min(target.hackSecurityThreads, target.hackMaxThreads);
     target.growThreads = Math.min(target.growSecurityThreads, target.growMaxThreads);
 
-    target.hackAmount = moneyFormat(target.hackThreads * (target.availMoney.value * target.hackMoney));
-    target.growAmount = moneyFormat(target.moneyRatio > 1 && target.growMaxThreads > 0
+    target.hackAmount = Units.money(target.hackThreads * (target.availMoney.value * target.hackMoney));
+    target.growAmount = Units.money(target.moneyRatio > 1 && target.growMaxThreads > 0
         ? (target.growThreads / target.growMaxThreads) * (target.maxMoney.value - target.availMoney.value)
         : 0
     );
@@ -76,7 +76,7 @@ export function updateInfo(ns, target) {
     const ht =  target.hackMoney >0 ? target.hackMaxThreads * ha/(target.maxMoney.value * target.hackMoney) : 0;
 
     //optimal hack threads
-    target.optimalHackMoney = moneyFormat(ha);
+    target.optimalHackMoney = Units.money(ha);
     target.optimalHackTreads = ht;
 
 }

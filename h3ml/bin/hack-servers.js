@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/hack-servers.js';
-const Version = '0.3.2.31'; // update this every time when edit the code!!!
+const Version = '0.3.3.16'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -7,8 +7,8 @@ import {Server}     from "/h3ml/lib/server-list.js"
 import {BotNet}     from "/h3ml/lib/botnet.js"
 import {Target}     from "/h3ml/lib/target.js"
 import {Table}      from "/h3ml/lib/utils.js"
-import {hackServersInfo} from "/h3ml/lib/hack-server.js"
-import {moneyFormat, timeFormat} from "/h3ml/lib/units.js"
+import {hackInfo} from "/h3ml/lib/hack-server.js"
+import {Units} from "/h3ml/lib/units.js"
 
 const protocolVersion   = Constants.protocolVersion;
 const watchPort         = Constants.infoPort;
@@ -91,9 +91,9 @@ export async function main(ns) {
         const server = item.split(",");
         const timeout = server[2] - Date.now() + parseInt(server[3]);
         const now = Date.now();
-        const estimate = timeFormat(server[1] !== undefined && timeout > 0 ? timeout/1000 : 0);
-        const diff_amount = moneyFormat(server[5]);
-        const total_amount = moneyFormat(server[6]);
+        const estimate = Units.time(server[1] !== undefined && timeout > 0 ? timeout/1000 : 0);
+        const diff_amount = Units.money(server[5]);
+        const total_amount = Units.money(server[6]);
         const diff_security = server[7];
         const hack_info = [
             server[0],
@@ -120,6 +120,6 @@ export async function main(ns) {
         botnet.usedRam, 100 * botnet.usedRam / botnet.maxRam
     );
 
-    hackServersInfo(l, botnet, servers, hacking_servers);
+    hackInfo(l, botnet, servers, hacking_servers);
 
 }

@@ -1,13 +1,26 @@
 const Module  = '/h3ml/lib/server-list.js';
-const Version = '0.3.2.23';     // update this every time when edit the code!!!
+const Version = '0.3.3.16';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Lvs}        from "/h3ml/lib/utils.js";
+import {Units}      from "/h3ml/lib/units.js";
 
+// extra mininimal implementation of Server class
 export class Server {
-    constructor(name) {
-        this.name = name;
+    constructor(ns, name, depth, childs) {
+        this.ns     = ns;
+        this.name   = name;
+        this.depth  = depth;
+        this.childs = childs;
     }
+    get maxRam()        {return 0;}
+    get usedRam()       {return 0;}
+    get maxMoney()      {return Units.money(0);}
+    get minSecurity()   {return 0;}
+    get curSecurity()   {return 0;}
+    get hackLevel()     {return 0;}
+    get faction()       {return false;}
+    get purshaced()     {return false;}
 }
 
 class Node {
@@ -26,16 +39,17 @@ class _Servers {
         return _Servers._instansce;
     }
     /**
-    * @param {import("Ns").NS } ns
+    * @param {import("Ns").NS} ns
+    * @param {import("Server").Server} server
     * @returns {Server[]} depth is 1-indexed
     */
-    list(ns) {
+    list(ns, server_ctor = Server.prototype.constructor) {
         const list = [];
         const visited = {"home": 1};
         const queue = Object.keys(visited);
         while (queue.length > 0) {
             const host = queue.pop();
-            const current = new Server(host);
+            const current = new server_ctor(ns, host);
             list.push(current);
             ns.scan(current.name)
                 .reverse()
@@ -53,7 +67,7 @@ class _Servers {
     * @param {({String}, {Node} [, {Lvs}]) =>{}} lambda
     * @returns {void}, this function build and walk tree call lambda for each node
     */
-    tree(ns, lambda) {
+    tree(ns, lambda, server_ctor = Server.prototype.constructor) {
         const root = new Node('home', 0);
         const visited = {'home': root};
         const queue = Object.keys(visited);
@@ -63,7 +77,7 @@ class _Servers {
             ns.scan(host)
                 .filter(e => !visited[e])
                 .forEach(child => {
-                    const server = new Node(child, node.depth+1);
+                    const server = new server_ctor(child, node.depth+1);
                     queue.push(server.name);
                     node.childs.push(server);
                     visited[server.name] = server;

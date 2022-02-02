@@ -1,14 +1,14 @@
 const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.3';     // update this every time when edit the code!!!
+const Version = '0.3.3.16';     // update this every time when edit the code!!!
 
-import { Constants }        from "/h3ml/lib/constants.js";
-import { Servers }          from "/h3ml/lib/server-list.js";
-import { BotNet }           from "/h3ml/lib/botnet.js";
-import { Table }            from "/h3ml/lib/utils.js";
-import { updateInfo }       from "/h3ml/lib/server-info.js";
-import { moneyFormat, timeFormat } from "/h3ml/lib/units.js"
+import {Constants}  from "/h3ml/lib/constants.js";
+import {Servers}    from "/h3ml/lib/server-list.js";
+import {BotNet}     from "/h3ml/lib/botnet.js";
+import {Table}      from "/h3ml/lib/utils.js";
+import {updateInfo} from "/h3ml/lib/server-info.js";
+import {Units}      from "/h3ml/lib/units.js"
 
-export function hackServersInfo(l, botnet, servers, hacking_servers) {
+export function hackInfo(l, botnet, servers, hacking_servers) {
     const ns = l.ns;
 
     if (botnet.servers.length) {
@@ -93,7 +93,7 @@ export function hackServersInfo(l, botnet, servers, hacking_servers) {
         );
 
         servers.forEach(server => {
-            const moneyHackRate = moneyFormat(server.threadRate);
+            const moneyHackRate = Units.money(server.threadRate);
             const hack_info = hacking_servers.has(server.name) ? hacking_servers["get"](server.name) : undefined;
             table.push(
                 server.name,
@@ -149,7 +149,7 @@ async function version(ns, port) {
 
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] | --help", Module);
-    ns.tprintf("this module is a library, import {hackServersInfo} from '%s'", Module);
+    ns.tprintf("this module is a library, import {hackInfo} from '%s'", Module);
     return;
 }
 
