@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.3.24'; // update this every time when edit the code!!!
+const Version = '0.3.3.25'; // update this every time when edit the code!!!
 
 import {settings}  from "h3ml-settings.js";
 
@@ -19,6 +19,7 @@ const _workerScriptFile = "/h3ml/lib/worker.js";
 const _securityFile     = "/h3ml/etc/security.js";
 const _serversFile      = "/h3ml/etc/servers.js";
 const _scriptsFile      = "/h3ml/etc/scripts.js";
+const _shareScriptFile  = "/h3ml/sbin/sharing.js";
 
 const _reserveRam       = 0;
 const _maxHomeCpuCores  = 8;
@@ -46,6 +47,7 @@ class _Constants {
     get debugLevel()            {return _debugLevel;}
 
     get workerScriptFile()      {return _workerScriptFile;}
+    get shareScriptFile()       {return _shareScriptFile;}
     get securityFile()          {return _securityFile;}
     get serversFile()           {return _serversFile;}
     get scriptsFile()           {return _scriptsFile;}

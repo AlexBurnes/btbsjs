@@ -1,8 +1,10 @@
-const Module  = '/h3ml/bin/sharing-power.js';
-const Version = '0.3.3.24'; // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/share.js';
+const Version = '0.3.3.25'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
+import {Servers}    from "/h3ml/lib/server-list.js";
+import {ScriptFile} from "/h3ml/etc/scripts.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -46,30 +48,30 @@ export async function main(ns) {
     const l = new Logger(ns, {args: args});
     l.g(1, "%s %s", Module, Version);
 
-    import {serversList} from "lib-server-list.js"
-
-    const servers = serversList(ns).filter(server => server.name.match(/^share-server-/));
+    const servers = Servers.list(ns).filter(server => server.name.match(/^share-server-/));
     let totalThreads = 0;
     const powerBefore = ns.getSharePower();
 
     for(let i = 0; i < servers.length; i++) {
         const server = servers[i];
-        ns.tprintf("check server %s", server.name);
-        if (!ns.fileExists("sharing.js", server.name)) {
-            ns.tprintf("copy sharing.js to server %s", server.name);
-            await ns.scp("sharing.js", server.name);
+        l.d(1, "check server %s", server.name);
+        if (!ns.fileExists(Constants.shareScriptFile, server.name)) {
+            l.d(1, "copy %s to server %s", Constants.shareScriptFile, server.name);
+            await ns.scp(Constants.shareScriptFile, server.name);
         }
-        const threads = Math.floor((ns.getServerMaxRam(server.name) - ns.getServerUsedRam(server.name)) / ns.getScriptRam("sharing.js"));
-        ns.tprintf("could run on %s %d threads", server.name, threads);
+        const threads = Math.floor((ns.getServerMaxRam(server.name) - ns.getServerUsedRam(server.name)) / ScriptFile[Constants.shareScriptFile]);
+        l.d(1, "could run on %s %d threads", server.name, threads);
         if (threads > 0) {
-            pid = ns.exec("sharing.js", server.name, threads);
+            pid = ns.exec(Constants.shareScriptFile, server.name, threads);
             if (pid) totalThreads += threads;
         }
     }
 
     const powerAfter = ns.getSharePower();
-    ns.tprintf("run more %d threads, power before %f, after %f, grow %f, grow one thread %f",
-        totalThreads, powerBefore, powerAfter, powerAfter/powerBefore,  (powerAfter-powerBefore)/totalThreads
-    );
+    if (totalThreads > 0) {
+        l.d("run more %d threads, power before %f, after %f, grow %f, grow one thread %f",
+            totalThreads, powerBefore, powerAfter, powerAfter/powerBefore,  (powerAfter-powerBefore)/totalThreads
+        );
+    }
     l.r(`Share power ${powerAfter}`);
 }

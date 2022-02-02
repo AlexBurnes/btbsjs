@@ -1,7 +1,6 @@
 const Module  = '/h3ml/sbin/sharing.js';
-const Version = '0.3.2.29'; // update this every time when edit the code!!!
+const Version = '0.3.3.25'; // update this every time when edit the code!!!
 
-import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
 
 async function version(ns, port) {
@@ -47,8 +46,6 @@ export async function main(ns) {
     const l = new Logger(ns, {args: args});
     l.g(1, "%s %s", Module, Version);
 
-    // but affect of the sharing is not to big, 1.02 => 1.24 for 2M threads!, but it double faction reputation rate on hacking contracts
-    //FIXME make it more usefull
     while (true) {
         const promise = await ns.share();
     }

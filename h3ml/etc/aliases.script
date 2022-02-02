@@ -14,7 +14,7 @@ alias weak=run /h3ml/bin/weak.js
 alias server-stat=run /h3ml/sbin/server-hack.js --analyze --debug
 alias server-hack=run /h3ml/sbin/server-hack.js
 alias hack-servers=run /h3ml/bin/hack-servers.js
-alias share=run /h3ml/bin/sharing-power.js
+alias share=run /h3ml/bin/share.js
 
 alias h3ml=run /h3ml/sbin/h3ml.js
 
