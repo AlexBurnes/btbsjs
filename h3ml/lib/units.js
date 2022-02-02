@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/units.js';
-const Version = '0.3.3.17'; // update this every time when edit the code!!!
+const Version = '0.3.3.18'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
@@ -20,7 +20,7 @@ class _Units {
         return sizeFormat(value);
     }
 }
-import const Units = new _Units();
+export const Units = new _Units();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // sizeFormat
