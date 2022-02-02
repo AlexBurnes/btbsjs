@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/units.js';
-const Version = '0.3.3.18'; // update this every time when edit the code!!!
+const Version = '0.3.3.23'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
@@ -27,7 +27,7 @@ export const Units = new _Units();
 
 const memoryUnits = ['b', 'k', 'M', 'G', 'T'];
 
-class sizeFormatted {
+class SizeFormatted {
     constructor(value, size, unit) {
         this.value = value;
         this.size  = size;
@@ -41,9 +41,9 @@ export function sizeFormat(size) {
     size = size;
     let unit = 0;
     const base = 1024;
-    if (parseFloat(size) == "Infinity") return sizeFormatted(0, 0, 'b');
+    if (parseFloat(size) == "Infinity") return SizeFormatted(0, 0, 'b');
     while (++unit < memoryUnits.length && Math.abs(size) >= base) size /= base;
-    return new sizeFormatted(value, value >= 0 ? size : -size, memoryUnits[--unit]);
+    return new SizeFormatted(value, value >= 0 ? size : -size, memoryUnits[--unit]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ export function sizeFormat(size) {
 
 const moneyUnits   = ['',  'k', 'm', 'b', 't', 'q'];
 
-class moneyFormatted {
+class MoneyFormatted {
     constructor(value, amount, unit) {
         this.value  = value;
         this.amount = amount;
