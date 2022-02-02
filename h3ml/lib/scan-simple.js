@@ -49,6 +49,9 @@ export async function main(ns) {
     l.g(1, "%s %s", Module, Version);
 
     Servers.tree(ns, (pad, server) => {
-        ns.tprintf("%s %s", pad, server.name);
+        ns.tprintf("%s %s %s [%d] %.2fGb %.2f%s$",
+            pad, server.name, server.faction ? "☣" : server.purshaced ? "☮" : ""
+            server.hackLevel, server.maxRam, server.maxMoney.amount, server.maxMoney.unit
+        );
     });
 }

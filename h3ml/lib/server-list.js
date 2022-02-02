@@ -1,9 +1,10 @@
 const Module  = '/h3ml/lib/server-list.js';
-const Version = '0.3.3.16';     // update this every time when edit the code!!!
+const Version = '0.3.3.22';     // update this every time when edit the code!!!
 
-import {Constants}  from "/h3ml/lib/constants.js";
-import {Lvs}        from "/h3ml/lib/utils.js";
-import {Units}      from "/h3ml/lib/units.js";
+import {Constants}   from "/h3ml/lib/constants.js";
+import {Lvs}         from "/h3ml/lib/utils.js";
+import {Units}       from "/h3ml/lib/units.js";
+import {serversData} from "/h3ml/etc/servers.js"
 
 // extra mininimal implementation of Server class
 export class Server {
@@ -12,15 +13,23 @@ export class Server {
         this.name   = name;
         this.depth  = depth;
         this.childs = childs;
+        this.data = serversData[name] || {
+            maxRam: 0,
+            maxMoney: 0,
+            minSecurity: 0,
+            hackDifficulty: 1,
+            factionServer: false,
+            purshacedServer: false
+        };
     }
-    get maxRam()        {return 0;}
+    get maxRam()        {return this.data.maxRam;}
     get usedRam()       {return 0;}
-    get maxMoney()      {return Units.money(0);}
-    get minSecurity()   {return 0;}
+    get maxMoney()      {return Units.money(this.data.maxMoney);}
+    get minSecurity()   {return this.data.minSecutiry;}
     get curSecurity()   {return 0;}
-    get hackLevel()     {return 0;}
-    get faction()       {return false;}
-    get purshaced()     {return false;}
+    get hackLevel()     {return this.data.hackDifficulty;}
+    get faction()       {return this.data.factionServer;}
+    get purshaced()     {return this.data.purshacedServer;}
 }
 
 class Node {
@@ -43,7 +52,7 @@ class _Servers {
     * @param {import("Server").Server} server
     * @returns {Server[]} depth is 1-indexed
     */
-    list(ns, server_ctor = Server.prototype.constructor) {
+    list(ns, server_ctor = Server) {
         const list = [];
         const visited = {"home": 1};
         const queue = Object.keys(visited);
@@ -67,8 +76,8 @@ class _Servers {
     * @param {({String}, {Node} [, {Lvs}]) =>{}} lambda
     * @returns {void}, this function build and walk tree call lambda for each node
     */
-    tree(ns, lambda, server_ctor = Server.prototype.constructor) {
-        const root = new Node('home', 0);
+    tree(ns, lambda, server_ctor = Server) {
+        const root = new Node(ns, 'home', 0, []);
         const visited = {'home': root};
         const queue = Object.keys(visited);
         while (queue.length > 0) {
@@ -77,7 +86,7 @@ class _Servers {
             ns.scan(host)
                 .filter(e => !visited[e])
                 .forEach(child => {
-                    const server = new server_ctor(child, node.depth+1);
+                    const server = new server_ctor(ns, child, node.depth+1, []);
                     queue.push(server.name);
                     node.childs.push(server);
                     visited[server.name] = server;
