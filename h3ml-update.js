@@ -1,13 +1,13 @@
 /*
     h3ml update script, this module must not have any library dependency
     upload this script at home computer and run:
-        wget https://raw.githubusercontent.com/AlexBurnes/h3ml/master/h3ml-update.js h3ml-update.js
+        wget https://raw.githubusercontent.com/AlexBurnes/h3ml/devel/h3ml-update.js h3ml-update.js
         run h3ml-update.js --version
         run h3ml-update.js
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.3.17'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/units.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.3.17'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
@@ -11,13 +11,13 @@ class _Units {
         return _Units._instansce;
     }
     money(value) {
-        return new Units.money(value);
+        return moneyFormat(value);
     }
     time(value) {
-        return new Units.time(value);
+        return timeFormat(value);
     }
     size(value) {
-        return new Units.size(value);
+        return sizeFormat(value);
     }
 }
 import const Units = new _Units();
@@ -36,7 +36,7 @@ class sizeFormatted {
     valueOf() {return this.value};
 }
 
-export function Units.size(size) {
+export function sizeFormat(size) {
     const value = size;
     size = size;
     let unit = 0;
@@ -60,7 +60,7 @@ class moneyFormatted {
     valueOf() {return this.value};
 }
 
-export function Units.money(amount) {
+export function moneyFormat(amount) {
     const value = amount;
     let unit = 0;
     const base = 1000;
@@ -81,7 +81,7 @@ class TimeFormatted {
     valueOf() {return this.value};
 }
 
-export function Units.time(time) {
+export function timeFormat(time) {
     const value = time;
     let unit = 0;
     if (parseFloat(time) == "Infinity") return TimeFormatted(0, 0, 's');
