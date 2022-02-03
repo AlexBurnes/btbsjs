@@ -1,27 +1,27 @@
-alias scan-deep=run /h3ml/bin/scan.js
+alias scan-deep="run /h3ml/bin/scan.js"
 
-alias server-cost=run /h3ml/bin/server-cost.js
-alias server-buy=run /h3ml/bin/server-buy.js
-alias server-rm=run /h3ml/bin/server-rm.js
+alias server-cost="run /h3ml/bin/server-cost.js"
+alias server-buy="run /h3ml/bin/server-buy.js"
+alias server-rm="run /h3ml/bin/server-rm.js"
 
-alias conn=run /h3ml/bin/connect.js
-alias worm=run /h3ml/bin/worm.js
+alias conn="run /h3ml/bin/connect.js"
+alias worm="run /h3ml/bin/worm.js"
 
-alias hack=run /h3ml/bin/hack.js
-alias grow=run /h3ml/bin/grow.js
-alias weak=run /h3ml/bin/weak.js
+alias hack="run /h3ml/bin/hack.js"
+alias grow="run /h3ml/bin/grow.js"
+alias weak="run /h3ml/bin/weak.js"
 
-alias server-stat=run /h3ml/sbin/server-hack.js --analyze --debug
-alias server-hack=run /h3ml/sbin/server-hack.js
-alias hack-servers=run /h3ml/bin/hack-servers.js
-alias share=run /h3ml/bin/share.js
+alias server-stat="run /h3ml/sbin/server-hack.js --analyze --debug"
+alias server-hack="run /h3ml/sbin/server-hack.js"
+alias hack-servers="run /h3ml/bin/hack-servers.js"
+alias share="run /h3ml/bin/share.js"
 
-alias h3ml=run /h3ml/sbin/h3ml.js
+alias h3ml="run /h3ml/sbin/h3ml.js"
 
-alias watch=run /h3ml/sbin/watcher.js
-alias start=run /h3ml/sbin/watcher.js
-alias stop=run /h3ml/bin/stop.js
-alias verbose=run /h3ml/bin/verbose.js
-alias quiet=run /h3ml/bin/quiet.js
+alias watch="run /h3ml/sbin/watcher.js"
+alias start="run /h3ml/sbin/watcher.js"
+alias stop="run /h3ml/bin/stop.js"
+alias verbose="run /h3ml/bin/verbose.js"
+alias quiet="run /h3ml/bin/quiet.js"
 
-alias hack-net=run /h3ml/sbin/hack-net.js
+alias hack-net="run /h3ml/sbin/hack-net.js"
