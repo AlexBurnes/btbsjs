@@ -77,7 +77,7 @@ async function update(l, baseUrl, host) {
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
 
-        l.g(1, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
+        l.g(2, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
 
         if (! await ns.wget(`${baseUrl}${file}`, file)) {
             l.e("[%d/%d] failed get file %s%s as %s", i+1, scriptFiles.length, baseUrl, file, file);
