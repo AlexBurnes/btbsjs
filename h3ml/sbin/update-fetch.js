@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.4.2'; // update this every time when edit the code!!!
+const Version = '0.3.4.4'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -68,16 +68,6 @@ async function update(l, baseUrl, host) {
         l.e("url to fetch from not specified");
         return help(ns);
     }
-
-    const filter_files = new Map();
-    core_files.forEach(file => {filter_files.set(file, true);});
-    const filter_re = new RegExp(`^${backup_path}.*\\.js`);
-
-    const config_files = new Map();
-    etc_files.forEach(file => {
-        filter_files.set(file, true);
-        config_files.set(file, true);
-    });
 
     l.g(1, "version of system is %s", Constants.version);
 

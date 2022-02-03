@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.4.3'; // update this every time when edit the code!!!
+const Version = '0.3.4.4'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -24,7 +24,6 @@ const files_list = [
 ];
 
 const update_fetch = "/h3ml/sbin/update-fetch.js";
-const backup_path = "/h3ml/var/backup";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
