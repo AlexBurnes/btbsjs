@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.4.4'; // update this every time when edit the code!!!
+const Version = '0.3.4.5'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -87,10 +87,6 @@ async function update(l, baseUrl, host) {
 
         //do not check script and txt for version and etc, don't care about it
         if (file.match(/^(?:.*\.script|.*\.txt)$/)) {
-            l.g(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
-            continue;
-        }
-        if (config_files.has(file)) {
             l.g(1, "[%d/%d] got file %s success", i+1, scriptFiles.length, file);
             continue;
         }
