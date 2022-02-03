@@ -1,14 +1,14 @@
 const Module  = '/h3ml/bin/hack-servers.js';
-const Version = '0.3.4.12'; // update this every time when edit the code!!!
+const Version = '0.3.4.13'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
-import {Servers}    from "/h3ml/lib/server-list.js"
-import {BotNet}     from "/h3ml/lib/botnet.js"
-import {Target}     from "/h3ml/lib/target.js"
-import {Table}      from "/h3ml/lib/utils.js"
-import {hackInfo}   from "/h3ml/lib/hack-server.js"
-import {Units}      from "/h3ml/lib/units.js"
+import {Servers}    from "/h3ml/lib/server-list.js";
+import {Server}     from "/h3ml/lib/server.js";
+import {BotNet}     from "/h3ml/lib/botnet.js";
+import {Table}      from "/h3ml/lib/utils.js";
+import {hackInfo}   from "/h3ml/lib/hack-server.js";
+import {Units}      from "/h3ml/lib/units.js";
 
 const protocolVersion   = Constants.protocolVersion;
 const watchPort         = Constants.infoPort;
@@ -108,7 +108,7 @@ export async function main(ns) {
         hacking_servers.set(server[0], hack_info);
     });
 
-    const servers = Servers.list(ns)
+    const servers = Servers.list(ns, Server)
         .filter(server => server.name !== 'home') // not home
         .filter(server => ns.getServerMaxMoney(server.name)) // has money
         .filter(server => ns.hasRootAccess(server.name)) // with root access

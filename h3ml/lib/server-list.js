@@ -22,14 +22,14 @@ export class Server {
             purshacedServer: false
         };
     }
-    get maxRam()        {return this.data.maxRam;}
-    get usedRam()       {return 0;}
-    get maxMoney()      {return Units.money(this.data.maxMoney);}
-    get minSecurity()   {return this.data.minSecutiry;}
-    get curSecurity()   {return 0;}
-    get hackLevel()     {return this.data.hackDifficulty;}
-    get faction()       {return this.data.factionServer;}
-    get purshaced()     {return this.data.purshacedServer;}
+    get maxRam()            {return this.data.maxRam;}
+    get usedRam()           {return 0;}
+    get maxMoney()          {return Units.money(this.data.maxMoney);}
+    get minSecurity()       {return this.data.minSecutiry;}
+    get currentSecurity()   {return 0;}
+    get hackLevel()         {return this.data.hackDifficulty;}
+    get faction()           {return this.data.factionServer;}
+    get purshaced()         {return this.data.purshacedServer;}
 }
 
 class _Servers {
