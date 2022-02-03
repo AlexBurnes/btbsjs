@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.4'; // update this every time when edit the code!!!
+const Version = '0.3.4.1'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -81,13 +81,6 @@ async function update(l, baseUrl, host) {
         config_files.set(file, true);
     });
 
-    const host_files = new Map();
-    ns.ls(host)
-        .filter(file => file.match(/.*\.js|.*\.txt/))
-        .filter(file => !filter_files.has(file))
-        .filter(file => !file.match(filter_re))
-        .forEach(file => {host_files.set(file, file)});
-
     l.g(1, "version of system is %s", Constants.version);
 
     // is it possible write file for script sizes?
@@ -118,14 +111,12 @@ async function update(l, baseUrl, host) {
 
         if (scripts["get"](file) == 0) {
             l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, scriptFiles.length, file);
-            if (host_files.has(file)) host_files.delete(file);
             continue;
         }
 
         const hostFreeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
         if (scripts["get"](file) > hostFreeRam) {
             l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2fG", i+1, scriptFiles.length, file, scripts["get"](file), hostFreeRam);
-            if (host_files.has(file)) host_files.delete(file);
             continue;
         }
 
@@ -146,56 +137,27 @@ async function update(l, baseUrl, host) {
         scripts.set(file, ns.getScriptRam(file));
         if (scripts["get"](file) == 0) {
             l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, core_files.length, file);
-            if (host_files.has(file)) host_files.delete(file);
             continue;
         }
 
         const hostFreeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
         if (scripts["get"](file) > hostFreeRam) {
             l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2fG", i+1, core_files.length, file, scripts["get"](file), hostFreeRam);
-            if (host_files.has(file)) host_files.delete(file);
             continue;
         }
 
         l.g(1, "[%d/%d] check core file %s",  i+1, core_files.length, file);
-        if (host_files.has(file)) {
-            if (!await compareVersion(l, host, file, `${backup_path}${file}`)) {
-                l.e("inspect old %s file, compare it with new %s", `${backup_path}${file}`, file);
-                continue;
-            }
+        if (!await checkVersion(l, host, file)) {
+            l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
+            continue;
         }
-        else {
-            if (!await checkVersion(l, host, file)) {
-                l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
-                continue;
-            }
-        }
+
         const [module_name, module_version] = await getModuleVersion(l, host, file);
         l.g(1, "[%d/%d] core file %s ok, version %s, memory require %fGb", i+1, core_files.length, file, module_version, scripts["get"](file));
 
     }
 
-    etc_files
-        .forEach(name => {
-            if (host_files.has(name)) {
-                host_files.delete(name);
-            }
-        });
-
-    // special file
-    if (host_files.has("/h3ml-update.js")) {
-        host_files.delete("/h3ml-update.js");
-    }
-
     await updateRamScriptsFile(l, scripts);
-
-    if (host_files.size > 0) {
-        l.g(1, "not updated files:");
-        host_files
-            .forEach((file, key) => {
-                l.g(1, "\t%s", file);
-            });
-    }
     l.r("updating done");
 
     // gather meta
