@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.4.5'; // update this every time when edit the code!!!
+const Version = '0.3.4.6'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -104,13 +104,12 @@ async function update(l, baseUrl, host) {
             continue;
         }
 
-        if (!await checkVersion(l, host, file)) {
+        const [module_name, module_version] = await checkVersion(l, host, file);
+        if (module_name == undefined) {
             l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
             continue;
         }
 
-        //if everithing is ok get its version and memory requirement
-        const [module_name, module_version] = await getModuleVersion(l, host, file);
         l.g(1, "[%d/%d] got file %s success, version %s, memory require %.2fGb", i+1, scriptFiles.length, file, module_version, scripts["get"](file));
     }
 
@@ -131,12 +130,12 @@ async function update(l, baseUrl, host) {
         }
 
         l.g(1, "[%d/%d] check core file %s",  i+1, core_files.length, file);
-        if (!await checkVersion(l, host, file)) {
+        const [module_name, module_version] = await checkVersion(l, host, file);
+        if (module_name == undefined) {
             l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
             continue;
         }
 
-        const [module_name, module_version] = await getModuleVersion(l, host, file);
         l.g(1, "[%d/%d] core file %s ok, version %s, memory require %fGb", i+1, core_files.length, file, module_version, scripts["get"](file));
 
     }
@@ -174,13 +173,13 @@ async function checkVersion(l, host, file) {
     l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
     if (module_name == undefined || module_version == undefined) {
         l.e("module %s return empty identity or/and version", file);
-        return false;
+        return [];
     }
     if (module_name !== file) {
         l.e("module identity %s not equal file name %s, something wrong", module_name, file);
-        return false;
+        return [];
     }
-    return true;
+    return [module_name, module_version];
 }
 
 async function getModuleVersion(l, host, module) {
