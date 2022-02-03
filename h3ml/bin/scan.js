@@ -1,13 +1,13 @@
 const Module  = '/h3ml/bin/scan.js';
-const Version = '0.3.2.25'; // update this every time when edit the code!!!
+const Version = '0.3.4.10'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"         // this need only for modules
 
 const scripts = [
-    '/h3ml/lib/scan-info-with-contracts',
-    '/h3ml/lib/scan-info',
-    '/h3ml/lib/scan-simple'
+    '/h3ml/lib/scan-info-with-contracts.js',
+    '/h3ml/lib/scan-info.js',
+    '/h3ml/lib/scan-simple.js'
 ];
 
 async function version(ns, port) {
@@ -56,11 +56,11 @@ export async function main(ns) {
     const host = ns.getHostname();
     const availMemory = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
     let pid;
-    scripts.reverse().forEach(f => {
+    scripts.forEach(f => {
         if (!pid) {
-            const scriptMem = ns.getScriptRam(f + '.js');
+            const scriptMem = ns.getScriptRam(f);
             if (scriptMem <= availMemory) {
-                pid = ns.run(f + '.js', 1);
+                pid = ns.run(f, 1);
             }
         }
     });

@@ -1,10 +1,12 @@
 const Module  = '/h3ml/lib/scan-info.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.4.10'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
 import {Server}     from "/h3ml/lib/server.js";
+import {Units}      from "/h3ml/lib/units.js";
+import {round}      from "/h3ml/lib/utils.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -71,7 +73,10 @@ export async function main(ns) {
             "%)"
         ].join("");
 
-        ns.tprintf("%s %s %s %s %s", pad, rooted, hacked, server.name, info);
-    },  Server.prototype.constructor);
+        ns.tprintf("%s %s %s %s %s %s",
+            pad, server.faction ? "☮ " : server.purshaced ? "⚒ " : "", rooted, hacked, server.name, info
+        );
+
+    },  Server);
 
 }
