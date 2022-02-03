@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.3.23'; // update this every time when edit the code!!!
+const Version = '0.3.4'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -92,27 +92,14 @@ async function update(l, baseUrl, host) {
 
     // is it possible write file for script sizes?
     const scripts = new Map();
-    if (!ns.fileExists(ram_scripts_file, host)) {
-        //create empty ram_scripts_file, its need by other scripts
-        await updateRamScriptsFile(l, scripts, host);
-    }
-
+    await updateRamScriptsFile(l, scripts, host);
 
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
 
         l.g(1, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
 
-        if (host_files.has(file)) {
-            ns.rm(`${backup_path}${file}`);
-            if (ns.fileExists(file, host)) {
-                ns.mv(host, file, `${backup_path}${file}`);
-            }
-            host_files.set(file, `${backup_path}${file}`);
-        }
-
-        await ns.wget(`${baseUrl}${file}`, file);
-        if (!ns.fileExists(file, host)) {
+        if (! await ns.wget(`${baseUrl}${file}`, file)) {
             l.e("[%d/%d] failed get file %s%s as %s", i+1, scriptFiles.length, baseUrl, file, file);
             continue;
         }
@@ -142,25 +129,9 @@ async function update(l, baseUrl, host) {
             continue;
         }
 
-        //FIXME compare file versions!!! inform user about
-        if (host_files.has(file)) {
-
-            l.d(1, "[%d/%d] uploaded, compare version of %s and %s", i+1, scriptFiles.length, file, host_files["get"](file));
-            if (!await compareVersions(l, host, file, host_files["get"](file))) {
-                l.e("inspect old %s file, compare it with new %s", host_files["get"](file), file);
-                l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
-                host_files.delete(file);
-                continue;
-            }
-            host_files.delete(file);
-        }
-        else {
-
-            if (!await checkVersion(l, host, file)) {
-                l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
-                continue;
-            }
-            l.g(1, "[%d/%d] uploaded file '%s' is new", i+1, scriptFiles.length, file);
+        if (!await checkVersion(l, host, file)) {
+            l.g(1, "[%d/%d] got file %s with warnings", i+1, scriptFiles.length, file);
+            continue;
         }
 
         //if everithing is ok get its version and memory requirement
@@ -239,10 +210,6 @@ async function update(l, baseUrl, host) {
 **/
 async function updateRamScriptsFile(l, scripts, host) {
     const ns = l.ns;
-    // if file exists delete it
-    if (ns.fileExists(ram_scripts_file, host)) {
-        ns.rm(ram_scripts_file, host);
-    }
     // prepare script source code
     let scripts_data = "export const ScriptFiles = {";
     let i = 0;
@@ -267,77 +234,6 @@ async function checkVersion(l, host, file) {
         l.e("module identity %s not equal file name %s, something wrong", module_name, file);
         return false;
     }
-    return true;
-}
-
-async function compareVersions(l, host, new_file, old_file) {
-    const ns = l.ns;
-
-    l.d(1, `new file '${new_file}' old file '${old_file}'`);
-    if (new_file == undefined || old_file == undefined) {
-        l.e("new or old file is undefined, bug?");
-        return false;
-    }
-
-    if (new_file == old_file) {
-        l.e("old and new file names equal, %s vs %s, bug?", new_file, old_file);
-        return false;
-    }
-
-    if (!ns.fileExists(new_file, host)) {
-        l.e("new file %s do not exists, bug?", new_file);
-        return false;
-    }
-
-    if (!ns.fileExists(old_file, host)) {
-        l.e("old file %s do not exists, bug?", old_file);
-        return false;
-    }
-
-    const [new_module_name, new_module_version] = await getModuleVersion(l, host, new_file);
-    l.d(1, "new module %s identify as %s version %s", new_file, new_module_name, new_module_version);
-    if (new_module_name == undefined || new_module_version == undefined) {
-        l.e("new module %s return empty identity or/and version", new_file);
-        return false;
-    }
-    if (new_module_name !== new_file) {
-        l.e("new module identity %s not equal file name %s, something wrong", new_module_name, new_file);
-        return false;
-    }
-
-    const [old_module_name, old_module_version] = await getModuleVersion(l, host, old_file);
-    l.d(1, "old module %s identify as %s version %s", new_file, old_module_name, old_module_version);
-    if (old_module_name == undefined || old_module_version == undefined) {
-        l.e("old module %s return empty identity or/and version", old_file);
-    }
-    if (old_module_name !== new_file) {
-        l.e("old module identity %s not equal file name %s, something wrong", old_module_name, new_file);
-        return false;
-    }
-
-    const new_version_numbers = new_module_version.split(".");
-    const old_version_numbers = old_module_version.split(".");
-
-    for(let i = 0; i < new_version_numbers.length; i++) {
-        if (i >= old_version_numbers) {
-            return true;
-        }
-        if (new_version_numbers[i] - old_version_numbers[i] < 0) {
-            l.e("new module %s version %s is less old %s", new_file, new_module_version, old_module_version);
-            return false;
-        }
-
-        if (new_version_numbers[i] - old_version_numbers[i] > 0) {
-            return true;
-        }
-    }
-
-    //FIXME
-    if (old_version_numbers.length > new_version_numbers.length) {
-        l.e("new module %s version %s is less old %s", new_file, new_module_version, old_module_version);
-        return false;
-    }
-
     return true;
 }
 
