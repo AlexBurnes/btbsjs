@@ -1,7 +1,7 @@
 
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.4.6'; // update this every time when edit the code!!!
+const Version = '0.3.4.7'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -12,7 +12,6 @@ import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
 
 const core_files = ["/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
-const ram_scripts_file = Constants.scriptsFile;
 const waitTimeout = 5000; //default wait timwout for version from module
 
 async function version(ns, port) {
@@ -115,6 +114,7 @@ async function update(l, baseUrl, host) {
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
     l.g(1, "check core files %d", core_files.length);
+    let [module_name, module_version] = [];
     for(let i = 0; i < core_files.length; i++) {
         const file = core_files[i];
         scripts.set(file, ns.getScriptRam(file));
@@ -122,20 +122,23 @@ async function update(l, baseUrl, host) {
             l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, core_files.length, file);
             continue;
         }
+        if (Module !== file) {
+            const hostFreeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
+            if (scripts["get"](file) > hostFreeRam) {
+                l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2fG", i+1, core_files.length, file, scripts["get"](file), hostFreeRam);
+                continue;
+            }
 
-        const hostFreeRam = ns.getServerMaxRam(host) - ns.getServerUsedRam(host);
-        if (scripts["get"](file) > hostFreeRam) {
-            l.w("[%d/%d] %s uploaded, but unable to check its version, require %.2fG, but server has %.2fG", i+1, core_files.length, file, scripts["get"](file), hostFreeRam);
-            continue;
+            l.g(1, "[%d/%d] check core file %s",  i+1, core_files.length, file);
+            [module_name, module_version] = await checkVersion(l, host, file);
+            if (module_name == undefined) {
+                l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
+                continue;
+            }
         }
-
-        l.g(1, "[%d/%d] check core file %s",  i+1, core_files.length, file);
-        const [module_name, module_version] = await checkVersion(l, host, file);
-        if (module_name == undefined) {
-            l.g(1, "[%d/%d] core file %s with warnings", i+1, scriptFiles.length, file);
-            continue;
+        else {
+            [module_name, module_version] = [Module, Version];
         }
-
         l.g(1, "[%d/%d] core file %s ok, version %s, memory require %fGb", i+1, core_files.length, file, module_version, scripts["get"](file));
 
     }
@@ -164,7 +167,7 @@ async function updateRamScriptsFile(l, scripts, host) {
     });
     scripts_data += "\n};";
     // write it
-    await ns.write(ram_scripts_file, scripts_data, "w");
+    await ns.write(Constants.scriptsFile, scripts_data, "w");
     return;
 }
 
