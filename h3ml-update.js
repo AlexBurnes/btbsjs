@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.4.2'; // update this every time when edit the code!!!
+const Version = '0.3.4.3'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -18,7 +18,7 @@ const files_list = [
     "/h3ml/etc/settings.js",
     "/h3ml/etc/scripts.js",
     "/h3ml/etc/servers.js",
-    "/h3ml/etc/securiry.js",
+    "/h3ml/etc/security.js",
     "/h3ml/lib/constants.js",
     "/h3ml/lib/log.js"
 ];
