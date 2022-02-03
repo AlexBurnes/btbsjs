@@ -36,25 +36,11 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
             totalRate += server.threadRate;
         });
 
-        //sort by hacking chance descending
-        //servers.sort(function(a, b){return ns.hackhackChances(b.name) - ns.hackhackChances(a.name)});
-
-        // sort by hackin level ascending
-        // servers.sort(function(a, b){return ns.getServerRequiredHackingLevel(a.name) - ns.getServerRequiredHackingLevel(b.name)});
-
-        //sort by hack rate in descending
-        //servers.sort(function (a, b) { return (b.threadRate - a.threadRate) });
-
-        // сервера нужно отсортировывать в таком порядке, порядок денег Math.floor(Math.log(maxMoney)), growrate, min sec
-
-        //sort by max money
-        //servers.sort(function (a, b) { return (b.maxMoney.value - a.maxMoney.value) });
-
         servers.sort(
-            function (a, b) {
+            function (b, a) {
                 return (
-                      Math.floor(Math.log(b.maxMoney.value))*(1/b.minSecurity)*b.serverGrowth
-                    - Math.floor(Math.log(a.maxMoney.value))*(1/a.minSecurity)*a.serverGrowth
+                      1/Math.floor(Math.log10(b.maxMoney.value))*(1/b.minSecurity)*b.serverGrowth
+                    - 1/Math.floor(Math.log10(a.maxMoney.value))*(1/a.minSecurity)*a.serverGrowth
                 )
             }
         );
@@ -75,30 +61,21 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 ["Max"      , "%.2f%s"  ],  // max money
                 ["R"        , "%.2f"    ],  // rate to grow from available to max money
                 ["Gr"       , "%d"      ],  // server growth effectivness
+                ["Rt"       , "%.2f"    ],  // server rating
                 ["Htm"      , "%.2f%s"  ],  // hack time
                 ["Gtm"      , "%.2f%s"  ],  // grow time
                 ["Wtm"      , "%.2f%s"  ],  // weaken time
                 ["H"        , "%s"      ],  // hacking server
-                //["Hp"       , "%.8f"    ],  // hack money part
-                //["Hth"      , "%d"      ],  // hack threads to hack all avail money
                 ["Hth"      , "%d"      ],  // hack optimal threads to hack money to grow server at once
                 ["Gth"      , "%d"      ],  // grow threads to grow from avail to max money
                 ["Wth"      , "%d"      ],  // weaken threads to down security to minimum
                 ["Hom"      , "%.2f%s"  ],  // hack optmal money
-                //["HsTh"     , "%d"      ],  // hax max security threads
-                //["GoTh"     , "%d"      ],  // grow optimal threads
-                //["GsTh"     , "%d"      ],  // grow max security threads
-                //["Max Oth"  , "%d"      ],  // maximum optimal threads required for server
-                //["Hr"       , "%.2f%s"  ],  // cicle rate, cycle = n(grow+hack)+weak
-                //["Thr"      , "%.2f"    ],  // thread % rate of all servers rate
-                //["aTh"      , "%d"      ]   // thread to use based on Thr
-                // Hacking information from watcher
-                ["C",           "%s"        ],
-                ["Time",        "%.2f%s"    ],
-                ["L",           "%s"        ],
-                ["Diff",        "%s%.2f%s"  ],
-                ["Sec",         "%.2f"      ],
-                ["Total",       "%.2f%s"    ]
+                ["C"        , "%s"      ],
+                ["Time"     , "%.2f%s"  ],
+                ["L"        , "%s"      ],
+                ["Diff"     , "%s%.2f%s"],
+                ["Sec"      , "%.2f"    ],
+                ["Total"    , "%.2f%s"  ]
             ],
 
         );
@@ -115,23 +92,15 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 [server.maxMoney.amount, server.maxMoney.unit],
                 server.moneyRatio,
                 server.serverGrowth,
+                Math.floor(Math.log(server.maxMoney.value))*(1/server.minSecurity)*server.serverGrowth,
                 [server.hackTime.time, server.hackTime.unit],
                 [server.growTime.time, server.growTime.unit],
                 [server.weakTime.time, server.weakTime.unit],
                 hacking_servers.has(server.name) ? "yes" : "no",
-                //server.hackMoney,
-                //server.hackThreads,
                 server.optimalMaxHackTreads,
                 server.growThreads,
                 server.weakThreads,
-                //server.maxHackSecurityThreads,
                 [server.optmalMaxHackMoney.amount, server.optmalMaxHackMoney.unit],
-                //server.serverMaxGrowthThreads,
-                //server.maxGrowSecutiryThreads,
-                //server.optimalMaxThreads,
-                //[moneyHackRate.amount, moneyHackRate.unit],
-                //server.threadRate / totalRate * 100,
-                //botnet.workers * server.threadRate / totalRate
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
                 hack_info !== undefined ? hack_info[3].substr(0, 1) : "",

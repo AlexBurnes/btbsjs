@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/worm.js';
-const Version = '0.3.3.8'; // update this every time when edit the code!!!
+const Version = '0.3.4.16'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js";
@@ -31,7 +31,7 @@ export async function main(ns) {
         [ 'update-port' , 0     ],
         [ 'help'        , false ],
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
-        [ 'debug'       , 0     ], // debug level
+        [ 'debug'       , 1     ], // debug level
         [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
         [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
 
@@ -48,17 +48,17 @@ export async function main(ns) {
     const l = new Logger(ns, {args: args});
     l.g(1, "%s %s", Module, Version);
 
-    const dest = args["_"][1] || args["_"][0];
+    const dest = args["_"][1] || args["_"][0] || "*";
     const source = args["_"][1] !== undefined ? args["_"][0]||"home" : "home";
 
-    // do not copy anything to devel servers from home only if defined source
+    l.d(1, "source '%s' dest '%s'", source, dest);
+
+    const re = new RegExp(dest == "*" ? ".*" : `^${dest}\$`);
 
     const servers = Servers.list(ns)
-        .filter(server => server.name != "home")
-        .filter(server =>
-            (source == "home" && !server.name.match(/^(?:devel-|share-)/)) ||
-            ((dest !== undefined && server.name == dest) || (dest == undefined))
-        );
+        .filter(server => (server.name != "home" && dest != "home") || dest == "home")
+        .filter(server => !server.name.match(/^(?:devel-|share-)/) && dest == server.name)
+        .filter(server => server.name.match(re));
 
     l.d(1, "copy files from %s to %s", source, servers.map(server => server.name).join(', '));
 
@@ -66,7 +66,7 @@ export async function main(ns) {
         .filter(f => f.match(/^.*\.js$/));
 
     const target_files = ns.ls(source)
-        .filter(f => f.match(/worker.js|constants.js|network.js|log.js|quiet.js|verbose.js/));
+        .filter(f => f.match(/worker.js|constants.js|network.js|log.js|quiet.js|verbose.js|h3ml-settings.js/));
 
     for (let server of servers.map(e => e.name)) {
         if (!ns.hasRootAccess(server)) {
@@ -81,12 +81,11 @@ export async function main(ns) {
 
     for (const server of servers) {
         if (ns.hasRootAccess(server.name)) {
-            const files = server.name.match(/^[a-zA-Z0-9]+\[\_\-]server(?:[\_\-]\d+)*$/)
+            const files = server.name.match(/^[a-zA-Z0-9]+\[\_\-]server(?:[\_\-]\d+)*$/) || server.name == "home"
                 ? server_files
                 : target_files;
-            await tryCatchIgnore(async () => await ns.scp(files, ns.getHostname(), server.name));
-            // Needs singularity :/
-            //await tryCatchIgnore(() => ns.exec('backdoor.js', server.name));
+            l.d(1, "copy files %s => %s: %s", source, server.name, files.join(","))
+            await tryCatchIgnore(async () => await ns.scp(files, source, server.name));
         }
     }
     ns.tprintf("worm done");

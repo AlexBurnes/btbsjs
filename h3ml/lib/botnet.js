@@ -1,9 +1,11 @@
 const Module  = '/h3ml/lib/botnet.js';
-const Version = '0.3.3.24';     // update this every time when edit the code!!!
+const Version = '0.3.4.16';     // update this every time when edit the code!!!
 
-import {Constants} from "/h3ml/lib/constants.js";
-import {Servers}   from "/h3ml/lib/server-list.js";
-import {ScriptFiles} from "/h3ml/etc/scripts.js"
+import {Constants}   from "/h3ml/lib/constants.js";
+import {Servers}     from "/h3ml/lib/server-list.js";
+import {ScriptFiles} from "/h3ml/etc/scripts.js";
+import {Server}      from "/h3ml/lib/server.js";
+
 
 /**
     @param {NS} ns
@@ -37,18 +39,16 @@ export class BotNet {
         this.maxRam = 0;
         this.usedRam = 0;
         this.servers =
-            Servers.list(ns)
-                .filter(server => !server.name.match(/^(ctrl-server|hack-server|hack-server-0)$/)) // do not use ctr-server and hack-server for workers
+            Servers.list(ns, Server)
+                .filter(server => !server.name.match(/^(ctrl-server|hack-server(?:-\d+)*)$/)) // do not use ctr-server and hack-server for workers
                 .filter(server => ns.hasRootAccess(server.name))
-                .filter(server => ns.getServerMaxRam(server.name) > this.workerRam)
+                .filter(server => server.maxRam > this.workerRam)
                 .filter(server => ns.fileExists(this.workerScript, server.name));
         this.servers
             .forEach(server => {
-                server.maxRam  = ns.getServerMaxRam(server.name);
-                server.usedRam = ns.getServerUsedRam(server.name);
                 server.workers = Math.floor((server.maxRam - server.usedRam)/this.workerRam);
-                this.maxRam += server.maxRam;
-                this.usedRam += ns.getServerUsedRam(server.name);
+                this.maxRam  += server.maxRam;
+                this.usedRam += server.usedRam;
             });
         this.maxWorkers = Math.floor(this.maxRam/this.workerRam);
         this.workers = Math.floor((this.maxRam - this.usedRam - Constants.reserveRam)/this.workerRam);

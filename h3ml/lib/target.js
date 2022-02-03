@@ -1,20 +1,19 @@
 const Module  = '/h3ml/lib/target.js';
-const Version = '0.3.2.21'; // update this every time when edit the code!!!
+const Version = '0.3.3.16'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
+import {Server}     from "/h3ml/lib/server.js";
 
-export class Target {
+export class Target extends Server {
     /**
      * @param {import("Ns").NS } ns
      * @param {string} name
      * @param {Array{server}} hosts
      */
     constructor(l, name, hosts) {
+        super(l.ns, name);
         this.l     = l;
-        this.ns    = l.ns;
-        this.name  = name;
         this.hosts = hosts;
-
     }
 
     /**

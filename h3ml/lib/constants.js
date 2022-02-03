@@ -1,8 +1,8 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.4.14'; // update this every time when edit the code!!!
+const Version = '0.3.4.16'; // update this every time when edit the code!!!
 
-import {settings}  from "h3ml-settings.js";
+import {settings}  from "/h3ml-settings.js";
 
 const _rootKitFiles = {
     "BruteSSH.exe"  : 1,
@@ -15,7 +15,7 @@ const _rootKitFiles = {
 const _logLevel     = settings.logLevel   || 1;    // default log level for all scripts
 const _debugLevel   = settings.debugLevel || 0;    // default debug level for all scripts
 
-const _workerScriptFile = "/h3ml/lib/worker.js";
+const _workerScriptFile = "/h3ml/sbin/worker.js";
 const _securityFile     = "/h3ml/etc/security.js";
 const _serversFile      = "/h3ml/etc/servers.js";
 const _scriptsFile      = "/h3ml/etc/scripts.js";
