@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.3.16';     // update this every time when edit the code!!!
+const Version = '0.3.4.12';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
@@ -45,8 +45,19 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
         //sort by hack rate in descending
         //servers.sort(function (a, b) { return (b.threadRate - a.threadRate) });
 
+        // сервера нужно отсортировывать в таком порядке, порядок денег Math.floor(Math.log(maxMoney)), growrate, min sec
+
         //sort by max money
-        servers.sort(function (a, b) { return (b.maxMoney.value - a.maxMoney.value) });
+        //servers.sort(function (a, b) { return (b.maxMoney.value - a.maxMoney.value) });
+
+        servers.sort(
+            function (a, b) {
+                return (
+                      Math.floor(Math.log(b.maxMoney.value))*(1/b.minSecurity)*b.serverGrowth
+                    - Math.floor(Math.log(a.maxMoney.value))*(1/a.minSecurity)*a.serverGrowth
+                )
+            }
+        );
 
         // need to find nearest > 2^n Gb server :)
         const allServersRam = Math.ceil(botnet.workerRam * allServerThreads);
@@ -125,7 +136,7 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
                 hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[3] == "hack" ? "-" : "+", hack_info[4].amount, hack_info[4].unit] : ["", 0, ""],
-                hack_info !== undefined ? hack_info[5] : "",
+                hack_info !== undefined ? hack_info[5] : 0,
                 hack_info !== undefined ? [hack_info[6].amount, hack_info[6].unit] : [0, ""]
             );
         });

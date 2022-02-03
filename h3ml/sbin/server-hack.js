@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack.js';
-const Version = '0.3.2.31'; // update this every time when edit the code!!!
+const Version = '0.3.4.12'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -117,7 +117,7 @@ async function hackServer(l, target, once, analyze, port) {
 
 
         const moneyHackRate = moneyFormat(server.threadRate);
-        if (lg.logLevel > 1) table.push(
+        if (l.logLevel > 1) table.push(
             server.name,
             100 * server.hackChances,
             server.minSecurity,
@@ -141,7 +141,7 @@ async function hackServer(l, target, once, analyze, port) {
             [moneyHackRate.amount, moneyHackRate.unit]
         );
 
-        if (lg.logLevel > 1) table.print();
+        if (l.logLevel > 1) table.print();
 
         const server_info = ns.sprintf(
             "ch %.2f, sec %.2f/%.2f, a %.2f%s m %.2f%s, r %.2f, ht %.2f%s, gt %.2f%s, wt %.2f%s",
@@ -342,11 +342,11 @@ export async function main(ns) {
     l.g(1, "%s %s", Module, Version);
 
 
-    const server = data["_"][0];
+    const server = args["_"][0];
 
-    const debugMode    = data["debug"]   ? 1 : 0;
-    const analyzeOnly  = data["analyze"] ? 1 : 0;
-    const runOnce      = data["once"]    ? 1 : 0;
+    const debugMode    = args["debug"]   ? 1 : 0;
+    const analyzeOnly  = args["analyze"] ? 1 : 0;
+    const runOnce      = args["once"]    ? 1 : 0;
     const outputToPort = debugMode       ? 0 : 1;
 
     if (!ns.serverExists(server)) {

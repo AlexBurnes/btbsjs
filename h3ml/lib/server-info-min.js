@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info-min.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.4.12'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Units}          from "/h3ml/lib/units.js"
@@ -25,13 +25,13 @@ export function updateInfo(ns, target) {
     target.hackSecurityRate = security.hackSecutiryRate;  // security grow on hack by one thread
     target.growSecurityRate = security.growSecutiryRate;  // security groe on hack by one thread
 
-    target.minSecurity      = server.minSecurity;
-    target.currentSecurity  = ns.getServerSecurityLevel(target.name);
+    //target.minSecurity      = server.minSecurity;
+    //target.currentSecurity  = ns.getServerSecurityLevel(target.name);
 
-    target.maxMoney   = Units.money(server.maxMoney);
-    target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
+    //target.maxMoney   = Units.money(server.maxMoney);
+    //target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
 
-    target.hackChances = ns.hackAnalyzeChances(target.name);
+    target.hackChances = ns.hackAnalyzeChance(target.name);
     target.hackMoney = ns.hackAnalyze(target.name); // part of amount hacked by one thread
 
     target.growMaxThreads = Math.ceil(ns.growthAnalyze(target.name, server.serverGrowth));

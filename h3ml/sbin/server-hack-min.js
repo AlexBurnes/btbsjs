@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack-min.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.4.12'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -326,11 +326,11 @@ export async function main(ns) {
     l.g(1, "%s %s", Module, Version);
 
 
-    const server = data["_"][0];
+    const server = args["_"][0];
 
-    const debugMode    = data["debug"]   ? 1 : 0;
-    const analyzeOnly  = data["analyze"] ? 1 : 0;
-    const runOnce      = data["once"]    ? 1 : 0;
+    const debugMode    = args["debug"]   ? 1 : 0;
+    const analyzeOnly  = args["analyze"] ? 1 : 0;
+    const runOnce      = args["once"]    ? 1 : 0;
     const outputToPort = debugMode       ? 0 : 1;
 
     if (!ns.serverExists(server)) {

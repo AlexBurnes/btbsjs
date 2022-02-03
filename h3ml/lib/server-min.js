@@ -24,14 +24,14 @@ export class Server {
         }
     }
 
-    get maxRam()        {return this.data.maxRam;}
-    get usedRam()       {return this.ns.getServerUsedRam(this.name);}
-    get maxMoney()      {return Units.money(this.data.maxMoney);}
-    get minSecurity()   {return this.data.minSecurity;}
-    get curSecurity()   {return this.ns.getServerSecurityLevel(this.name);}
-    get hackLevel()     {return this.data.hackDifficulty;}
-    get faction()       {return this.data.factionServer;}
-    get purshaced()     {return this.data.purshacedServer;}
+    get maxRam()            {return this.data.maxRam;}
+    get usedRam()           {return this.ns.getServerUsedRam(this.name);}
+    get maxMoney()          {return Units.money(this.data.maxMoney);}
+    get minSecurity()       {return this.data.minSecurity;}
+    get currentSecurity()   {return this.ns.getServerSecurityLevel(this.name);}
+    get hackLevel()         {return this.data.hackDifficulty;}
+    get faction()           {return this.data.factionServer;}
+    get purshaced()         {return this.data.purshacedServer;}
 }
 
 /**

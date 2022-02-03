@@ -10,12 +10,12 @@ export class Server {
         this.depth  = depth;
         this.childs = childs;
     }
-    get maxRam()        {return this.ns.getServerMaxRam(this.name);}
-    get usedRam()       {return this.ns.getServerUsedRam(this.name);}
-    get maxMoney()      {return Units.money(ns.getServerMaxMoney(this.name));}
-    get minSecurity()   {return this.ns.getServerMinSecurityLevel(this.name);}
-    get curSecurity()   {return this.ns.getServerSecurityLevel(this.name);}
-    get hackLevel()     {return this.ns.getServerRequiredHackingLevel(this.name);}
+    get maxRam()            {return this.ns.getServerMaxRam(this.name);}
+    get usedRam()           {return this.ns.getServerUsedRam(this.name);}
+    get maxMoney()          {return Units.money(ns.getServerMaxMoney(this.name));}
+    get minSecurity()       {return this.ns.getServerMinSecurityLevel(this.name);}
+    get currentSecurity()   {return this.ns.getServerSecurityLevel(this.name);}
+    get hackLevel()         {return this.ns.getServerRequiredHackingLevel(this.name);}
 
     get faction() {
         if (this.ns.getServerMaxRam(this.name) >= 0 &&
