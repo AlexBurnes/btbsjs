@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/worm.js';
-const Version = '0.3.3.24'; // update this every time when edit the code!!!
+const Version = '0.3.3.8'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js";
@@ -54,7 +54,7 @@ export async function main(ns) {
     // do not copy anything to devel servers from home only if defined source
 
     const servers = Servers.list(ns)
-        .filrer(server => server.name != "home")
+        .filter(server => server.name != "home")
         .filter(server =>
             (source == "home" && !server.name.match(/^(?:devel-|share-)/)) ||
             ((dest !== undefined && server.name == dest) || (dest == undefined))
@@ -66,7 +66,7 @@ export async function main(ns) {
         .filter(f => f.match(/^.*\.js$/));
 
     const target_files = ns.ls(source)
-        .filter(f => f.match(/worker.js|lib-constants.js|lib-network.js|quiet.js|verbose.js/));
+        .filter(f => f.match(/worker.js|constants.js|network.js|log.js|quiet.js|verbose.js/));
 
     for (let server of servers.map(e => e.name)) {
         if (!ns.hasRootAccess(server)) {
@@ -81,7 +81,7 @@ export async function main(ns) {
 
     for (const server of servers) {
         if (ns.hasRootAccess(server.name)) {
-            const files = server.name.match(/^[a-zA-Z]\-server(?:\-\d+)?$/)
+            const files = server.name.match(/^[a-zA-Z0-9]+\[\_\-]server(?:[\_\-]\d+)*$/)
                 ? server_files
                 : target_files;
             await tryCatchIgnore(async () => await ns.scp(files, ns.getHostname(), server.name));

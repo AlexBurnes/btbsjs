@@ -1,34 +1,36 @@
 const Module  = '/h3ml/lib/server.js';
-const Version = '0.3.3.16';     // update this every time when edit the code!!!
+const Version = '0.3.4.8';     // update this every time when edit the code!!!
 
 import {Units} from "/h3ml/lib/units.js";
 
 export class Server {
-    constructor(ns, name) {
-        this.ns   = ns;
-        this.name = name;
+    constructor(ns, name, depth, childs) {
+        this.ns     = ns;
+        this.name   = name;
+        this.depth  = depth;
+        this.childs = childs;
     }
-    get maxRam()        {return ns.getServerMaxRam(this.name);}
-    get usedRam()       {return ns.getServerUsedRam(this.name);}
+    get maxRam()        {return this.ns.getServerMaxRam(this.name);}
+    get usedRam()       {return this.ns.getServerUsedRam(this.name);}
     get maxMoney()      {return Units.money(ns.getServerMaxMoney(this.name));}
-    get minSecurity()   {return ns.getServerMinSecurityLevel(this.name);}
-    get curSecurity()   {return ns.getServerSecurityLevel(this.name);}
-    get hackLevel()     {return ns.getServerRequiredHackingLevel(this.name);}
+    get minSecurity()   {return this.ns.getServerMinSecurityLevel(this.name);}
+    get curSecurity()   {return this.ns.getServerSecurityLevel(this.name);}
+    get hackLevel()     {return this.ns.getServerRequiredHackingLevel(this.name);}
 
     get faction() {
             return
-                ns.getServerMaxRam(server.name) >= 0 &&
-                ns.getServerMaxMoney(server.name) == 0 &&
-                ns.getServerRequiredHackingLevel(server.name) > 1
+                this.ns.getServerMaxRam(this.name) >= 0 &&
+                this.ns.getServerMaxMoney(this.name) == 0 &&
+                this.ns.getServerRequiredHackingLevel(this.name) > 1
                 ? true
                 : false;
             }
 
     get purshaced() {
             return
-                ns.getServerMaxRam(server.name) > 0 &&
-                ns.getServerMaxMoney(server.name) == 0 &&
-                ns.getServerRequiredHackingLevel(server.name) == 1
+                this.ns.getServerMaxRam(this.name) > 0 &&
+                this.ns.getServerMaxMoney(this.name) == 0 &&
+                this.ns.getServerRequiredHackingLevel(this.name) == 1
                 ? true
                 : false;
             }
