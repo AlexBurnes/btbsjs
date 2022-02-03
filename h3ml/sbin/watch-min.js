@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.3.20'; // update this every time when edit the code!!!
+const Version = '0.3.4.8'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -51,7 +51,7 @@ class WatchTarget {
         this.startTime      = 0;
         this.endTime        = 0;
         this.hosts          = new Map();
-        info();
+        this.info();
     }
     method(method, start, end) {
         this.currentAction  = method;
@@ -61,7 +61,7 @@ class WatchTarget {
         this.startTime      = start;
         this.endTime        = end;
         this.hosts          = new Map();
-        info();
+        this.info();
     }
     info() {
         const ns = this.ns;
@@ -84,17 +84,18 @@ class _Watcher {
     init(l) {
         this.lg = l;
         this.ns = l.ns;
-        this.socket = new Socket(ns, Constants.watchPort);
-        this.targets = new Map();
-        serversData
-            .forEach((server, name) => {
+        this.socket = new Socket(this.ns, Constants.watchPort);
+        this.targets_ = new Map();
+        Object.keys(serversData)
+            .forEach(name => {
+                const server = serversData[name];
                 if (server.maxMoney > 0) {
-                    targets.set(name, new WatchTarget(ns, name));
+                    this.targets_.set(name, new WatchTarget(this.ns, name));
                 }
             });
     }
 
-    get targets() {return this.targets;}
+    get targets() {return this.targets_;}
     async idle() {}
     async router() {}
     async start() {}
@@ -298,7 +299,7 @@ export async function main(ns) {
         await Watcher.socket.listen(
             async (time, data) => {
                 //await Watcher.router(time, data);
-                switch (data[0]) {
+                switch (data.shift()) {
                     case '<':
                         // stop method
                         await actionStop(Watcher, time, data);
