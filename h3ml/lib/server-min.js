@@ -1,7 +1,7 @@
 const Module  = '/h3ml/lib/server-min.js';
-const Version = '0.3.4.8';     // update this every time when edit the code!!!
+const Version = '0.3.4.11';     // update this every time when edit the code!!!
 
-import {Units} from "/h3ml/lib/units.js";
+import {Units}       from "/h3ml/lib/units.js";
 import {serversData} from "/h3ml/etc/servers.js";
 
 export class Server {
@@ -10,7 +10,7 @@ export class Server {
         this.name   = name;
         this.depth  = depth;
         this.childs = childs;
-        this.data   = ServersData[name];
+        this.data   = serversData[name];
         // avoid undefined value
         if (data == undefined) {
             data = {
