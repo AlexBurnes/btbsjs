@@ -22,9 +22,6 @@ export const scriptFiles = [
     // aliases
     "/h3ml/etc/aliases.script",
     "/h3ml/etc/aliases-min.script",
-    "/h3ml/etc/servers.js",
-    "/h3ml/etc/security.js",
-    "/h3ml/etc/scripts.js",
 
     // libraries in order of dependencie
     "/h3ml/lib/network.js",

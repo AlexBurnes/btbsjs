@@ -17,21 +17,21 @@ export class Lvs {
     }
 
     empty() {
-    return graphEmpty;
+        return graphEmpty;
     }
 
     pad(index, last) {
-    let str = '';
-    const S = this;
-    if (S.lvs[index] != (last == 1 ? 0 : 1) || index != S.level) {
-        S.lvs[index] = index ? last ? 0 : 1 : 0;
-        S.level = index;
-    }
-    for(var i=0; i<=index-1; i++) {
-        str += (S.lvs[i] ? graphContinue : graphEmpty);
-    }
-    str += (last ? graphLast : index ? graphItem : graphEmpty);
-    return str;
+        let str = '';
+        const S = this;
+        if (S.lvs[index] != (last == 1 ? 0 : 1) || index != S.level) {
+            S.lvs[index] = index ? last ? 0 : 1 : 0;
+            S.level = index;
+        }
+        for(var i=0; i<=index-1; i++) {
+            str += (S.lvs[i] ? graphContinue : graphEmpty);
+        }
+        str += (last ? graphLast : index ? graphItem : graphEmpty);
+        return str;
     }
 }
 

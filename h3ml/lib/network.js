@@ -29,7 +29,6 @@ export class Socket {
         this.port = port;
         this.time = Date.now();
     }
-    //FIXME write it in async way
     async read(options = {}) {
         const ns = this.ns;
         const start = Date.now();
