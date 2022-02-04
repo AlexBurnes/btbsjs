@@ -106,7 +106,7 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 server.hackThreads,
                 server.growThreads,
                 server.weakThreads,
-                [server.optmalHackMoney.amount, server.optmalHackMoney.unit],
+                [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
                 server.optimalThreads,
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],

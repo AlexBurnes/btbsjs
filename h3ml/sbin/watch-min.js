@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.4.18'; // update this every time when edit the code!!!
+const Version = '0.3.5.2'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -35,6 +35,7 @@ function help(ns) {
 */
 
 let quietMode    = 1;
+const watchDataFile = "/h3ml/var/watcher.txt"; //FIXME move to constants
 
 class WatchTarget {
     constructor(ns, name) {
@@ -45,7 +46,6 @@ class WatchTarget {
         this.currentValue   = 0;
         this.totalAmount    = 0;
         this.actionTime     = Date.now();
-        this.hosts          = new Map();
         this.lastAction     = "";
         this.diffAvailMoney = Units.money(0);
         this.timeSpent      = Units.time(0);
@@ -96,6 +96,11 @@ class _Watcher {
                     this.targets_.set(name, new WatchTarget(this.ns, name));
                 }
             });
+
+        watch_data = read(watchDataFile);
+        if (watch_data) {
+            l.g(1, "there is a watch data, use it for init watcher");
+        }
     }
 
     get targets() {return this.targets_;}
@@ -105,6 +110,30 @@ class _Watcher {
     async stop() {}
     async ctrl() {}
     async info() {};
+    save() {
+        const watchData =
+            this.targets
+                .map((target, name) =>
+                    [
+                          name
+                        , target.currentAction
+                        , target.currentThreads
+                        , target.currentValue
+                        , target.totalAmount
+                        , target.actionTime
+                        , target.lastAction
+                        , target.diffAvailMoney.value
+                        , target.timeSpent.value
+                        , target.totalAmount
+                        , target.diffSecuriry
+                        , target.startTime
+                        , target.endTime
+                        , this.hosts.map((name) => name).join(',')
+                    ].join('|');
+                )
+                .join(";\n");
+        write(watchDataFile, "w");
+    }
 }
 
 const Watcher = new _Watcher;
@@ -329,9 +358,9 @@ export async function main(ns) {
 
     const l = new Logger(ns, {args: args});
 
-
-
     Watcher.init(l);
+
+    ns.atExit(() => {Watcher.save()})
 
 
     // drop all old events

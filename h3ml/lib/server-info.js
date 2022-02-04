@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info.js';
-const Version = '0.3.5.1'; // update this every time when edit the code!!!
+const Version = '0.3.5.2'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Units}      from "/h3ml/lib/units.js"
@@ -34,8 +34,8 @@ export function updateInfo(ns, target) {
     target.weakMaxThreads = Math.ceil((100 - target.minSecurity) / target.weakSecurityRate);
 
     // money to stole, to grow current value at once!
-    target.hackMaxThreads = ns.hackAnalyzeThreads(target.name, target.availMoney.value * (1-1/target.serverGrowth));
-    //Math.floor(1 / target.hackMoney); //max threads to hack maxMoney
+    target.hackMaxThreads = target.hackMoney ? ns.hackAnalyzeThreads(target.name, target.availMoney.value * (1-1/target.serverGrowth)) : 0;
+    // //max threads to hack maxMoney
     target.maxHackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity
     target.maxGrowSecutiryThreads = (100 - target.minSecurity)/target.growSecurity
 
@@ -87,11 +87,11 @@ export function updateInfo(ns, target) {
 
     //optimal hack threads
     target.optimalHackMoney   = Units.money(ha);
-    target.optimalHackTreads  = ht;
+    target.optimalHackThreads = target.hackMaxThreads;
 
     //optimal grow threads
-    target.optimalGrowThreads = target.serverMaxGrowthThreads;
-    target.optimalThreads     = Math.max(target.optimalGrowthThreads, target.optimalHackThreads);
+    target.optimalGrowThreads = target.serverMaxGrowthThreads || 0;
+    target.optimalThreads     = Math.max(target.optimalGrowThreads, target.optimalHackThreads);
 
 }
 

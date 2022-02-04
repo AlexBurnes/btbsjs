@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/units.js';
-const Version = '0.3.4.17'; // update this every time when edit the code!!!
+const Version = '0.3.5.2'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
@@ -25,7 +25,7 @@ export const Units = new _Units();
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // sizeFormat
 
-const memoryUnits = ['b', 'k', 'M', 'G', 'T'];
+const memoryUnits = ['b', 'k', 'M', 'G', 'T', 'P'];
 
 class SizeFormatted {
     constructor(value, size, unit) {
@@ -34,7 +34,7 @@ class SizeFormatted {
         this.unit  = unit;
     }
     valueOf() {return this.value};
-    pretty(ns) {return ns.sprintf("%.2f%s", this.size, this.units);}
+    pretty(ns) {return ns.sprintf("%.2f%s", this.size, this.unit);}
 }
 
 export function sizeFormat(size) {
@@ -44,7 +44,7 @@ export function sizeFormat(size) {
     const base = 1024;
     if (parseFloat(size) == "Infinity") return new SizeFormatted(0, 0, 'b');
     while (++unit < memoryUnits.length && Math.abs(size) >= base) size /= base;
-    return new SizeFormatted(value, value >= 0 ? size : -size, memoryUnits[--unit]);
+    return new SizeFormatted(value, value >= 0 ? size : -size, memoryUnits[unit]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -59,7 +59,7 @@ class MoneyFormatted {
         this.unit   = unit
     }
     valueOf() {return this.value};
-    pretty(ns) {return ns.sprintf("%.2f%s", this.amount, this.units);}
+    pretty(ns) {return ns.sprintf("%.2f%s", this.amount, this.unit);}
 }
 
 export function moneyFormat(amount) {
@@ -81,7 +81,7 @@ class TimeFormatted {
         this.unit = unit;
     }
     valueOf() {return this.value};
-    pretty(ns) {return ns.sprintf("%.2f%s", this.time, this.units);}
+    pretty(ns) {return ns.sprintf("%.2f%s", this.time, this.unit);}
 }
 
 export function timeFormat(time) {
