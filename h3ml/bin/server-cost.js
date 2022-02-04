@@ -12,7 +12,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -48,7 +48,7 @@ export async function main(ns) {
 
     // for modules
     const l = new Logger(ns, {args: args});
-    l.g(1, "%s %s", Module, Version);
+
 
     const [requestSizeGb] = args["_"];
 

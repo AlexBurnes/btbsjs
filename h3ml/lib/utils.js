@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/utils.js';
-const Version = '0.3.4.17';     // update this every time when edit the code!!!
+const Version = '0.3.4.18';     // update this every time when edit the code!!!
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Level tree dumper
@@ -85,13 +85,11 @@ export class Table {
      * @params {Array}  l array of lengthes
     **/
     border(g, l) {
-        let row = '';
-        for(let i = 0; i < l.length; i++) {
-            row += i == 0 ? g[0] : i == 1 ? g[3] : g[2];
-            row += g[1].repeat(l[i] + 1);
-            row += i == l.length - 1 ? g[4] : "";
-        }
-        this.ns.tprintf("%s", row);
+        this.ns.tprintf("%s",
+            l.map((d, i, l) =>
+                (i == 0 ? g[0] : i == 1 ? g[3] : g[2]) +  g[1].repeat(d + 1) + (i == l.length - 1 ? g[4] : "")
+            ).join('')
+        );
     }
 
     /**
@@ -100,32 +98,28 @@ export class Table {
      * @params {Array}  r array of data
      * @params {Number} a allign 0 left, 1 center, 2 right, default left
     **/
-
-    //FIXME possible trouble with ord length, 1/2 0 1 ok, 0 0 1 ok, 2 1 1, 3 1 2
     header(g, l, r, a = 0) {
-        let row = '';
-        for(let i = 0; i < r.length; i++) {
-            row += i <= 1 ? g[0] : g[2];
-            const al = l[i] - r[i].length;
-            row += this.ns.vsprintf("%s%s%s",
-                  a == 0
-                ? [ r[i],               g[1].repeat(al), " "]
-                : a == 1
-                ? [ g[1].repeat(al/2),  r[i],            g[1].repeat(al/2) + g[1].repeat(al%2)]
-                : [ g[1].repeat(al),    r[i],            " "]
-                //FIXME align center
-            );
-            row += i == r.length - 1 ? g[0] : "";
-        }
-        this.ns.tprintf("%s", row);
+        this.ns.tprintf("%s",
+            r.map((d, i, r, al = l[i] - d.length) =>
+                (i <= 1 ? g[0] : g[2]) +
+                this.ns.vsprintf("%s%s%s",
+                    a == 0
+                    ? [d, g[1].repeat(al), " "]
+                    : a == 1
+                        ? [g[1].repeat(al/2), d, g[1].repeat(al/2) + g[1].repeat(al%2)]
+                        : [g[1].repeat(al), d, " "]
+                ) +
+                (i == r.length - 1 ? g[0] : "")
+            ).join('')
+        );
     }
+
     /**
      * @params {String} g array of graph elements [left, gorizontal, cross, cross thin, right]
      * @params {Array}  l array of lengthes
      * @params {Array}  r array of rows of data
      * @params {Number} a allign 0 left, 1 center, 2 right, default left
     **/
-
     column(g, l, r, a = 0) {
         r.forEach(r => this.header(g, l, r, a));
     }
@@ -160,7 +154,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 

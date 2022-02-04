@@ -10,7 +10,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -46,7 +46,7 @@ export async function main(ns) {
 
     // for modules
     const l = new Logger(ns, {args: args});
-    l.g(1, "%s %s", Module, Version);
+
 
     const dest = args["_"][1] || args["_"][0] || "*";
     const source = args["_"][1] !== undefined ? args["_"][0]||"home" : "home";

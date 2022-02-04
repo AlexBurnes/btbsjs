@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/h3ml.js';
-const Version = '0.3.3.26'; // update this every time when edit the code!!!
+const Version = '0.3.4.18'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -15,7 +15,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -32,29 +32,24 @@ function help(ns) {
 async function listHackingServers(l, timeout) {
     const ns = l.ns;
     const start = Date.now();
-    await ns.tryWritePort(watchPort, ns.sprintf("%d|%d|@|%d|server-hacking-list", start, protocolVersion, infoPort));
-    while (Date.now() - start < timeout) { //wait 5 seconds
-        const str = await ns.readPort(infoPort);
-        if (str !== "NULL PORT DATA") {
-            const [time, version, action, ...data] = str.split("|");
-            if (time == undefined || version == undefined || version != protocolVersion) continue;
-            l.d(1, "%d %s: %s", time, action, data.join(", "));
-            if (action == "#") {
-                if (data[0] == "server-hacking-list") {
-                    const list = data[1].split(";").filter(server => !server.match(/^$/));
-                    l.d(1, "hacking servers %d", list.length);
-                    if (list.length > 0) {
-                        list.forEach(server => l.d(1, "\t%s", server));
-                    }
-                    return list;
-                }
+    const watchSocket = new Socket(ns, watchPort);
+    const infoSocket  = new Socket(ns, infoPort);
+    await watchSocket.write("@", infoPort, "server-hacking-list");
+    const [time, data] = await infoSocket.read({time: start, timeout: timeout});
+    l.d(1, "read time %d, action %s, info %s", time, data.join(','));
+    if (data[0] == "#") {
+        if (data[1] == "server-hacking-list") {
+            const list = data[2].split(";").filter(server => !server.match(/^$/));
+            l.d(1, "hacking servers %d", list.length);
+            if (list.length > 0) {
+                list.forEach(server => l.d(1, "\t%s", server));
             }
-
+            return list;
         }
-        await ns.sleep(100);
     }
     return [];
 }
+
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -70,12 +65,12 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    const lg = new Logger(ns, {logLevel : logLevel, debugLevel: debugLevel});
+    const l = new Logger(ns, {args: args});
 
     const hacking_list = await listHackingServers(l, 5000);
     const hacking_servers = new Map();
     hacking_list.forEach(list => {
-        data = list.split(',');
+        const data = list.split(',');
         hacking_servers.set(data[0], true);
     });
 
@@ -93,7 +88,7 @@ export async function main(ns) {
                 l.g(2, "%s already haking", server.name);
             }
             else {
-                const pid = ns.exec("server-hack.js", hack_server, 1, server.name);
+                const pid = ns.exec("/h3ml/sbin/server-hack.js", hack_server, 1, server.name);
                 if (pid) {
                     l.g(1, "%s start hacking at '%s' pid %d", server.name, hack_server, pid);
                 }

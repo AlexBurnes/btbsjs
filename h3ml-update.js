@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.4.17'; // update this every time when edit the code!!!
+const Version = '0.3.4.18'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 
@@ -30,7 +30,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 

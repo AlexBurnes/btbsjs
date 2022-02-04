@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-buy-min.js';
-const Version = '0.3.4.17'; // update this every time when edit the code!!!
+const Version = '0.3.4.18'; // update this every time when edit the code!!!
 
 import {Logger}     from "/h3ml/lib/log.js";
 
@@ -11,7 +11,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -47,7 +47,7 @@ export async function main(ns) {
 
     // for modules
     const l = new Logger(ns, {args: args});
-    l.g(1, "%s %s", Module, Version);
+
 
     const [name, requestSizeGb] = args["_"];
 
@@ -73,7 +73,7 @@ export async function main(ns) {
         }
     }
 
-    l.g("request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.amount, priceFmt.unit);
+    l.g(1, "request server size %s => %dG", requestSizeGb, size);
 
     const server_name = ns.purchaseServer(name, size);
 

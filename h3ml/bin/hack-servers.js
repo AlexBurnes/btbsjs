@@ -1,18 +1,17 @@
 const Module  = '/h3ml/bin/hack-servers.js';
-const Version = '0.3.4.13'; // update this every time when edit the code!!!
+const Version = '0.3.4.18'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
 import {Server}     from "/h3ml/lib/server.js";
 import {BotNet}     from "/h3ml/lib/botnet.js";
-import {Table}      from "/h3ml/lib/utils.js";
+import {Socket}     from "/h3ml/lib/network.js";
 import {hackInfo}   from "/h3ml/lib/hack-server.js";
 import {Units}      from "/h3ml/lib/units.js";
 
-const protocolVersion   = Constants.protocolVersion;
-const watchPort         = Constants.infoPort;
-const ctrlPort          = Constants.ctrlPort;
+const protocolVersion = Constants.protocolVersion;
+const watchPort       = Constants.watchPort;
 const infoPort        = Constants.infoPort;
 
 async function version(ns, port) {
@@ -20,7 +19,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -37,26 +36,20 @@ function help(ns) {
 async function listHackingServers(l, timeout) {
     const ns = l.ns;
     const start = Date.now();
-    await ns.tryWritePort(1, ns.sprintf("%d|%d|@|%d|server-hacking-list", start, protocolVersion, infoPort));
-    while (Date.now() - start < timeout) { //wait 5 seconds
-        const str = await ns.readPort(infoPort);
-        if (str !== "NULL PORT DATA") {
-            const [time, version, action, ...data] = str.split("|");
-            if (time == undefined || version == undefined || version != protocolVersion) continue;
-            l.d(1, "%d %s: %s", time, action, data.join(", "));
-            if (action == "#") {
-                if (data[0] == "server-hacking-list") {
-                    const list = data[1].split(";").filter(server => !server.match(/^$/));
-                    l.d(1, "hacking servers %d", list.length);
-                    if (list.length > 0) {
-                        list.forEach(server => l.d(1, "\t%s", server));
-                    }
-                    return list;
-                }
+    const watchSocket = new Socket(ns, watchPort);
+    const infoSocket  = new Socket(ns, infoPort);
+    await watchSocket.write("@", infoPort, "server-hacking-list");
+    const [time, data] = await infoSocket.read({time: start, timeout: timeout});
+    l.d(1, "read time %d, action %s, info %s", time, data.join(','));
+    if (data[0] == "#") {
+        if (data[1] == "server-hacking-list") {
+            const list = data[2].split(";").filter(server => !server.match(/^$/));
+            l.d(1, "hacking servers %d", list.length);
+            if (list.length > 0) {
+                list.forEach(server => l.d(1, "\t%s", server));
             }
-
+            return list;
         }
-        await ns.sleep(100);
     }
     return [];
 }
@@ -83,7 +76,7 @@ export async function main(ns) {
 
     // for modules
     const l = new Logger(ns, {args: args});
-    l.g(1, "%s %s", Module, Version);
+
 
     const hacking_list = await listHackingServers(l, 5000);
     const hacking_servers = new Map();
@@ -115,10 +108,11 @@ export async function main(ns) {
         .filter(server => ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel()); // hackable
 
     const botnet = new BotNet(ns);
-    l.g(1, "botnet %d memory %dGb max threads %d, used memory %dGb usage %.2f%%",
-        botnet.servers.length, botnet.maxRam, botnet.workers,
+    l.g(1, "botnet %d memory %dGb max threads %d, free %d, used memory %dGb usage %.2f%%",
+        botnet.servers.length, botnet.maxRam, botnet.maxWorkers, botnet.workers,
         botnet.usedRam, 100 * botnet.usedRam / botnet.maxRam
     );
+
 
     hackInfo(l, botnet, servers, hacking_servers);
 

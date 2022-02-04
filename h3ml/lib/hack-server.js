@@ -61,7 +61,6 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 ["Max"      , "%.2f%s"  ],  // max money
                 ["R"        , "%.2f"    ],  // rate to grow from available to max money
                 ["Gr"       , "%d"      ],  // server growth effectivness
-                ["Rt"       , "%.2f"    ],  // server rating
                 ["Htm"      , "%.2f%s"  ],  // hack time
                 ["Gtm"      , "%.2f%s"  ],  // grow time
                 ["Wtm"      , "%.2f%s"  ],  // weaken time
@@ -92,7 +91,6 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 [server.maxMoney.amount, server.maxMoney.unit],
                 server.moneyRatio,
                 server.serverGrowth,
-                Math.floor(Math.log(server.maxMoney.value))*(1/server.minSecurity)*server.serverGrowth,
                 [server.hackTime.time, server.hackTime.unit],
                 [server.growTime.time, server.growTime.unit],
                 [server.weakTime.time, server.weakTime.unit],
@@ -123,7 +121,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 

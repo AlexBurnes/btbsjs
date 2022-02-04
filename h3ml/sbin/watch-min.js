@@ -1,21 +1,24 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.4.17'; // update this every time when edit the code!!!
+const Version = '0.3.4.18'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
 import {Socket}         from "/h3ml/lib/network.js";
 import {Units}          from "/h3ml/lib/units.js";
 import {serversData}    from "/h3ml/etc/servers.js";
+import {Servers}        from "/h3ml/lib/server-list.js";
+
+/*
 import {updateInfo}     from "/h3ml/lib/server-info-min.js";
 import {Target}         from "/h3ml/lib/target-min.js"
-import {BotNet}         from "/h3ml/lib/botnet-min.js"
+import {BotNet}         from "/h3ml/lib/botnet-min.js"*/
 
 async function version(ns, port) {
     if (port !== undefined && port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -236,9 +239,12 @@ async function actionCtrl(watcher, time, data) {
 
     const socket = new Socket(ns, data[0]);
 
-    if (quietMode == 0) l.g(1, "ctrl receive %s, port %d", data[1], data[0]);
+    l.g(2, "ctrl receive %s, port %d", data[1], data[0]);
 
     switch (data[1]) {
+        case "server-hacking-list":
+            serversHackList(l, watcher, socket);
+            break;
         case "quiet":
             quietMode = 1;
             break;
@@ -246,9 +252,45 @@ async function actionCtrl(watcher, time, data) {
             quietMode = 0;
             break;
         default:
-            socket.write("#|Error|unknown command", data[1]);
+            socket.write("#|Error|unknown command");
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// list of hacking servers
+async function serversHackList(l, watcher, socket) {
+    const ns = l.ns;
+    l.d(1, "prepare list");
+    const scripts = new Map();
+    Servers.list(ns).forEach(server => {
+        //l.g(1, "server %s", server.name);
+        const procs = ns.ps(server.name);
+        //ns.tprint(procs);
+        procs
+            .filter(proc => proc.filename == "/h3ml/sbin/server-hack.js")
+            .forEach(proc => {
+                proc.args
+                    .filter(arg => !arg.match(/^--/))
+                    .forEach(arg => {scripts.set(arg, true); l.d(1, "set %s hack %s", server.name, arg);})
+            });
+    });
+    const list = new Array();
+    watcher.targets.forEach((server, key) => {
+        l.d(1, "server %s, action %s", server.name, server.currentAction);
+        if (scripts.has(server.name)) list.push(server);
+    });
+
+    const info = list.map(
+        s =>
+            ns.sprintf("%s,%s,%d,%d,%s,%f,%f,%f",
+                s.name, s.currentAction, s.startTime, s.endTime,
+                s.lastAction, s.diffAvailMoney.value, s.totalAmount, s.diffSecuriry
+            )
+        ).join(";");
+    l.d(1, "write info %s", info);
+    await socket.write("#", "server-hacking-list", info);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // info from scripts, to output into terminal or log
@@ -287,6 +329,8 @@ export async function main(ns) {
 
     const l = new Logger(ns, {args: args});
 
+
+
     Watcher.init(l);
 
 
@@ -316,6 +360,7 @@ export async function main(ns) {
                         //info to output
                         await actionInfo(Watcher, time, data);
                 }
+                return 1; //continue
             },
             {
                 timeout: 1000,

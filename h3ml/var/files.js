@@ -8,7 +8,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(Constants.updatePort, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -63,6 +63,7 @@ export const scriptFiles = [
     "/h3ml/bin/hack-servers.js",
     "/h3ml/bin/share.js",
 
+    "/h3ml/bin/start.js",
     "/h3ml/bin/stop.js",
     "/h3ml/bin/quiet.js",
     "/h3ml/bin/verbose.js",

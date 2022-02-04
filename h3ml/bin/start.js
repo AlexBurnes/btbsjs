@@ -1,8 +1,9 @@
-const Module  = '/h3ml/bin/verbose.js';
-const Version = '0.3.2.24'; // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/start.js';
+const Version = '0.3.4.17'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
+import {Servers}    from "/h3ml/lib/server-list.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -19,7 +20,7 @@ async function version(ns, port) {
 **/
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] | --help", Module);
-    ns.tprintf("set watcher verbose");
+    ns.tprintf("start watcher");
     return;
 }
 
@@ -46,5 +47,11 @@ export async function main(ns) {
     const l = new Logger(ns, {args: args});
 
 
-    await ns.tryWritePort(Constants.ctrlPort, ns.sprintf("%d|%d|@|0|verbose", Date.now(), Constants.protocolVersion));
+    const ctrl_server = ns.serverExists("ctrl-server") ? "ctrl-server" : "home";
+    if (ns.getServerMaxRam(ctrl_server) > 128) {
+        ns.exec("/h3ml/sbin/watcher.js", ctrl_server, 1);
+    }
+    else {
+        ns.exec("/h3ml/sbin/watch-min.js", ctrl_server, 1);
+    }
 }

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watcher.js';
-const Version = '0.3.3'; // update this every time when edit the code!!!
+const Version = '0.3.4.18'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -12,7 +12,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
@@ -197,7 +197,7 @@ async function actionStop(l, servers, time, data) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // list of hacking servers
-async function serversHackList(l, servers, port) {
+async function serversHackList(l, socket) {
     const ns = l.ns;
     const scripts = new Map();
     Servers.list().forEach(server => {
@@ -211,7 +211,7 @@ async function serversHackList(l, servers, port) {
             });
     });
     const list = new Array();
-    servers.forEach((server, key) => {
+    Watcher.targets.forEach((server, key) => {
         l.d(1, "server %s, action %s", server.name, server.currentAction);
         if (
             ns.getServerMaxMoney(server.name) > 0 &&
@@ -234,7 +234,7 @@ async function serversHackList(l, servers, port) {
                         )
                 )
                 .join(";");
-        await ns.tryWritePort(port, ns.sprintf("%d|%d|#|server-hacking-list|%s", Date.now(), protocolVersion, info));
+        await socket.write(info);
     }
 }
 
@@ -250,7 +250,7 @@ async function actionCtrl(l, servers, time, data) {
 
     switch (data[1]) {
         case "server-hacking-list":
-            serversHackList(l, servers, port);
+            serversHackList(l, socket);
             break;
         case "quiet":
             quietMode = 1;

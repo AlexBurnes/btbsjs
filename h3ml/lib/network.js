@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/network.js';
-const Version = '0.3.4.17';
+const Version = '0.3.4.18';
 
 /*
     network interaction, read, write, listen
@@ -14,7 +14,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(port, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
 }
 
 function help(ns) {
@@ -31,12 +31,13 @@ export class Socket {
     }
     async read(options = {}) {
         const ns = this.ns;
-        const start = Date.now();
+        const start = options.time || Date.now();
         while (true) {
             const str = await ns.readPort(this.port);
             if (str !== "NULL PORT DATA") {
                 const [time, version, ...data] = str.split("|");
                 if (time == undefined || version == undefined || version != this.version) continue; //failed
+                if (time < this.time) continue;
                 return [time, data];
             }
             if (options.timeout && Date.now() - start >= options.timeout) break;
@@ -46,7 +47,7 @@ export class Socket {
     }
     async write(...data) {
         const ns = this.ns;
-        return await ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data.join("|")));
+        return await ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data.join('|')));
     }
     /* @param {(time, string){}} collaback*/
     async listen(callback, options = {}) {

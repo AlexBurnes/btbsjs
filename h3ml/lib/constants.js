@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.4.17'; // update this every time when edit the code!!!
+const Version = '0.3.4.18'; // update this every time when edit the code!!!
 
 import {settings}  from "/h3ml-settings.js";
 
@@ -25,8 +25,8 @@ const _reserveRam       = 0;
 const _maxHomeCpuCores  = 8;
 
 const _protocolVersion  = 2; // version of protocol for iteract on botnet network
-const _watchPort        = 1; // port number for updater
-const _ctrlPort         = 2; // port number for receive ctrl data
+const _watchPort        = 1; // port number for recieve watch data
+const _ctrlPort         = 2; // port number for receive ctrl data?
 const _infoPort         = 3; // reserved port for hacking.js, hack-servers.js
 const _updatePort       = 4; // reserved port for updater.js
 
@@ -73,7 +73,7 @@ async function version(ns, port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
         return ns.tryWritePort(Constants.updatePort, data);
     }
-    ns.tprintf("version %s", Version);
+    ns.tprintf("module %s version %s", Module, Version);
     return;
 }
 
