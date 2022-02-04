@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.4.12';     // update this every time when edit the code!!!
+const Version = '0.3.5.1';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
@@ -53,6 +53,8 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
 
         const table = new Table(ns,
             [
+
+                // this information from servers
                 ["    Name" , "%s"      ],  // server name
                 ["Chance"   , "%.2f%%"  ],  // hack  chance
                 ["Min "     , "%.2f"    ],  // min sucity
@@ -61,20 +63,26 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 ["Max"      , "%.2f%s"  ],  // max money
                 ["R"        , "%.2f"    ],  // rate to grow from available to max money
                 ["Gr"       , "%d"      ],  // server growth effectivness
+                ["H"        , "%s"      ],  // hacking server
                 ["Htm"      , "%.2f%s"  ],  // hack time
                 ["Gtm"      , "%.2f%s"  ],  // grow time
                 ["Wtm"      , "%.2f%s"  ],  // weaken time
-                ["H"        , "%s"      ],  // hacking server
-                ["Hth"      , "%d"      ],  // hack optimal threads to hack money to grow server at once
-                ["Gth"      , "%d"      ],  // grow threads to grow from avail to max money
-                ["Wth"      , "%d"      ],  // weaken threads to down security to minimum
-                ["Hom"      , "%.2f%s"  ],  // hack optmal money
-                ["C"        , "%s"      ],
-                ["Time"     , "%.2f%s"  ],
-                ["L"        , "%s"      ],
-                ["Diff"     , "%s%.2f%s"],
-                ["Sec"      , "%.2f"    ],
-                ["Total"    , "%.2f%s"  ]
+
+                // this is calculated by server-info.updateInfo
+                ["Hth"      , "%d"      ],  // hack threads to hack money to grow server at once
+                ["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
+                ["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
+                ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
+                ["Oth"      , "%d"      ],  // optimal max threads
+
+                // this come from wather
+                ["Ca"       , "%s"      ],  // current action
+                ["Time"     , "%.2f%s"  ],  // remain time
+                ["La"       , "%s"      ],  // previous action
+                //FIXME add spent time on action
+                ["Diff"     , "%s%.2f%s"],  // available money diff, + grow, - hack
+                ["Sec"      , "%.2f"    ],  // secutity diff of prvious action
+                ["Total"    , "%.2f%s"  ],  // total amount hacked from server
             ],
 
         );
@@ -91,14 +99,15 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 [server.maxMoney.amount, server.maxMoney.unit],
                 server.moneyRatio,
                 server.serverGrowth,
+                hacking_servers.has(server.name) ? "yes" : "no",
                 [server.hackTime.time, server.hackTime.unit],
                 [server.growTime.time, server.growTime.unit],
                 [server.weakTime.time, server.weakTime.unit],
-                hacking_servers.has(server.name) ? "yes" : "no",
-                server.optimalMaxHackTreads,
+                server.hackThreads,
                 server.growThreads,
                 server.weakThreads,
-                [server.optmalMaxHackMoney.amount, server.optmalMaxHackMoney.unit],
+                [server.optmalHackMoney.amount, server.optmalHackMoney.unit],
+                server.optimalThreads,
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
                 hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
