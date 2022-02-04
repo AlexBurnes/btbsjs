@@ -1,132 +1,19 @@
-const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.5.2';     // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/hack-servers.js';
+const Version = '0.3.5.3'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
+import {Logger}     from "/h3ml/lib/log.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
+import {Server}     from "/h3ml/lib/server.js";
 import {BotNet}     from "/h3ml/lib/botnet.js";
-import {Table}      from "/h3ml/lib/utils.js";
-import {updateInfo} from "/h3ml/lib/server-info.js";
-import {Units}      from "/h3ml/lib/units.js"
+import {Socket}     from "/h3ml/lib/network.js";
+import {hackInfo}   from "/h3ml/lib/hack-server.js";
+import {Units}      from "/h3ml/lib/units.js";
 
-export function hackInfo(l, botnet, servers, hacking_servers) {
-    const ns = l.ns;
+const protocolVersion = Constants.protocolVersion;
+const watchPort       = Constants.watchPort;
+const infoPort        = Constants.infoPort;
 
-    if (botnet.servers.length) {
-        l.g(2, "botnet list:");
-        botnet.servers
-            .sort(function (a, b) { a.workers - b.workers })
-            .forEach(server => {
-                l.g(2, "\t%s %dGb / %dGb, allow worker threads %d",
-                    server.name, server.maxRam, server.usedRam, server.workers
-                );
-            });
-    }
-
-    if (servers.length) {
-
-        let allServerThreads = 0;
-        let maxServerThreads = 0;
-        servers.forEach(server => {
-            updateInfo(ns, server);
-            if (maxServerThreads < server.optimalThreads) {
-                maxServerThreads = server.optimalThreads;
-            }
-            allServerThreads += server.optimalThreads;
-        });
-
-        servers.sort(
-            function (b, a) {
-                return (
-                      1/Math.floor(Math.log10(b.maxMoney.value))*(1/b.minSecurity)*b.serverGrowth
-                    - 1/Math.floor(Math.log10(a.maxMoney.value))*(1/a.minSecurity)*a.serverGrowth
-                )
-            }
-        );
-
-        // need to find nearest > 2^n Gb server :)
-        const allServersRam = Math.ceil(botnet.workerRam * allServerThreads);
-        const oneServerRam = Math.ceil(botnet.workerRam * maxServerThreads);
-        l.g(1, "hacking %d/%d servers", hacking_servers.size, servers.length);
-        l.g(1, "for optimal hack require max single server size %s, total size %s",
-            Units.size(oneServerRam*1024*1024).pretty(ns), Units.size(allServersRam*1024*1024).pretty(ns)
-        );
-
-        const table = new Table(ns,
-            [
-
-                // this information from servers
-                ["    Name" , "%s"      ],  // server name
-                ["Chance"   , "%.2f%%"  ],  // hack  chance
-                ["Min "     , "%.2f"    ],  // min sucity
-                ["Cur"      , "%.2f"    ],  // cure security
-                ["Avail"    , "%.2f%s"  ],  // available money
-                ["Max"      , "%.2f%s"  ],  // max money
-                ["R"        , "%.2f"    ],  // rate to grow from available to max money
-                ["Gr"       , "%d"      ],  // server growth effectivness
-                ["H"        , "%s"      ],  // hacking server
-                ["Htm"      , "%.2f%s"  ],  // hack time
-                ["Gtm"      , "%.2f%s"  ],  // grow time
-                ["Wtm"      , "%.2f%s"  ],  // weaken time
-
-                // this is calculated by server-info.updateInfo
-                ["Hth"      , "%d"      ],  // hack threads to hack money to grow server at once
-                ["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
-                ["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
-                ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
-                ["Oth"      , "%d"      ],  // optimal max threads
-                ["sz"       , "%s"      ],  // server size require
-
-                // this come from wather
-                ["Ca"       , "%s"      ],  // current action
-                ["Time"     , "%.2f%s"  ],  // remain time
-                ["La"       , "%s"      ],  // previous action
-                //FIXME add spent time on action
-                ["Diff"     , "%s%.2f%s"],  // available money diff, + grow, - hack
-                ["Sec"      , "%.2f"    ],  // secutity diff of prvious action
-                ["Total"    , "%.2f%s"  ],  // total amount hacked from server
-            ],
-
-        );
-
-        servers.forEach(server => {
-            const moneyHackRate = Units.money(server.threadRate);
-            const hack_info = hacking_servers.has(server.name) ? hacking_servers["get"](server.name) : undefined;
-            table.push(
-                server.name,
-                100 * server.hackChances,
-                server.minSecurity,
-                server.currentSecurity,
-                [server.availMoney.amount, server.availMoney.unit],
-                [server.maxMoney.amount, server.maxMoney.unit],
-                server.moneyRatio,
-                server.serverGrowth,
-                hacking_servers.has(server.name) ? "yes" : "no",
-                [server.hackTime.time, server.hackTime.unit],
-                [server.growTime.time, server.growTime.unit],
-                [server.weakTime.time, server.weakTime.unit],
-                server.hackThreads,
-                server.growThreads,
-                server.weakThreads,
-                [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
-                server.optimalThreads,
-                Units.size(server.optimalThreads*botnet.workerRam*1024*1024).pretty(ns),
-                hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
-                hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
-                hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
-                hack_info !== undefined ? [hack_info[3] == "hack" ? "-" : "+", hack_info[4].amount, hack_info[4].unit] : ["", 0, ""],
-                hack_info !== undefined ? hack_info[5] : 0,
-                hack_info !== undefined ? [hack_info[6].amount, hack_info[6].unit] : [0, ""]
-            );
-        });
-        table.print();
-    }
-    return;
-}
-
-/**
-    @param {NS} ns
-    @param {Number} port
-**/
 async function version(ns, port) {
     if (port !== undefined && port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
@@ -136,10 +23,35 @@ async function version(ns, port) {
     return;
 }
 
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
 function help(ns) {
     ns.tprintf("usage: %s --version [--update-port] | --help", Module);
-    ns.tprintf("this module is a library, import {hackInfo} from '%s'", Module);
+    ns.tprintf("module description");
     return;
+}
+
+async function listHackingServers(l, timeout) {
+    const ns = l.ns;
+    const start = Date.now();
+    const watchSocket = new Socket(ns, watchPort);
+    const infoSocket  = new Socket(ns, infoPort);
+    await watchSocket.write("@", infoPort, "server-hacking-list");
+    const [time, data] = await infoSocket.read({time: start, timeout: timeout});
+    l.d(1, "read time %d, action %s, info %s", time, data.join(','));
+    if (data[0] == "#") {
+        if (data[1] == "server-hacking-list") {
+            const list = data[2].split(";").filter(server => !server.match(/^$/));
+            l.d(1, "hacking servers %d", list.length);
+            if (list.length > 0) {
+                list.forEach(server => l.d(1, "\t%s", server));
+            }
+            return list;
+        }
+    }
+    return [];
 }
 
 /** @param {NS} ns **/
@@ -147,7 +59,12 @@ export async function main(ns) {
     const args = ns.flags([
         [ 'version'     , false ],
         [ 'update-port' , 0     ],
-        [ 'help'        , false ]
+        [ 'help'        , false ],
+        [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
+        [ 'debug'       , 0     ], // debug level
+        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+
     ]);
 
     if (args['version']) {
@@ -156,7 +73,47 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    help(ns);
-    return;
-}
 
+    // for modules
+    const l = new Logger(ns, {args: args});
+
+
+    const hacking_list = await listHackingServers(l, 5000);
+    const hacking_servers = new Map();
+    hacking_list.forEach(item => {
+        const server = item.split(",");
+        const timeout = server[2] - Date.now() + parseInt(server[3]);
+        const now = Date.now();
+        const estimate = Units.time(server[1] !== undefined && timeout > 0 ? timeout/1000 : 0);
+        const diff_amount = Units.money(server[5]);
+        const total_amount = Units.money(server[6]);
+        const diff_security = server[7];
+        const hack_info = [
+            server[0],
+            server[1],
+            estimate,
+            server[4],
+            diff_amount,
+            diff_security,
+            total_amount
+        ];
+        //l.d(1, "\t%s data: %s", server[0], server.join(","));
+        hacking_servers.set(server[0], hack_info);
+    });
+
+    const servers = Servers.list(ns, Server)
+        .filter(server => server.name !== 'home') // not home
+        .filter(server => ns.getServerMaxMoney(server.name)) // has money
+        .filter(server => ns.hasRootAccess(server.name)) // with root access
+        .filter(server => ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel()); // hackable
+
+    const botnet = new BotNet(ns);
+    l.g(1, "botnet %d memory %dGb max threads %d, free %d, used memory %dGb usage %.2f%%",
+        botnet.servers.length, botnet.maxRam, botnet.maxWorkers, botnet.workers,
+        botnet.usedRam, 100 * botnet.usedRam / botnet.maxRam
+    );
+
+
+    hackInfo(l, botnet, servers, hacking_servers);
+
+}

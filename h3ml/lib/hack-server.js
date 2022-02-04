@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.5.1';     // update this every time when edit the code!!!
+const Version = '0.3.5.2';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
@@ -26,14 +26,12 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
 
         let allServerThreads = 0;
         let maxServerThreads = 0;
-        let totalRate = 0;
         servers.forEach(server => {
             updateInfo(ns, server);
-            if (maxServerThreads < server.optimalMaxThreads) {
-                maxServerThreads = server.optimalMaxThreads;
+            if (maxServerThreads < server.optimalThreads) {
+                maxServerThreads = server.optimalThreads;
             }
-            allServerThreads += server.optimalMaxThreads;
-            totalRate += server.threadRate;
+            allServerThreads += server.optimalThreads;
         });
 
         servers.sort(
@@ -49,7 +47,9 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
         const allServersRam = Math.ceil(botnet.workerRam * allServerThreads);
         const oneServerRam = Math.ceil(botnet.workerRam * maxServerThreads);
         l.g(1, "hacking %d/%d servers", hacking_servers.size, servers.length);
-        l.g(1, "for optimal hack require max single server size %dGb, total size %dGb", oneServerRam, allServersRam);
+        l.g(1, "for optimal hack require max single server size %s, total size %s",
+            Units.size(oneServerRam*1024*1024).pretty(ns), Units.size(allServersRam*1024*1024).pretty(ns)
+        );
 
         const table = new Table(ns,
             [
@@ -74,6 +74,7 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 ["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
                 ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
                 ["Oth"      , "%d"      ],  // optimal max threads
+                ["sz"       , "%s"      ],  // server size require
 
                 // this come from wather
                 ["Ca"       , "%s"      ],  // current action
@@ -108,6 +109,7 @@ export function hackInfo(l, botnet, servers, hacking_servers) {
                 server.weakThreads,
                 [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
                 server.optimalThreads,
+                Units.size(server.optimalThreads*botnet.workerRam*1024*1024).pretty(ns),
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
                 hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
