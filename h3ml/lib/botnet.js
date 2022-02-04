@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/botnet.js';
-const Version = '0.3.4.16';     // update this every time when edit the code!!!
+const Version = '0.3.4.17';     // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Servers}     from "/h3ml/lib/server-list.js";
@@ -40,7 +40,7 @@ export class BotNet {
         this.usedRam = 0;
         this.servers =
             Servers.list(ns, Server)
-                .filter(server => !server.name.match(/^(ctrl-server|hack-server(?:-\d+)*)$/)) // do not use ctr-server and hack-server for workers
+                .filter(server => !server.name.match(/^(ctrl-server|devel-|hack-server(?:-\d+)*)$/)) // do not use ctr-server and hack-server for workers
                 .filter(server => ns.hasRootAccess(server.name))
                 .filter(server => server.maxRam > this.workerRam)
                 .filter(server => ns.fileExists(this.workerScript, server.name));

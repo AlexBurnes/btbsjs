@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/units.js';
-const Version = '0.3.3.23'; // update this every time when edit the code!!!
+const Version = '0.3.4.17'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 
@@ -34,6 +34,7 @@ class SizeFormatted {
         this.unit  = unit;
     }
     valueOf() {return this.value};
+    pretty(ns) {return ns.sprintf("%.2f%s", this.size, this.units);}
 }
 
 export function sizeFormat(size) {
@@ -41,7 +42,7 @@ export function sizeFormat(size) {
     size = size;
     let unit = 0;
     const base = 1024;
-    if (parseFloat(size) == "Infinity") return SizeFormatted(0, 0, 'b');
+    if (parseFloat(size) == "Infinity") return new SizeFormatted(0, 0, 'b');
     while (++unit < memoryUnits.length && Math.abs(size) >= base) size /= base;
     return new SizeFormatted(value, value >= 0 ? size : -size, memoryUnits[--unit]);
 }
@@ -58,13 +59,14 @@ class MoneyFormatted {
         this.unit   = unit
     }
     valueOf() {return this.value};
+    pretty(ns) {return ns.sprintf("%.2f%s", this.amount, this.units);}
 }
 
 export function moneyFormat(amount) {
     const value = amount;
     let unit = 0;
     const base = 1000;
-    if (parseFloat(amount) == "Infinity") return MoneyFormatted(0, 0, '');
+    if (parseFloat(amount) == "Infinity") return new MoneyFormatted(0, 0, '');
     while (++unit < moneyUnits.length && Math.abs(amount) >= base) amount /= base;
     return new MoneyFormatted(value, amount, moneyUnits[unit-1]);
 }
@@ -79,12 +81,13 @@ class TimeFormatted {
         this.unit = unit;
     }
     valueOf() {return this.value};
+    pretty(ns) {return ns.sprintf("%.2f%s", this.time, this.units);}
 }
 
 export function timeFormat(time) {
     const value = time;
     let unit = 0;
-    if (parseFloat(time) == "Infinity") return TimeFormatted(0, 0, 's');
+    if (parseFloat(time) == "Infinity") return new TimeFormatted(0, 0, 's');
     while (++unit < timeUnits.length && Math.abs(time) >= timeBases[unit-1]) time /= timeBases[unit-1];
     return new TimeFormatted(value, time, timeUnits[unit-1]);
 }

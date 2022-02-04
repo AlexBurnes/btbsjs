@@ -1,62 +1,54 @@
 const Module  = '/h3ml/lib/utils.js';
-const Version = '0.3.2.21';     // update this every time when edit the code!!!
-
-import {Constants}  from "/h3ml/lib/constants.js";
+const Version = '0.3.4.17';     // update this every time when edit the code!!!
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Level tree dumper
-const graphEmpty    = '    ';
-const graphContinue = ' │  ';
-const graphItem     = ' ├──';
-const graphLast     = ' └──';
-
 export class Lvs {
     constructor() {
-    this.lvs = [];
-    this.level = 0;
+        this.lv = [];   // vector of levels
+        this.l  = 0;    // current level
     }
 
-    empty() {
-        return graphEmpty;
-    }
+    get empty()  {return '    ';}
+    get trunk()  {return ' │  ';}
+    get branch() {return ' ├──';}
+    get leaf()   {return ' └──';}
 
-    pad(index, last) {
-        let str = '';
-        const S = this;
-        if (S.lvs[index] != (last == 1 ? 0 : 1) || index != S.level) {
-            S.lvs[index] = index ? last ? 0 : 1 : 0;
-            S.level = index;
+    /**
+     * @params {Number} i index
+     * @params {Number} l last
+     * @return {String}
+    **/
+    pad(i, l) {
+        const t = this;
+        if (t.lv[i] != (l ? 0 : 1) || i != t.l) {
+            t.lv[i] = i ? l ? 0 : 1 : 0;
+            t.l = i;
         }
-        for(var i=0; i<=index-1; i++) {
-            str += (S.lvs[i] ? graphContinue : graphEmpty);
-        }
-        str += (last ? graphLast : index ? graphItem : graphEmpty);
-        return str;
+        return t.empty + t.lv.slice(0, i).map(l => l ? t.trunk : t.empty).join('') + (l ? t.leaf : i ? t.branch : t.empty);
     }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Table
-/*  @param {array[array[string]]} rows
-    first row could be column names
-    rows of column row
-*/
 
-/*
-╔═╤═╦═╗
-║ │ ║ ║
-╠═╪═╬═╣
-╟─┼─╫─╢
-╚═╧═╩═╝
-*/
+/** default graph of table is array of rows 5x5: top, column-border, header-border, row-border, bottom **/
+/** each row is array of graph elements: left, filler, cross, cross thin, right **/
+const tableGraph = [
+    "╔═╤╦╗",
+    "║ │║║",
+    "╠═╪╬╣",
+    "╟─┼╫╢",
+    "╚═╧╩╝"
+];
 
 export class Table {
 
-    constructor(ns, columns) {
+    constructor(ns, columns, graph = tableGraph) {
         this.ns = ns;
-
         this.headers = []; // column names
         this.formats = []; // column formats
+        this.graph = graph;
         columns.forEach(
             column => {
                 this.headers.push(column[0]);
@@ -64,7 +56,7 @@ export class Table {
             }
         );
 
-        this.rows = []; // rows data
+        this.rows    = []; // rows data
         this.columns = []; // column max sizes
         if (this.headers.length != this.formats.length) {
             throw new Error("number of column names and column formats not equals");
@@ -85,65 +77,66 @@ export class Table {
             }
             if (this.columns[i] == undefined || this.columns[i] < data[i].length) this.columns[i] = data[i].length;
         }
-    this.rows.push(data);
+        this.rows.push(data);
+    }
+
+    /**
+     * @params {String} g array of graph elements [left, gorizontal, cross, cross thin, right]
+     * @params {Array}  l array of lengthes
+    **/
+    border(g, l) {
+        let row = '';
+        for(let i = 0; i < l.length; i++) {
+            row += i == 0 ? g[0] : i == 1 ? g[3] : g[2];
+            row += g[1].repeat(l[i] + 1);
+            row += i == l.length - 1 ? g[4] : "";
+        }
+        this.ns.tprintf("%s", row);
+    }
+
+    /**
+     * @params {String} g array of graph elements [left, gorizontal, cross, cross thin, right]
+     * @params {Array}  l array of lengthes
+     * @params {Array}  r array of data
+     * @params {Number} a allign 0 left, 1 center, 2 right, default left
+    **/
+
+    //FIXME possible trouble with ord length, 1/2 0 1 ok, 0 0 1 ok, 2 1 1, 3 1 2
+    header(g, l, r, a = 0) {
+        let row = '';
+        for(let i = 0; i < r.length; i++) {
+            row += i <= 1 ? g[0] : g[2];
+            const al = l[i] - r[i].length;
+            row += this.ns.vsprintf("%s%s%s",
+                  a == 0
+                ? [ r[i],               g[1].repeat(al), " "]
+                : a == 1
+                ? [ g[1].repeat(al/2),  r[i],            g[1].repeat(al/2) + g[1].repeat(al%2)]
+                : [ g[1].repeat(al),    r[i],            " "]
+                //FIXME align center
+            );
+            row += i == r.length - 1 ? g[0] : "";
+        }
+        this.ns.tprintf("%s", row);
+    }
+    /**
+     * @params {String} g array of graph elements [left, gorizontal, cross, cross thin, right]
+     * @params {Array}  l array of lengthes
+     * @params {Array}  r array of rows of data
+     * @params {Number} a allign 0 left, 1 center, 2 right, default left
+    **/
+
+    column(g, l, r, a = 0) {
+        r.forEach(r => this.header(g, l, r, a));
     }
 
     print() {
-        let border = "";
-        for(let i = 0; i < this.columns.length; i++) {
-            border += i == 0 ? "╔" : i == 1 ? "╦" : "╤";
-            border += "═".repeat(this.columns[i] + 1);
-            border += i == this.columns.length - 1 ? "╗" : "";
-        }
-        this.ns.tprintf("%s", border);
-
-        let header = "";
-        for(let i = 0; i < this.headers.length; i++) {
-            header += i <= 1 ? "║" : "│";
-            header += this.ns.vsprintf("%s%s ", [ this.headers[i], " ".repeat(this.columns[i] - this.headers[i].length) ]);
-            header += i == this.headers.length - 1 ? "║" : "";
-        }
-        this.ns.tprintf("%s", header);
-
-        border = "";
-        for(let i = 0; i < this.columns.length; i++) {
-            border += i == 0 ? "╠" : i == 1 ? "╬" : "╪";
-            border += "═".repeat(this.columns[i] + 1);
-            border += i == this.columns.length - 1 ? "╣" : "";
-        }
-        this.ns.tprintf("%s", border);
-
-        border = "";
-        for(let i = 0; i < this.columns.length; i++) {
-            border += i == 0 ? "╟" : i == 1 ? "╫" : "┼";
-            border += "─".repeat(this.columns[i] + 1);
-            border += i == this.columns.length - 1 ? "╢" : "";
-        }
-
-        for(let i = 0; i < this.rows.length; i++) {
-            let row = "";
-            for(let j = 0; j < this.rows[i].length; j++) {
-            row += j <= 1 ? "║" : "│";
-            row += this.ns.vsprintf("%s%s ", [ " ".repeat(this.columns[j] - this.rows[i][j].length), this.rows[i][j] ]);
-            row += j == this.rows[i].length - 1 ? "║" : "";
-            }
-            this.ns.tprintf("%s", row);
-        }
-
-        border = "";
-        for(let i = 0; i < this.columns.length; i++) {
-            border += i == 0 ? "╚" : i == 1 ? "╩" : "╧";
-            border += "═".repeat(this.columns[i] + 1);
-            border += i == this.columns.length - 1 ? "╝" : "";
-        }
-        this.ns.tprintf("%s", border);
-
-        // clean rows
-        this.rows = []; // rows data
-        this.columns = []; // column max sizes
-        for(let i = 0; i < this.headers.length; i++) {
-            this.columns[i] = this.headers[i].length;
-        }
+        this.border(this.graph[0], this.columns);                   // top
+        this.header(this.graph[1], this.columns, this.headers);     // header
+        this.border(this.graph[2], this.columns);                   // border
+        this.column(this.graph[1], this.columns, this.rows, 2);     // rows
+        this.border(this.graph[4], this.columns);                   // bottom
+        this.rows = [];  // clean rows
     }
 }
 

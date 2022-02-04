@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-buy-min.js';
-const Version = '0.3.3.24'; // update this every time when edit the code!!!
+const Version = '0.3.4.17'; // update this every time when edit the code!!!
 
 import {Logger}     from "/h3ml/lib/log.js";
 
@@ -57,7 +57,7 @@ export async function main(ns) {
         return;
     }
 
-    let [_, size, unit] = requestSizeGb.match(/^(\d+)(g|t|G|T|p|P)?/);
+    let [_, size, unit] = requestSizeGb.match(/^(\d+)(g|t|G|T|p|P)+/);
     if (unit !== undefined) {
         switch (unit) {
             case 'G':
@@ -66,13 +66,14 @@ export async function main(ns) {
             case 'T':
             case 't':
                 size *= 1024;
+                break;
             case 'P':
             case 'p':
                 size *= 1024*1024;
         }
     }
 
-    l.g("request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.cost, priceFmt.unit);
+    l.g("request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.amount, priceFmt.unit);
 
     const server_name = ns.purchaseServer(name, size);
 

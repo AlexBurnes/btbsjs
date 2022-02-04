@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/worm.js';
-const Version = '0.3.4.16'; // update this every time when edit the code!!!
+const Version = '0.3.4.17'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js";
@@ -31,7 +31,7 @@ export async function main(ns) {
         [ 'update-port' , 0     ],
         [ 'help'        , false ],
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
-        [ 'debug'       , 1     ], // debug level
+        [ 'debug'       , 0     ], // debug level
         [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
         [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
 
@@ -57,7 +57,7 @@ export async function main(ns) {
 
     const servers = Servers.list(ns)
         .filter(server => (server.name != "home" && dest != "home") || dest == "home")
-        .filter(server => !server.name.match(/^(?:devel-|share-)/) && dest == server.name)
+        .filter(server => !server.name.match(/^(?:devel-|share-)/) && dest != "*" && dest == server.name)
         .filter(server => server.name.match(re));
 
     l.d(1, "copy files from %s to %s", source, servers.map(server => server.name).join(', '));
@@ -81,7 +81,7 @@ export async function main(ns) {
 
     for (const server of servers) {
         if (ns.hasRootAccess(server.name)) {
-            const files = server.name.match(/^[a-zA-Z0-9]+\[\_\-]server(?:[\_\-]\d+)*$/) || server.name == "home"
+            const files = server.name.match(/^[a-zA-Z0-9]+?[\_\-]server(?:[\_\-]\d+)*$/) || server.name == "home"
                 ? server_files
                 : target_files;
             l.d(1, "copy files %s => %s: %s", source, server.name, files.join(","))

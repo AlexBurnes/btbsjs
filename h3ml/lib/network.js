@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/network.js';
-const Version = '0.3.4.8';
+const Version = '0.3.4.17';
 
 /*
     network interaction, read, write, listen
@@ -44,9 +44,9 @@ export class Socket {
         }
         return [0, ""];
     }
-    write(...data) {
+    async write(...data) {
         const ns = this.ns;
-        return ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data.join("|")));
+        return await ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data.join("|")));
     }
     /* @param {(time, string){}} collaback*/
     async listen(callback, options = {}) {

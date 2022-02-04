@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/worker.js';
-const Version = '0.3.2.20'; // update this every time when edit the code!!!
+const Version = '0.3.4.17'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Socket}     from "/h3ml/lib/network.js";
@@ -46,7 +46,7 @@ export async function main(ns) {
 
     const socket = new Socket(ns, Constants.watchPort);
 
-    socket.write(">", hostName, time, threadsNum, target, method, end);
+    await socket.write(">", hostName, time, threadsNum, target, method, end);
 
     const result = await ns[method](target);
 

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.4.16'; // update this every time when edit the code!!!
+const Version = '0.3.4.17'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -246,7 +246,7 @@ async function actionCtrl(watcher, time, data) {
             quietMode = 0;
             break;
         default:
-            socket.write("#|Error|unknown command");
+            socket.write("#|Error|unknown command", data[1]);
     }
 }
 

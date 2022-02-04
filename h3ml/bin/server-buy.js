@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/server-buy.js';
-const Version = '0.3.3.24'; // update this every time when edit the code!!!
+const Version = '0.3.4.17'; // update this every time when edit the code!!!
 
 import {Logger}     from "/h3ml/lib/log.js";
 import {Units}      from "/h3ml/lib/units.js";
@@ -83,7 +83,7 @@ export async function main(ns) {
         l.e("bought maximum servers %d", maxServers);
     }
 
-    let [_, size, unit] = requestSizeGb.match(/^(\d+)(g|t|G|T|p|P)?/);
+    let [_, size, unit] = requestSizeGb.match(/^(\d+)(g|t|G|T|p|P)+?/);
     if (unit !== undefined) {
         switch (unit) {
             case 'G':
@@ -92,6 +92,7 @@ export async function main(ns) {
             case 'T':
             case 't':
                 size *= 1024;
+                break;
             case 'P':
             case 'p':
                 size *= 1024*1024;
@@ -103,13 +104,13 @@ export async function main(ns) {
         l.e("no price for server such size %s => %dG", requestSizeGb, size);
         return;
     }
-    const priceFmt = Units.price(serverPrice);
+    const priceFmt = Units.money(serverPrice);
 
-    l.g("request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.cost, priceFmt.unit);
+    l.g(1, "request server size %s => %dG, price %.2f%s", requestSizeGb, size, priceFmt.amount, priceFmt.unit);
 
     let prompt = true;
     if (!args["y"]) {
-        prompt = await ns.prompt(ns.sprintf("Buy server size %s => %dG, price %.2f%s?", requestSizeGb, size, priceFmt.cost, priceFmt.unit));
+        prompt = await ns.prompt(ns.sprintf("Buy server size %s => %dG, price %.2f%s?", requestSizeGb, size, priceFmt.amount, priceFmt.unit));
     }
     if (prompt) {
         const server_name = ns.purchaseServer(name, size);

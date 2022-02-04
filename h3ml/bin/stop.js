@@ -51,7 +51,7 @@ export async function main(ns) {
     Servers.list(ns)
         .forEach(server => {
             ns.ps(server.name)
-                .filter(proc => proc.filename = '/h3ml/sbin/watcher.js')
+                .filter(proc => proc.filename == '/h3ml/sbin/watcher.js' || proc.filename == '/h3ml/sbin/watch-min.js')
                 .forEach( proc => {
                     ns.kill(proc.pid, server.name);
                 })
