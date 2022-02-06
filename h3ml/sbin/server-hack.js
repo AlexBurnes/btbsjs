@@ -1,13 +1,12 @@
 const Module  = '/h3ml/sbin/server-hack.js';
-const Version = '0.3.4.12'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
 import {Target}      from "/h3ml/lib/target.js";
-import {Server}      from "/h3ml/lib/server-list.js";
 import {BotNet}      from "/h3ml/lib/botnet.js";
 import {Table}       from "/h3ml/lib/utils.js";
-import {moneyFormat} from "/h3ml/lib/units.js";
+import {Units}       from "/h3ml/lib/units.js";
 import {updateInfo, calcGrowth, calcHack} from "/h3ml/lib/server-info.js";
 
 async function version(ns, port) {
@@ -57,14 +56,14 @@ async function hackServer(l, target, once, analyze, port) {
 
     server.hackAction = actionNone;
     server.preferAction = actionNone;
-    updateInfo(ns, server);
 
     const table = new Table(ns,
         [
+            // this information from servers
             ["    Name" , "%s"      ],  // server name
             ["Chance"   , "%.2f%%"  ],  // hack  chance
             ["Min "     , "%.2f"    ],  // min sucity
-            ["Cur"      , "%.2f"    ],  // cure: security
+            ["Cur"      , "%.2f"    ],  // cure security
             ["Avail"    , "%.2f%s"  ],  // available money
             ["Max"      , "%.2f%s"  ],  // max money
             ["R"        , "%.2f"    ],  // rate to grow from available to max money
@@ -72,23 +71,23 @@ async function hackServer(l, target, once, analyze, port) {
             ["Htm"      , "%.2f%s"  ],  // hack time
             ["Gtm"      , "%.2f%s"  ],  // grow time
             ["Wtm"      , "%.2f%s"  ],  // weaken time
-            ["Hp"       , "%.8f"    ],  // hack money part
-            ["Hth"      , "%d"      ],  // hack threads to hack all avail money
-            //["Hm"       , "%.2f%s"  ],  // hack money with Hth threads
-            ["Gth"      , "%d"      ],  // grow threads to grow from avail to max money
-            //["Gm"       , "%.2f%s"  ],  // grow money with Gth threads
-            ["Wth"      , "%d"      ],  // weaken threads to down security to minimum
-            //["Ws"       , "%.2f"    ],  // weaken security level with Wth
-            ["Max Oth"  , "%d"      ],  // maximum optimal threads required for server
-            ["Cr"       , "%.2f%s"  ],  // cicle rate, cycle = n(grow+hack)+weak
+            // this is calculated by server-info.updateInfo
+            ["Hth"      , "%d"      ],  // hack threads to hack money to grow server at once
+            ["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
+            ["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
+            ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
+            ["Oth"      , "%d"      ],  // optimal max threads
+            ["sz"       , "%s"      ],  // server size require
         ],
     );
+
+    updateInfo(ns, server);
 
     while (true) {
 
         const t = botnet.workers;
 
-        if (t == 0) {
+        if (t <= 0) {
             await writeToPort(l, port, "=> '%s' unable to do anything, not enough resource on botnet ", target);
             await ns.sleep(1000);
             botnet.update();
@@ -98,6 +97,7 @@ async function hackServer(l, target, once, analyze, port) {
         }
 
         l.g(2, "%s analyze grow/hack on max threads %d", target, t);
+
 
         const availMoney = ns.getServerMoneyAvailable(target);
         l.g(2, "%s previous action %d, avail money availMoney %f, last %f", target, server.hackAction, availMoney, server.availMoney.value);
@@ -116,8 +116,7 @@ async function hackServer(l, target, once, analyze, port) {
         updateInfo(ns, server);
 
 
-        const moneyHackRate = moneyFormat(server.threadRate);
-        if (l.logLevel > 1) table.push(
+        table.push(
             server.name,
             100 * server.hackChances,
             server.minSecurity,
@@ -129,19 +128,15 @@ async function hackServer(l, target, once, analyze, port) {
             [server.hackTime.time, server.hackTime.unit],
             [server.growTime.time, server.growTime.unit],
             [server.weakTime.time, server.weakTime.unit],
-            //scripts.has(server.name) ? "yes" : "no",
-            server.hackMoney,
             server.hackThreads,
-            //[server.hackAmount.amount, server.hackAmount.unit],
             server.growThreads,
-            //[server.growAmount.amount, server.growAmount.unit],
             server.weakThreads,
-            //server.weakAmount,
-            server.optimalMaxThreads,
-            [moneyHackRate.amount, moneyHackRate.unit]
+            [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
+            server.optimalThreads,
+            Units.size(server.optimalThreads*botnet.workerRam*1024*1024).pretty(ns),
         );
 
-        if (l.logLevel > 1) table.print();
+        if (analyze) table.print();
 
         const server_info = ns.sprintf(
             "ch %.2f, sec %.2f/%.2f, a %.2f%s m %.2f%s, r %.2f, ht %.2f%s, gt %.2f%s, wt %.2f%s",
@@ -213,8 +208,8 @@ async function hackServer(l, target, once, analyze, port) {
         if (gr >= gmr || gr == 0) {
             l.g(2, "%s server near or empty", target);
             // could be there money of a is zero
-            const gaf = moneyFormat(a*(gmr - 1));
-            const gmf = moneyFormat(a*gmr);
+            const gaf = Units.money(a*(gmr - 1));
+            const gmf = Units.money(a*gmr);
             await writeToPort(l, port, "=> '%s' grow << %d >> %.2f%s => +%.2f%s -> %.2f%s",
                     target, gpt, server.hackTime.time, server.hackTime.unit, gaf.amount, gaf.unit, gmf.amount, gmf.unit
             );
@@ -229,8 +224,8 @@ async function hackServer(l, target, once, analyze, port) {
             const ht = Math.floor(ns.hackAnalyzeThreads(target, hm));
 
             const [hpm, hpt] = calcHack(l, server, hm, ht, t);
-            const hma = moneyFormat(hpm);
-            const sma = moneyFormat(m - hpm);
+            const hma = Units.money(hpm);
+            const sma = Units.money(m - hpm);
 
             await writeToPort(l, port, "=> '%s' hack << %d >> %.2f%s => -%.2f%s -> %.2f%s",
                 target, hpt, server.hackTime.time, server.hackTime.unit, hma.amount, hma.unit, sma.amount, sma.unit
@@ -247,16 +242,16 @@ async function hackServer(l, target, once, analyze, port) {
             const ht = Math.floor(ns.hackAnalyzeThreads(target, hm));
             const [hpm, hpt] = calcHack(l, server, hm, ht, t);
 
-            const hma = moneyFormat(hpm);
-            const sma = moneyFormat(a - hpm);
+            const hma = Units.money(hpm);
+            const sma = Units.money(a - hpm);
 
             //calculate growth threads from a to m for max(gt,t);
             const [ghr, ght] = calcGrowth(l, server, a, gr, gt, t);
             const gha = a * ghr;  // amount of money after grow
             l.d(1, "ghr %f, gha %f", ghr, gha);
 
-            const gmf = moneyFormat(gha);
-            const gaf = moneyFormat(gha-a);
+            const gmf = Units.money(gha);
+            const gaf = Units.money(gha-a);
 
             if ( hpm > m - a) {
                 await writeToPort(l, port, "=> '%s' hack << %d >> %.2f%s => -%.2f%s -> %.2f%s",
@@ -285,11 +280,11 @@ async function hackServer(l, target, once, analyze, port) {
             const ht = a/m > 0.1 ? Math.floor(ns.hackAnalyzeThreads(target, hm)) : 0;
             const [hpm, hpt] = ht > 0 ? calcHack(l, server, hm, ht, t) : [hm, ht];
 
-            const hma = moneyFormat(hpm);
-            const sma = moneyFormat(a - hpm);
+            const hma = Units.money(hpm);
+            const sma = Units.money(a - hpm);
 
-            const gaf = moneyFormat(a*(grr - 1));
-            const gmf = moneyFormat(a*grr);
+            const gaf = Units.money(a*(grr - 1));
+            const gmf = Units.money(a*grr);
 
             // first must grow, next must hack and repeat
             if (server.hackAction != actionGrow ) {

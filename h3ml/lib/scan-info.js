@@ -73,7 +73,7 @@ export async function main(ns) {
             "%)"
         ].join("");
 
-        ns.tprintf("%s %s %s %s %s %s",
+        ns.tprintf("%s %s%s %s %s %s",
             pad, server.faction ? "☮ " : server.purshaced ? "⚒ " : "", rooted, hacked, server.name, info
         );
 

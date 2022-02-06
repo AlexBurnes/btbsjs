@@ -1,11 +1,18 @@
 const Module  = '/h3ml/sbin/watcher.js';
-const Version = '0.3.4.18'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
 import {Socket}         from "/h3ml/lib/network.js";
-import {moneyFormat ,timeFormat}    from "/h3ml/lib/units.js"
-import {Servers}        from "/h3ml/lib/server-list.js"
+import {Units}          from "/h3ml/lib/units.js";
+import {serversData}    from "/h3ml/etc/servers.js";
+import {Servers}        from "/h3ml/lib/server-list.js";
+
+/*
+import {updateInfo}     from "/h3ml/lib/server-info-min.js";
+import {Target}         from "/h3ml/lib/target-min.js"
+import {BotNet}         from "/h3ml/lib/botnet-min.js"
+*/
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -17,45 +24,37 @@ async function version(ns, port) {
 }
 
 function help(ns) {
-    ns.tprintf("usage: %s  ...args | --version [--update-port] | --help", Module);
-    ns.tprintf("its is a worker for h3ml to do action on target host: hack, grow, weakern '%s'");
-    ns.tprintf("this module is used by target library to spread work across targets");
+    ns.tprintf("usage: %s | --version [--update-port] | --help", Module);
+    ns.tprintf("listen port for events from workers, collect data on target actions");
     return;
 }
 
 /*
-    listen port and output events info
-    watch for hack,grow,weaken actions and output server affected information
+    minimal watcher implementation without ctrl hack server list
 
 */
 
-const protocolVersion = Constants.protocolVersion;
-const watchPort       = Constants.watchPort;
-
-const debugLevel = 0;
-const logLevel   = 1;
-
 let quietMode    = 1;
+const watchDataFile = "/h3ml/var/watcher.txt"; //FIXME move to constants
 
 class WatchTarget {
     constructor(ns, name) {
         this.ns             = ns;
         this.name           = name;
+        this.state          = 0;    //state of target 0 do not do any actions, 1 hacking
         this.currentAction  = "";
         this.currentThreads = 0;
         this.currentValue   = 0;
         this.totalAmount    = 0;
         this.actionTime     = Date.now();
-        this.hosts          = new Map();
         this.lastAction     = "";
-        this.diffAvailMoney = moneyFormat(0);
-        this.timeSpent      = timeFormat(0);
-        this.totalAmount    = 0;
+        this.diffAvailMoney = Units.money(0);
+        this.timeSpent      = Units.time(0);
         this.diffSecuriry   = 0;
         this.startTime      = 0;
         this.endTime        = 0;
         this.hosts          = new Map();
-        info();
+        this.info();
     }
     method(method, start, end) {
         this.currentAction  = method;
@@ -65,29 +64,120 @@ class WatchTarget {
         this.startTime      = start;
         this.endTime        = end;
         this.hosts          = new Map();
-        info();
+        this.info();
     }
     info() {
         const ns = this.ns;
+        const server = serversData[this.name];
         this.currentSecurity = ns.getServerSecurityLevel(this.name);
-        this.minSecurity     = ns.getServerMinSecurityLevel(this.name);
-        this.availMoney      = moneyFormat(ns.getServerMoneyAvailable(this.name));
-        this.maxMoney        = moneyFormat(ns.getServerMaxMoney(this.name));
+        this.minSecurity     = server.minSecurity || 0;
+        this.availMoney      = Units.money(ns.getServerMoneyAvailable(this.name));
+        this.maxMoney        = Units.money(server.maxMoney);
     }
 }
 
+class _Watcher {
+    constructor() {
+        if (!_Watcher._instance) {
+            _Watcher._instance = this
+        }
+        return _Watcher._instansce;
+    }
+
+    init(l) {
+        this.lg = l;
+        this.ns = l.ns;
+        this.socket = new Socket(this.ns, Constants.watchPort);
+        this.targets_ = new Map();
+        this.maxNameLength = 0;
+        Object.keys(serversData)
+            .forEach(name => {
+                const server = serversData[name];
+                if (server.maxMoney > 0) {
+                    this.maxNameLength = Math.max(name.length, this.maxNameLength);
+                    this.targets_.set(name, new WatchTarget(this.ns, name));
+                }
+            });
+        l.d(1, "max length name %d", this.maxNameLength);
+        const watchData = this.ns.read(watchDataFile);
+        if (watchData) {
+            l.g(1, "there is a watch data, use it for init watcher");
+            const rows = watchData.split(";\n");
+            rows.forEach(row => {
+                const data = row.split("|");
+                l.d(1, "%s %s", data[0], data.join());
+                if (this.targets_.has(data[0])) {
+                    const target = this.targets_["get"](data[0]);
+                    target.currentState    = data[1] || 0;
+                    target.currentAction   = data[2] || "";
+                    target.currentThreads  = data[3];
+                    target.currentValue    = data[4];
+                    target.totalAmount     = Number(data[5]);
+                    target.actionTime      = data[6];
+                    target.lastAction      = data[7] || "";
+                    target.diffAvailMoney  = Units.money(data[8]);
+                    target.timeSpent       = Units.time(data[9]);
+                    target.diffSecuriry    = data[10];
+                    target.startTime       = data[11];
+                    target.endTime         = data[12];
+                    const hosts = data[13].split(",").filter(name => !name.match(/^$/));
+                    hosts.forEach(name => target.hosts.set(name, true));
+                    target.info();
+                }
+            });
+        }
+    }
+
+    get targets() {return this.targets_;}
+    async idle() {}
+    async router() {}
+    async start() {}
+    async stop() {}
+    async ctrl() {}
+    async info() {};
+    save() {
+        this.lg.g(1, "save watch data");
+        let watchData = "";
+        this.targets
+            .forEach((target, name) => {
+                watchData += [
+                          name
+                        , target.currentState
+                        , target.currentAction
+                        , target.currentThreads
+                        , target.currentValue
+                        , target.totalAmount
+                        , target.actionTime
+                        , target.lastAction
+                        , target.diffAvailMoney.value
+                        , target.timeSpent.value
+                        , target.diffSecuriry
+                        , target.startTime
+                        , target.endTime
+                    ].join('|');
+                watchData += "|";
+                target.hosts.forEach((_, name) => {watchData += name + ","});
+                watchData += ";\n";
+            });
+        this.ns.write(watchDataFile, watchData, "w");
+    }
+}
+
+const Watcher = new _Watcher;
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // actionStart
-async function actionStart(l, servers, time, data) {
+async function actionStart(watcher, time, data) {
+    const l = watcher.lg;
     const ns = l.ns;
     const [host, start, threads, server, method, end] = data;
 
-    if (!servers.has(server)) {
-        servers.set(server, new WatchTarget(ns, server));
+    if (!Watcher.targets.has(server)) {
+        Watcher.targets.set(server, new WatchTarget(ns, server));
     }
 
-    if (servers.has(server)) {
-        const target = servers["get"](server);
+    if (Watcher.targets.has(server)) {
+        const target = Watcher.targets["get"](server);
         if (target.actionTime <= start) {
             if (target.actionTime < start) {
                 target.method(method, start, end);
@@ -104,8 +194,10 @@ async function actionStart(l, servers, time, data) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // actionStart
-async function actionStop(l, servers, time, data) {
+async function actionStop(watcher, time, data) {
+    const l = watcher.lg;
     const ns = l.ns;
+
     const [host, eventTime, threads, server, method, result] = data;
     let resultStr = "";
     switch (method) {
@@ -116,7 +208,7 @@ async function actionStop(l, servers, time, data) {
             resultStr = ns.sprintf("%.2f", result);
             break;
         case "hack":
-            const amount = moneyFormat(result);
+            const amount = Units.money(result);
             resultStr = ns.sprintf("%.2f%s", amount.amount, amount.unit);
             break;
     }
@@ -125,12 +217,12 @@ async function actionStop(l, servers, time, data) {
         host, server, method, threads, resultStr, eventTime
     );
 
-    if (!servers.has(server)) {
-        servers.set(server, new WatchTarget(ns, server));
+    if (!Watcher.targets.has(server)) {
+        Watcher.targets.set(server, new WatchTarget(ns, server));
     }
 
-    if (servers.has(server)) {
-        const target = servers["get"](server);
+    if (Watcher.targets.has(server)) {
+        const target = Watcher.targets["get"](server);
 
         l.d(1, "%s event time %d target action %s time %d host %s, wait hosts %d",
             server, time, target.currentAction, target.actionTime, host, target.hosts.size);
@@ -143,10 +235,10 @@ async function actionStop(l, servers, time, data) {
                 const currentTarget = new WatchTarget(ns, server);
                 currentTarget.currentValue   = result;
                 currentTarget.lastAction     = target.currentAction;
-                currentTarget.diffAvailMoney = moneyFormat(Math.abs(currentTarget.availMoney.value - target.availMoney.value));
+                currentTarget.diffAvailMoney = Units.money(Math.abs(currentTarget.availMoney.value - target.availMoney.value));
                 currentTarget.diffSecuriry   = currentTarget.currentSecurity - target.currentSecurity;
                 currentTarget.totalAmount    = target.totalAmount + (target.currentAction == "hack" ? currentTarget.diffAvailMoney.value : 0);
-                currentTarget.timeSpent      = timeFormat((Date.now() - target.startTime)/1000);
+                currentTarget.timeSpent      = Units.time((Date.now() - target.startTime)/1000);
 
                 const timeSpent = currentTarget.timeSpent;
                 if (quietMode == 0) {
@@ -178,16 +270,23 @@ async function actionStop(l, servers, time, data) {
                 }
                 //FIXME need caclulate timeout depends on money value
                 if (method == "hack" && currentTarget.diffAvailMoney.value > 0) {
-                    const text = ns.sprintf("%s +%.2f%s", server, currentTarget.diffAvailMoney.amount, currentTarget.diffAvailMoney.unit);
+                    const money = currentTarget.diffAvailMoney.pretty(ns);
+                    const text = ns.sprintf("%s%s+%s",
+                        // !!! " " is a utf8 FIGURE SPACE !!!
+                        server, " ".repeat(Watcher.maxNameLength-server.length + 8 - money.length), money
+                    );
                     let timeout = Math.log10(currentTarget.diffAvailMoney.value/1000000)*5;
                     if (timeout < 5) timeout = 5;
                     if (timeout > 60) timeout = 60;
                     ns.toast(text, "success", timeout * 1000);
                 }
                 //replace target
-                servers.set(server, currentTarget);
+                Watcher.targets.set(server, currentTarget);
 
-                //ns.run("server-analyze.js", 1, server);
+                //FIXME here we can start hack the server
+                if (target.currentAction == 1) {
+                    doHackAction(l, Watcher, target);
+                }
 
             }
         }
@@ -196,61 +295,18 @@ async function actionStop(l, servers, time, data) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// list of hacking servers
-async function serversHackList(l, socket) {
-    const ns = l.ns;
-    const scripts = new Map();
-    Servers.list().forEach(server => {
-        const procs = ns.ps(server.name);
-        procs
-            .filter(proc => proc.filename == "server-hack.js")
-            .forEach(proc => {
-                proc.args
-                    .filter(arg => !arg.match(/^--/))
-                    .forEach(arg => {scripts.set(arg, true)})
-            });
-    });
-    const list = new Array();
-    Watcher.targets.forEach((server, key) => {
-        l.d(1, "server %s, action %s", server.name, server.currentAction);
-        if (
-            ns.getServerMaxMoney(server.name) > 0 &&
-            ns.hasRootAccess(server.name) &&
-            ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel() &&
-            scripts.has(server.name)
-        ) {
-            list.push(server);
-        }
-    });
-
-    if (port > 0)  {
-        const info =
-            list
-                .map(
-                    s =>
-                        ns.sprintf("%s,%s,%d,%d,%s,%f,%f,%f",
-                            s.name, s.currentAction, s.startTime, s.endTime,
-                            s.lastAction, s.diffAvailMoney.value, s.totalAmount, s.diffSecuriry
-                        )
-                )
-                .join(";");
-        await socket.write(info);
-    }
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // ctrl
-async function actionCtrl(l, servers, time, data) {
+async function actionCtrl(watcher, time, data) {
+    const l = watcher.lg;
     const ns = l.ns;
 
-    const port = data[0];
+    const socket = new Socket(ns, data[0]);
 
-    if (quietMode == 0) l.g(1, "ctrl receive %s, port %d", data[1], data[0]);
+    l.g(1, "ctrl receive %s, port %d", data[1], data[0]);
 
     switch (data[1]) {
         case "server-hacking-list":
-            serversHackList(l, socket);
+            serversHackList(l, watcher, socket);
             break;
         case "quiet":
             quietMode = 1;
@@ -258,18 +314,109 @@ async function actionCtrl(l, servers, time, data) {
         case "verbose":
             quietMode = 0;
             break;
+        case "start-hack":
+            startHackServer(l, watcher, socket, data[2]);
+            break;
+        case "stop-hack":
+            stopHackServer(l, watcher, socket, data[2]);
+            break;
+        case "stop":
+            watcher.save();
+            return 0;
+
         default:
-            if (port > 0) {
-                await ns.tryWritePort(port, ns.sprintf("%d|%d|#|Error|", Date.now(), protocolVersion, "error", "unknown command"));
-            }
+            socket.write("#|Error|unknown command");
     }
+    return 1;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// startHackServer
+async function startHackServer(l, watcher, socket, name) {
+    if (watcher.targets.has(name)) {
+        const target = watcher.targets["get"](name);
+        if (target.currentState == 1) {
+            return socket.write("#", "Error", "start-hack", "already hacking", name);
+        }
+        target.currentState = 1;
+        doHackServer(l, watcher, target);
+    }
+    else {
+        //new target, check that server is exists
+        const target = new WatchTarget(l.ns, name);
+        watcher.targets.set(name, target);
+        target.currentState = 1;
+        doHackServer(l, watcher, target);
+    }
+    await socket.write("#", "OK", "start-hack", "start hacking", name);
+}
+
+async function doHackServer(l, watcher, target) {
+    // do hack action
+    l.g(1, "do hack action on target %s", target.name);
+    //FIXME
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// stopHackServer
+async function stopHackServer(l, watcher, socket, name) {
+    if (watcher.targets.has(name)) {
+        const target = watcher.targets["get"](name);
+        if (target.currentState == 0) {
+            return socket.write("#", "Error", "stop-hack", "do not haking", name);
+        }
+        target.currentState = 0;
+    }
+    else {
+        return socket.write("#", "Error", "stop-hack", "do not haking", name);
+    }
+    await socket.write("#", "OK", "stop-hack", "stop haking", name);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// list of hacking servers
+async function serversHackList(l, watcher, socket) {
+    const ns = l.ns;
+    l.d(1, "prepare list");
+    const scripts = new Map();
+    Servers.list(ns).forEach(server => {
+        //l.g(1, "server %s", server.name);
+        const procs = ns.ps(server.name);
+        //ns.tprint(procs);
+        procs
+            .filter(proc => proc.filename == "/h3ml/sbin/server-hack.js")
+            .forEach(proc => {
+                proc.args
+                    .filter(arg => !arg.match(/^--/))
+                    .forEach(arg => {scripts.set(arg, true); l.d(1, "set %s hack %s", server.name, arg);})
+            });
+    });
+    const list = new Array();
+    watcher.targets.forEach((server, key) => {
+        l.d(1, "server %s, action %s", server.name, server.currentAction);
+        if (scripts.has(server.name)) list.push(server);
+    });
+
+    const info = list.map(
+        s =>
+            ns.sprintf("%s,%s,%d,%d,%s,%f,%f,%f",
+                s.name, s.currentAction, s.startTime, s.endTime,
+                s.lastAction, s.diffAvailMoney.value, s.totalAmount, s.diffSecuriry
+            )
+        ).join(";");
+    l.d(1, "write info %s", info);
+    await socket.write("#", "server-hacking-list", info);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // info from scripts, to output into terminal or log
 
-async function actionInfo(l, servers, time, data) {
+async function actionInfo(watcher, time, data) {
+    const l = watcher.lg;
     const ns = l.ns;
+
     if (quietMode == 0) l.g(1, "%s", data.join(", "));
     return;
 }
@@ -300,77 +447,53 @@ export async function main(ns) {
 
     const l = new Logger(ns, {args: args});
 
-    // run only at home and ctr-server
-    if (!ns.getHostname().match(/home|ctrl-server/)) {
-        ns.tprintf("could be run only on home or ctrl-server");
-        return;
-    }
-    //check that we do not run on home or ctrl-server
-    const is_home_run =
-        ns.getHostname() != "home" &&
-        ns.ps("home").filter(proc => proc.filename == Module).length
-        ? true
-        : false;
+    Watcher.init(l);
 
-    const is_ctrl_run =
-        ns.getHostname() != "ctrl-server" &&
-        ns.serverExists("ctrl-server") &&
-        ns.ps("ctrl-server").filter(proc => proc.filename == Module).length
-        ? true
-        : false;
-
-    if (is_home_run || is_ctrl_run){
-        ns.tprintf("module is already running on %s", is_home_run ? "home" : "ctrl-server");
-        return;
-    }
-
-    if (ns.getHostname() !== "ctrl-server" && ns.serverExists("ctrl-server")) {
-        l.g(1, "start watcher on 'ctrl-server'");
-        ns.exec(Module, "ctrl-server", 1);
-        return;
-    }
-
-    const servers = new Map();
-    Servers.list(ns)
-        .forEach(server => {
-            servers.set(server.name, new WatchTarget(ns, name));
-        });
+    // check target state, it they 1 then do action on it
+    Watcher.targets.forEach((target, name) => {
+        if (target.currentAction == 1) {
+            doHackAction(l, Watcher, target);
+        }
+    })
 
     // drop all old events
     let oldTime = Date.now();
     l.d(1, "time %d", oldTime);
 
     while (true) {
-        const str = await ns.readPort(watchPort);
-        if (str !== "NULL PORT DATA") {
-            l.d(1, "time %d", oldTime);
-            const [time, version, action, ...data] = str.split("|");
-            if (time == undefined || version == undefined || version != protocolVersion) continue; //failed
-            l.d(1, "%d %s: %s", time, action, data.join(", "));
-            if (time < oldTime) continue; // do not read old events from port
-            switch (action) {
-                case '<':
-                    // stop method
-                    await actionStop(l, servers, time, data);
-                    break;
-                case '>':
-                    // start method
-                    await actionStart(l, servers, time, data);
-                    break;
-                case '@':
-                    // request stat
-                    await actionCtrl(l, servers, time, data);
-                    break;
-                case '#':
-                    //info to output
-                    await actionInfo(l, servers, time, data);
-            }
-            continue;
-        }
-        oldTime = Date.now();
 
-        //FIXME need function to check wait sto events from servers;
-        // need event driven mechanism, like listent + on receive
-        await ns.sleep(100);
+        await Watcher.socket.listen(
+            async (time, data) => {
+                //await Watcher.router(time, data);
+                switch (data.shift()) {
+                    case '<':
+                        // stop method
+                        await actionStop(Watcher, time, data);
+                        break;
+                    case '>':
+                        // start method
+                        await actionStart(Watcher, time, data);
+                        break;
+                    case '@':
+                        // request stat
+                        if (!await actionCtrl(Watcher, time, data))
+                            return 0;
+                        break;
+                    case '#':
+                        //info to output
+                        await actionInfo(Watcher, time, data);
+                }
+                return 1; //continue
+            },
+            {
+                timeout: 1000,
+                //idle: Watcher.idle
+                idle: async () => {
+                    //check events;
+                    l.d(1, "idle, do checks");
+                    return 1;
+                }
+            }
+        );
     }
 }

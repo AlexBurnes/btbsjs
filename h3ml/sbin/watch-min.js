@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.5.2'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -11,7 +11,8 @@ import {Servers}        from "/h3ml/lib/server-list.js";
 /*
 import {updateInfo}     from "/h3ml/lib/server-info-min.js";
 import {Target}         from "/h3ml/lib/target-min.js"
-import {BotNet}         from "/h3ml/lib/botnet-min.js"*/
+import {BotNet}         from "/h3ml/lib/botnet-min.js"
+*/
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -23,9 +24,8 @@ async function version(ns, port) {
 }
 
 function help(ns) {
-    ns.tprintf("usage: %s  ...args | --version [--update-port] | --help", Module);
-    ns.tprintf("its is a worker for h3ml to do action on target host: hack, grow, weakern '%s'");
-    ns.tprintf("this module using target library to spread work across targets");
+    ns.tprintf("usage: %s | --version [--update-port] | --help", Module);
+    ns.tprintf("listen port for events from workers, collect data on target actions");
     return;
 }
 
@@ -41,6 +41,7 @@ class WatchTarget {
     constructor(ns, name) {
         this.ns             = ns;
         this.name           = name;
+        this.state          = 0;    //state of target 0 do not do any actions, 1 hacking
         this.currentAction  = "";
         this.currentThreads = 0;
         this.currentValue   = 0;
@@ -49,7 +50,6 @@ class WatchTarget {
         this.lastAction     = "";
         this.diffAvailMoney = Units.money(0);
         this.timeSpent      = Units.time(0);
-        this.totalAmount    = 0;
         this.diffSecuriry   = 0;
         this.startTime      = 0;
         this.endTime        = 0;
@@ -70,7 +70,7 @@ class WatchTarget {
         const ns = this.ns;
         const server = serversData[this.name];
         this.currentSecurity = ns.getServerSecurityLevel(this.name);
-        this.minSecurity     = server.minSecurity;
+        this.minSecurity     = server.minSecurity || 0;
         this.availMoney      = Units.money(ns.getServerMoneyAvailable(this.name));
         this.maxMoney        = Units.money(server.maxMoney);
     }
@@ -89,17 +89,42 @@ class _Watcher {
         this.ns = l.ns;
         this.socket = new Socket(this.ns, Constants.watchPort);
         this.targets_ = new Map();
+        this.maxNameLength = 0;
         Object.keys(serversData)
             .forEach(name => {
                 const server = serversData[name];
                 if (server.maxMoney > 0) {
+                    this.maxNameLength = Math.max(name.length, this.maxNameLength);
                     this.targets_.set(name, new WatchTarget(this.ns, name));
                 }
             });
-
-        watch_data = read(watchDataFile);
-        if (watch_data) {
+        l.d(1, "max length name %d", this.maxNameLength);
+        const watchData = this.ns.read(watchDataFile);
+        if (watchData) {
             l.g(1, "there is a watch data, use it for init watcher");
+            const rows = watchData.split(";\n");
+            rows.forEach(row => {
+                const data = row.split("|");
+                l.d(1, "%s %s", data[0], data.join());
+                if (this.targets_.has(data[0])) {
+                    const target = this.targets_["get"](data[0]);
+                    target.currentState    = data[1] || 0;
+                    target.currentAction   = data[2] || "";
+                    target.currentThreads  = data[3];
+                    target.currentValue    = data[4];
+                    target.totalAmount     = Number(data[5]);
+                    target.actionTime      = data[6];
+                    target.lastAction      = data[7] || "";
+                    target.diffAvailMoney  = Units.money(data[8]);
+                    target.timeSpent       = Units.time(data[9]);
+                    target.diffSecuriry    = data[10];
+                    target.startTime       = data[11];
+                    target.endTime         = data[12];
+                    const hosts = data[13].split(",").filter(name => !name.match(/^$/));
+                    hosts.forEach(name => target.hosts.set(name, true));
+                    target.info();
+                }
+            });
         }
     }
 
@@ -111,11 +136,13 @@ class _Watcher {
     async ctrl() {}
     async info() {};
     save() {
-        const watchData =
-            this.targets
-                .map((target, name) =>
-                    [
+        this.lg.g(1, "save watch data");
+        let watchData = "";
+        this.targets
+            .forEach((target, name) => {
+                watchData += [
                           name
+                        , target.currentState
                         , target.currentAction
                         , target.currentThreads
                         , target.currentValue
@@ -124,15 +151,15 @@ class _Watcher {
                         , target.lastAction
                         , target.diffAvailMoney.value
                         , target.timeSpent.value
-                        , target.totalAmount
                         , target.diffSecuriry
                         , target.startTime
                         , target.endTime
-                        , this.hosts.map((name) => name).join(',')
                     ].join('|');
-                )
-                .join(";\n");
-        write(watchDataFile, "w");
+                watchData += "|";
+                target.hosts.forEach((_, name) => {watchData += name + ","});
+                watchData += ";\n";
+            });
+        this.ns.write(watchDataFile, watchData, "w");
     }
 }
 
@@ -229,9 +256,9 @@ async function actionStop(watcher, time, data) {
                     else {
                         l.g(1, "<= '%s' %s => %s%.2f%s -> %.2f%s / %.2f%s in %.2f%s",
                             server, method,
-                            currentTarget.availMoney > target.availMoney
+                            currentTarget.availMoney.value > target.availMoney.value
                                 ? "+"
-                                : currentTarget.availMoney == target.availMoney
+                                : currentTarget.availMoney.value == target.availMoney.value
                                     ? ""
                                     : "-",
                             currentTarget.diffAvailMoney.amount, currentTarget.diffAvailMoney.unit,
@@ -243,8 +270,12 @@ async function actionStop(watcher, time, data) {
                 }
                 //FIXME need caclulate timeout depends on money value
                 if (method == "hack" && currentTarget.diffAvailMoney.value > 0) {
-                    const text = ns.sprintf("%s +%.2f%s", server, currentTarget.diffAvailMoney.amount, currentTarget.diffAvailMoney.unit);
-                    let timeout = Math.log10(currentTarget.diffAvailMoney/1000000)*5;
+                    const money = currentTarget.diffAvailMoney.pretty(ns);
+                    const text = ns.sprintf("%s%s+%s",
+                        // !!! " " is a utf8 FIGURE SPACE !!!
+                        server, " ".repeat(Watcher.maxNameLength-server.length + 8 - money.length), money
+                    );
+                    let timeout = Math.log10(currentTarget.diffAvailMoney.value/1000000)*5;
                     if (timeout < 5) timeout = 5;
                     if (timeout > 60) timeout = 60;
                     ns.toast(text, "success", timeout * 1000);
@@ -252,7 +283,10 @@ async function actionStop(watcher, time, data) {
                 //replace target
                 Watcher.targets.set(server, currentTarget);
 
-                //ns.run("server-analyze.js", 1, server);
+                //FIXME here we can start hack the server
+                if (target.currentAction == 1) {
+                    doHackAction(l, Watcher, target);
+                }
 
             }
         }
@@ -268,7 +302,7 @@ async function actionCtrl(watcher, time, data) {
 
     const socket = new Socket(ns, data[0]);
 
-    l.g(2, "ctrl receive %s, port %d", data[1], data[0]);
+    l.g(1, "ctrl receive %s, port %d", data[1], data[0]);
 
     switch (data[1]) {
         case "server-hacking-list":
@@ -280,10 +314,65 @@ async function actionCtrl(watcher, time, data) {
         case "verbose":
             quietMode = 0;
             break;
+        case "start-hack":
+            startHackServer(l, watcher, socket, data[2]);
+            break;
+        case "stop-hack":
+            stopHackServer(l, watcher, socket, data[2]);
+            break;
+        case "stop":
+            watcher.save();
+            return 0;
+
         default:
             socket.write("#|Error|unknown command");
     }
+    return 1;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// startHackServer
+async function startHackServer(l, watcher, socket, name) {
+    if (watcher.targets.has(name)) {
+        const target = watcher.targets["get"](name);
+        if (target.currentState == 1) {
+            return socket.write("#", "Error", "start-hack", "already hacking", name);
+        }
+        target.currentState = 1;
+        doHackServer(l, watcher, target);
+    }
+    else {
+        //new target, check that server is exists
+        const target = new WatchTarget(l.ns, name);
+        watcher.targets.set(name, target);
+        target.currentState = 1;
+        doHackServer(l, watcher, target);
+    }
+    await socket.write("#", "OK", "start-hack", "start hacking", name);
+}
+
+async function doHackServer(l, watcher, target) {
+    // do hack action
+    l.g(1, "do hack action on target %s", target.name);
+    //FIXME
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// stopHackServer
+async function stopHackServer(l, watcher, socket, name) {
+    if (watcher.targets.has(name)) {
+        const target = watcher.targets["get"](name);
+        if (target.currentState == 0) {
+            return socket.write("#", "Error", "stop-hack", "do not haking", name);
+        }
+        target.currentState = 0;
+    }
+    else {
+        return socket.write("#", "Error", "stop-hack", "do not haking", name);
+    }
+    await socket.write("#", "OK", "stop-hack", "stop haking", name);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // list of hacking servers
@@ -360,8 +449,12 @@ export async function main(ns) {
 
     Watcher.init(l);
 
-    ns.atExit(() => {Watcher.save()})
-
+    // check target state, it they 1 then do action on it
+    Watcher.targets.forEach((target, name) => {
+        if (target.currentAction == 1) {
+            doHackAction(l, Watcher, target);
+        }
+    })
 
     // drop all old events
     let oldTime = Date.now();
@@ -383,7 +476,8 @@ export async function main(ns) {
                         break;
                     case '@':
                         // request stat
-                        await actionCtrl(Watcher, time, data);
+                        if (!await actionCtrl(Watcher, time, data))
+                            return 0;
                         break;
                     case '#':
                         //info to output
@@ -397,6 +491,7 @@ export async function main(ns) {
                 idle: async () => {
                     //check events;
                     l.d(1, "idle, do checks");
+                    return 1;
                 }
             }
         );

@@ -46,5 +46,5 @@ export async function main(ns) {
     const l = new Logger(ns, {args: args});
 
 
-    await ns.tryWritePort(Constants.ctrlPort, ns.sprintf("%d|%d|@|0|quiet", Date.now(), Constants.protocolVersion));
+    await ns.tryWritePort(Constants.watchPort, ns.sprintf("%d|%d|@|0|quiet", Date.now(), Constants.protocolVersion));
 }

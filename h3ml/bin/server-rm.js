@@ -5,9 +5,6 @@ import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
 import {Servers}    from "/h3ml/lib/server-list.js"
 
-//FIXME move to constants
-const UnitGb = Math.pow(2, 30);
-
 async function version(ns, port) {
     if (port !== undefined && port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);

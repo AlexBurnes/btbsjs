@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/utils.js';
-const Version = '0.3.4.18';     // update this every time when edit the code!!!
+const Version = '0.3.5.4';     // update this every time when edit the code!!!
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Level tree dumper
@@ -85,11 +85,9 @@ export class Table {
      * @params {Array}  l array of lengthes
     **/
     border(g, l) {
-        this.ns.tprintf("%s",
-            l.map((d, i, l) =>
-                (i == 0 ? g[0] : i == 1 ? g[3] : g[2]) +  g[1].repeat(d + 1) + (i == l.length - 1 ? g[4] : "")
-            ).join('')
-        );
+        return l.map((d, i, l) =>
+            (i == 0 ? g[0] : i == 1 ? g[3] : g[2]) +  g[1].repeat(d + 1) + (i == l.length - 1 ? g[4] : "")
+        ).join('')
     }
 
     /**
@@ -99,8 +97,7 @@ export class Table {
      * @params {Number} a allign 0 left, 1 center, 2 right, default left
     **/
     header(g, l, r, a = 0) {
-        this.ns.tprintf("%s",
-            r.map((d, i, r, al = l[i] - d.length) =>
+        return r.map((d, i, r, al = l[i] - d.length) =>
                 (i <= 1 ? g[0] : g[2]) +
                 this.ns.vsprintf("%s%s%s",
                     a == 0
@@ -110,8 +107,7 @@ export class Table {
                         : [g[1].repeat(al), d, " "]
                 ) +
                 (i == r.length - 1 ? g[0] : "")
-            ).join('')
-        );
+            ).join('');
     }
 
     /**
@@ -121,16 +117,19 @@ export class Table {
      * @params {Number} a allign 0 left, 1 center, 2 right, default left
     **/
     column(g, l, r, a = 0) {
-        r.forEach(r => this.header(g, l, r, a));
+        return r.map(r => this.header(g, l, r, a)).join("\n");
     }
 
     print() {
-        this.border(this.graph[0], this.columns);                   // top
-        this.header(this.graph[1], this.columns, this.headers);     // header
-        this.border(this.graph[2], this.columns);                   // border
-        this.column(this.graph[1], this.columns, this.rows, 2);     // rows
-        this.border(this.graph[4], this.columns);                   // bottom
+        const data = [
+            this.border(this.graph[0], this.columns),                   // top
+            this.header(this.graph[1], this.columns, this.headers),     // header
+            this.border(this.graph[2], this.columns),                   // border
+            this.column(this.graph[1], this.columns, this.rows, 2),          // rows
+            this.border(this.graph[4], this.columns)                    // bottom
+        ].join("\n");
         this.rows = [];  // clean rows
+        return data;
     }
 }
 

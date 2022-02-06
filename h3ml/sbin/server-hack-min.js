@@ -126,7 +126,7 @@ async function hackServer(l, target, once, analyze, port) {
             server.optimalThreads,
         );
 
-        if (lg.logLevel > 1) table.print();
+        if (l.logLevel > 1) ns.tprintf("%s", table.print());
 
         const server_info = ns.sprintf(
             "sec %.2f/%.2f, a %.2f%s m %.2f%s, r %.2f",

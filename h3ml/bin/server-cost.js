@@ -1,11 +1,9 @@
 const Module  = '/h3ml/bin/server-cost.js';
-const Version = '0.3.3.24'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Logger}     from "/h3ml/lib/log.js";
 import {Units}      from "/h3ml/lib/units.js";
 import {Table}      from "/h3ml/lib/utils.js"
-
-const UnitGb = Math.pow(2, 30);
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -65,7 +63,7 @@ export async function main(ns) {
     let i = 0;
     for(let sizeGb=minSizeGb; sizeGb <= maxSizeGb; sizeGb*=2) {
         const costFmt = Units.money(ns.getPurchasedServerCost(sizeGb));
-        const sizeFmt = Units.size(sizeGb * UnitGb);
+        const sizeFmt = Units.size(sizeGb * Constants.uGb);
         table.push(
             [sizeFmt.size, sizeFmt.unit],
             i++,
@@ -73,5 +71,7 @@ export async function main(ns) {
             [costFmt.amount, costFmt.unit]
         );
     }
-    table.print();
+    ns.disableLog("ALL");
+    ns.print(table.print());
+    ns.tail(Module);
 }

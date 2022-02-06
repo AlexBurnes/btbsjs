@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/network.js';
-const Version = '0.3.4.18';
+const Version = '0.3.5.4';
 
 /*
     network interaction, read, write, listen
@@ -30,6 +30,7 @@ export class Socket {
         this.time = Date.now();
     }
     async read(options = {}) {
+        if (!this.port) return [0, ""];
         const ns = this.ns;
         const start = options.time || Date.now();
         while (true) {
@@ -43,14 +44,16 @@ export class Socket {
             if (options.timeout && Date.now() - start >= options.timeout) break;
             await ns.sleep(100);
         }
-        return [0, ""];
+        return [0, []];
     }
     async write(...data) {
+        if (!this.port) return;
         const ns = this.ns;
         return await ns.tryWritePort(this.port, ns.sprintf("%d|%d|%s", Date.now(), this.version, data.join('|')));
     }
     /* @param {(time, string){}} collaback*/
     async listen(callback, options = {}) {
+        if (!this.port) return;
         const ns = this.ns;
         const timeout = options.timeout || 100;
         while(true) {
@@ -61,14 +64,14 @@ export class Socket {
                     const [time, version, ...data] = str.split("|");
                     if (time == undefined || version == undefined || version != this.version) continue; //failed
                     if (time < this.time) continue; // do not read old events from port
-                    await callback(time, data);
+                    if (!await callback(time, data)) return;
                     if (options.idle && Date.now() - start > timeout) await options.idle();
                     continue;
                 }
                 break;
             }
             this.time = Date.now();
-            if (options.idle) await options.idle();
+            if (options.idle) if (!await options.idle()) return;
             if (Date.now() - start > timeout) continue;
             await ns.sleep(timeout);
         }

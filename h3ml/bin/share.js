@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/share.js';
-const Version = '0.3.4.1'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -55,21 +55,18 @@ export async function main(ns) {
     for(let i = 0; i < servers.length; i++) {
         const server = servers[i];
         l.d(1, "check server %s", server.name);
-        if (!ns.fileExists(Constants.shareScriptFile, server.name)) {
-            l.d(1, "copy %s to server %s", Constants.shareScriptFile, server.name);
-            await ns.scp(Constants.shareScriptFile, server.name);
-        }
-        const threads = Math.floor((ns.getServerMaxRam(server.name) - ns.getServerUsedRam(server.name)) / ScriptFile[Constants.shareScriptFile]);
+        await ns.scp(Constants.shareScriptFile, server.name);
+        const threads = Math.floor((ns.getServerMaxRam(server.name) - ns.getServerUsedRam(server.name)) / ScriptFiles[Constants.shareScriptFile]);
         l.d(1, "could run on %s %d threads", server.name, threads);
         if (threads > 0) {
-            pid = ns.exec(Constants.shareScriptFile, server.name, threads);
+            const pid = ns.exec(Constants.shareScriptFile, server.name, threads);
             if (pid) totalThreads += threads;
         }
     }
 
     const powerAfter = ns.getSharePower();
     if (totalThreads > 0) {
-        l.d("run more %d threads, power before %f, after %f, grow %f, grow one thread %f",
+        l.g(1, "run more %d threads, power before %f, after %f, grow %f, grow one thread %f",
             totalThreads, powerBefore, powerAfter, powerAfter/powerBefore,  (powerAfter-powerBefore)/totalThreads
         );
     }

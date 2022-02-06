@@ -50,6 +50,7 @@ export class Logger {
 
         this.debugLevel = options["debugLevel"] || Constants.debugLevel; //default debug level
         this.logLevel   = options["logLevel"]   || Constants.logLevel;   //default log level
+        this.quiet = 0;
 
         if (options["args"]) {
             const args = options["args"];
@@ -59,8 +60,7 @@ export class Logger {
                 this.logLevel = 1;
             }
             if (args["quiet"]) {
-                this.logLevel   = 0;
-                this.debugLevel = 0;
+                this.quiet = 1;
             }
         }
 
@@ -72,7 +72,10 @@ export class Logger {
     d(level, format, ...args) {
         if (typeof(level) !== "number") throw Error("BUG: wrong usage of Logger.log(level, format, ..args), wrong type of argument level, expected number");
         if (this.debugLevel == 0 || level > this.debugLevel) return;
-        this.ns.tprintf("#DEBUG: %s", this.ns.vsprintf(format, args));
+        const text = this.ns.sprintf("DEBUG: %s", this.ns.vsprintf(format, args));
+        this.ns.print(text);
+        if (this.quiet) return;
+        this.ns.tprintf("%s", text);
     }
     // log
     /** @param {Number} level 0..N **/
@@ -83,30 +86,40 @@ export class Logger {
         if (this.logLevel == 0 || level > this.logLevel) return;
         //how about to log into log ?
         const text = this.ns.vsprintf(format, args);
+        this.ns.print(text);
+        if (this.quiet) return;
         this.ns.tprintf("%s", text);
-        this.ns.print(text);  //???
+        return;
     }
     // log result, always without level, and this may be toasted
     /** @param {String} format sprintf **/
     /** @param {...Any} args **/
     r(format, ...args) {
         const text = this.ns.vsprintf(format, args);
-        this.ns.tprintf("%s", text);
+        this.ns.print(text);
         if (Constants.toastLogResult) {
             this.ns.toast(text, "info", Constants.toastInfoTimeout);
         }
+        if (this.quiet) return;
+        this.ns.tprintf("%s", text);
         return;
     }
     // log error, allways without level
     /** @param {String} format sprintf **/
     /** @param {...Any} args **/
     e(format, ...args) {
-        this.ns.tprintf("ERROR: %s", this.ns.vsprintf(format, args));
+        const text = this.ns.sprintf("ERROR: %s", this.ns.vsprintf(format, args));
+        this.ns.print(text);
+        if (this.quiet) return;
+        this.ns.tprintf("%s", text);
     }
     // log error, allways without level
     /** @param {String} format sprintf **/
     /** @param {...Any} args **/
     w(format, ...args) {
-        this.ns.tprintf("WARNING: %s", this.ns.vsprintf(format, args));
+        const text = this.ns.sprintf("WARNING: %s", this.ns.vsprintf(format, args));
+        this.ns.print(text);
+        if (this.quiet) return;
+        this.ns.tprintf("%s", text);
     }
 }

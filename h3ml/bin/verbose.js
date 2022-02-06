@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/verbose.js';
-const Version = '0.3.2.24'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -45,6 +45,5 @@ export async function main(ns) {
 
     const l = new Logger(ns, {args: args});
 
-
-    await ns.tryWritePort(Constants.ctrlPort, ns.sprintf("%d|%d|@|0|verbose", Date.now(), Constants.protocolVersion));
+    await ns.tryWritePort(Constants.watchPort, ns.sprintf("%d|%d|@|0|verbose", Date.now(), Constants.protocolVersion));
 }

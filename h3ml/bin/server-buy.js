@@ -1,12 +1,9 @@
 const Module  = '/h3ml/bin/server-buy.js';
-const Version = '0.3.4.17'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Logger}     from "/h3ml/lib/log.js";
 import {Units}      from "/h3ml/lib/units.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
-
-//FIXME move to constants
-const UnitGb = Math.pow(2, 30);
 
 async function version(ns, port) {
     if (port !== undefined && port) {

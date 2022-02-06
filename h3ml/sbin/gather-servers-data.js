@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/gather-servers-data.js';
-const Version = '0.3.4.1'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -34,7 +34,7 @@ async function updateServersFile(l, host) {
             const serverData = ns.getServer(server.name);
             data += "        'serverGrowth': "      + serverData.serverGrowth + ",\n";
             data += "        'maxRam': "            + ns.getServerMaxRam(server.name) + ",\n";
-            data += "        'minSecutiry': "       + ns.getServerMinSecurityLevel(server.name) + ",\n";
+            data += "        'minSecurity': "       + ns.getServerMinSecurityLevel(server.name) + ",\n";
             data += "        'maxMoney': "          + ns.getServerMaxMoney(server.name) + ",\n";
             data += "        'hackDifficulty': "    + ns.getServerRequiredHackingLevel(server.name) + ",\n";
             data += "        'factionServer': "     +

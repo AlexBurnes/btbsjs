@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.5.3'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {settings}  from "/h3ml-settings.js";
 
@@ -11,6 +11,8 @@ const _rootKitFiles = {
     "relaySMTP.exe" : 4,
     "SQLInject.exe" : 5
 };
+
+const _uGb = Math.pow(2^30);
 
 const _logLevel     = settings.logLevel   || 1;    // default log level for all scripts
 const _debugLevel   = settings.debugLevel || 0;    // default debug level for all scripts
@@ -29,6 +31,7 @@ const _watchPort        = 1; // port number for recieve watch data
 const _ctrlPort         = 2; // port number for receive ctrl data?
 const _infoPort         = 3; // reserved port for hacking.js, hack-servers.js
 const _updatePort       = 4; // reserved port for updater.js
+const _stockPort        = 5; // reserved port for stock.js
 
 // log toast
 const _toastLogResult         = true;
@@ -46,6 +49,8 @@ class _Constants {
     get logLevel()              {return _logLevel;}
     get debugLevel()            {return _debugLevel;}
 
+    get uGb()                   {return _uGb;}
+
     get workerScriptFile()      {return _workerScriptFile;}
     get shareScriptFile()       {return _shareScriptFile;}
     get securityFile()          {return _securityFile;}
@@ -61,6 +66,7 @@ class _Constants {
     get updatePort()            {return _updatePort;}
     get ctrlPort()              {return _ctrlPort;}
     get infoPort()              {return _infoPort;}
+    get stockPort()             {return _stockPort;}
 
     get toastLogResult()        {return _toastLogResult;}
     get toastResultTimeout()    {return _toastResultTimeout;}

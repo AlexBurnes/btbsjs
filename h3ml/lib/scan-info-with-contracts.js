@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/scan-info-with-contracts.js';
-const Version = '0.3.4.10'; // update this every time when edit the code!!!
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -74,6 +74,9 @@ export async function main(ns) {
             "%)"
         ].join("");
 
+        ns.tprintf("%s %s%s %s %s %s",
+            pad, server.faction ? "☮ " : server.purshaced ? "⚒ " : "", rooted, hacked, server.name, info
+        );
         const contracts = ns.ls(server.name, ".cct");
         for(let i=0; i < contracts.length; i++) {
             const contract = contracts[i];
@@ -82,8 +85,6 @@ export async function main(ns) {
                 contract, ns.codingcontract.getContractType(contract, server.name)
             );
         }
-        ns.tprintf("%s %s %s %s %s %s",
-            pad, server.faction ? "☮ " : server.purshaced ? "⚒ " : "", rooted, hacked, server.name, info
-        );
+
     }, Server);
 }
