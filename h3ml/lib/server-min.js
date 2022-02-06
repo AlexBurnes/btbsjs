@@ -24,7 +24,7 @@ export class Server {
         }
     }
 
-    get maxRam()            {return this.data.maxRam;}
+    get maxRam()            {return this.ns.getServerMaxRam(this.name);}
     get usedRam()           {return this.ns.getServerUsedRam(this.name);}
     get maxMoney()          {return Units.money(this.data.maxMoney);}
     get minSecurity()       {return this.data.minSecurity;}

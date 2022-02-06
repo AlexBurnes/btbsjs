@@ -1,13 +1,13 @@
-const Module  = '/h3ml/sbin/server-hack.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Module  = '/h3ml/sbin/server-hack-min.js';
+const Version = '0.3.5.8'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
-import {Target}      from "/h3ml/lib/target.js";
-import {BotNet}      from "/h3ml/lib/botnet.js";
+import {Target}      from "/h3ml/lib/target-min.js";
+import {BotNet}      from "/h3ml/lib/botnet-min.js";
 import {Table}       from "/h3ml/lib/utils.js";
 import {Units}       from "/h3ml/lib/units.js";
-import {updateInfo, calcGrowth, calcHack} from "/h3ml/lib/server-info.js";
+import {updateInfo, calcGrowth, calcHack} from "/h3ml/lib/server-info-min.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {

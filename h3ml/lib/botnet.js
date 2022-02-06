@@ -6,7 +6,6 @@ import {Servers}     from "/h3ml/lib/server-list.js";
 import {ScriptFiles} from "/h3ml/etc/scripts.js";
 import {Server}      from "/h3ml/lib/server.js";
 
-
 /**
     @param {NS} ns
     @param {Number} port

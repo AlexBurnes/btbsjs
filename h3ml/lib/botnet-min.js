@@ -1,9 +1,10 @@
 const Module  = '/h3ml/lib/botnet-min.js';
 const Version = '0.3.4.16';     // update this every time when edit the code!!!
 
-import {Constants}      from "/h3ml/lib/constants.js";
-import {ScriptFiles}    from "/h3ml/etc/scripts.js";
-import {Server}         from "/h3ml/lib/server-min.js";
+import {Constants}   from "/h3ml/lib/constants.js";
+import {Servers}     from "/h3ml/lib/server-list.js";
+import {ScriptFiles} from "/h3ml/etc/scripts.js";
+import {Server}      from "/h3ml/lib/server-min.js";
 
 /**
     @param {NS} ns
@@ -38,16 +39,15 @@ export class BotNet {
         this.usedRam = 0;
         this.servers =
             Servers.list(ns, Server)
-                .filter(server => !server.name.match(/^(ctrl-server|hack-server(?:\-\d+)*)$/)) // do not use ctr-server and hack-server for workers
+                .filter(server => !server.name.match(/^(ctrl-server|devel-|hack-server(?:-\d+)*)$/)) // do not use ctr-server and hack-server for workers
                 .filter(server => ns.hasRootAccess(server.name))
                 .filter(server => server.maxRam > this.workerRam)
                 .filter(server => ns.fileExists(this.workerScript, server.name));
         this.servers
             .forEach(server => {
-                server.usedRam = ns.getServerUsedRam(server.name);
                 server.workers = Math.floor((server.maxRam - server.usedRam)/this.workerRam);
-                this.maxRam += server.maxRam;
-                this.usedRam += ns.getServerUsedRam(server.name);
+                this.maxRam  += server.maxRam;
+                this.usedRam += server.usedRam;
             });
         this.maxWorkers = Math.floor(this.maxRam/this.workerRam);
         this.workers = Math.floor((this.maxRam - this.usedRam - Constants.reserveRam)/this.workerRam);

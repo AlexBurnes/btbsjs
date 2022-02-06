@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/hack-servers.js';
-const Version = '0.3.5.7'; // update this every time when edit the code!!!
+const Version = '0.3.5.5'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -117,9 +117,11 @@ export async function main(ns) {
 
         const botnet = new BotNet(ns);
         const botnetData =
-            ns.sprintf("botnet %d memory %dGb max threads %d, free %d, used memory %dGb usage %.2f%%",
-                botnet.servers.length, botnet.maxRam, botnet.maxWorkers, botnet.workers,
-                botnet.usedRam, 100 * botnet.usedRam / botnet.maxRam
+            ns.sprintf("botnet %d memory %s max threads %s, free %s, used memory %s usage %.2f%%",
+                botnet.servers.length, Units.size(botnet.maxRam * Constants.uGb).pretty(ns),
+                Units.money(botnet.maxWorkers).pretty(ns),
+                Units.money(botnet.workers).pretty(ns),
+                Units.size(botnet.usedRam * Constants.uGb).pretty(ns), 100 * botnet.usedRam / botnet.maxRam
             );
         const data = hackInfo.info(botnet, servers, hacking_servers);
         if (!tail) {

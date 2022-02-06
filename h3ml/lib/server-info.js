@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info.js';
-const Version = '0.3.5.2'; // update this every time when edit the code!!!
+const Version = '0.3.5.8'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Units}      from "/h3ml/lib/units.js"
@@ -22,20 +22,17 @@ export function updateInfo(ns, target) {
 
     target.serverMaxGrowthThreads = Math.ceil(ns.growthAnalyze(target.name, target.serverGrowth));
 
-    //target.minSecurity      = ns.getServerMinSecurityLevel(target.name);
-    //target.currentSecurity  = ns.getServerSecurityLevel(target.name);
-    //target.maxMoney = Units.money(ns.getServerMaxMoney(target.name));
     target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
 
     target.hackChances = ns.hackAnalyzeChance(target.name);
-    target.hackMoney   = ns.hackAnalyze(target.name); // part of amount hacked by one thread
+    target.hackMoney = ns.hackAnalyze(target.name); // part of amount hacked by one thread
 
     target.weakThreads = Math.ceil((target.currentSecurity - target.minSecurity) / target.weakSecurityRate);
     target.weakMaxThreads = Math.ceil((100 - target.minSecurity) / target.weakSecurityRate);
 
     // money to stole, to grow current value at once!
     target.hackMaxThreads = target.hackMoney ? ns.hackAnalyzeThreads(target.name, target.availMoney.value * (1-1/target.serverGrowth)) : 0;
-    // //max threads to hack maxMoney
+    // max threads to hack maxMoney
     target.maxHackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity
     target.maxGrowSecutiryThreads = (100 - target.minSecurity)/target.growSecurity
 
@@ -57,7 +54,7 @@ export function updateInfo(ns, target) {
     let growThreads;
     switch (target.moneyRatio) {
         case 0:
-            growThreads = target.growSecurityThreads; // unknown ratio, unkwnown number of threads allowed to up
+            growThreads = target.serverMaxGrowthThreads; // unknown ratio, unkwnown number of threads allowed to up
             break;
         case 1:
             growThreads = 0;
