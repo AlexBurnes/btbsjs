@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Version = '0.3.5.5'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -42,9 +42,7 @@ async function writeToPort(l, port, format, ...data) {
     if (port > 0) {
         await ns.tryWritePort(ctrlPort, ns.sprintf("%d|%d|#|%s", Date.now(), protocolVersion, str));
     }
-    else {
-        l.g(1, "%s", str);
-    }
+    l.g(1, "%s", str);
 }
 
 async function hackServer(l, target, once, analyze, port) {
@@ -100,6 +98,20 @@ async function hackServer(l, target, once, analyze, port) {
 
 
         const availMoney = ns.getServerMoneyAvailable(target);
+        const diffMoney = Units.money(availMoney - server.availMoney.value);
+        const currentSecurity = ns.getServerSecurityLevel(target);
+        switch (server.hackAction) {
+                case actionGrow:
+                    l.g(1, "<= '%s' grow +%s => %s", target, diffMoney.pretty(ns), Units.money(availMoney).pretty(ns));
+                    break;
+                case actionHack:
+                    l.g(1, "<= '%s' hack -%s => %s", target, diffMoney.pretty(ns), Units.money(availMoney).pretty(ns));
+                    break;
+                case actionWeak:
+                    l.g(1, "<= '%s' weak %.2f => %.2f", target, currentSecurity - server.currentSecurity, currentSecurity);
+                    break;
+        }
+
         l.g(2, "%s previous action %d, avail money availMoney %f, last %f", target, server.hackAction, availMoney, server.availMoney.value);
         if (server.hackAction == actionGrow || server.hackAction == actionHack) {
             // analize previous step result
@@ -319,7 +331,7 @@ export async function main(ns) {
         [ 'log'          , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'        , 0     ], // debug level
         [ 'verbose'      , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'        , false ], // quiet mode, short analog of --log-level 0
+        [ 'quiet'        , true  ], // quiet mode, short analog of --log-level 0
         [ 'once'         , false ],
         [ 'analyze'      , false ]
 
@@ -332,10 +344,10 @@ export async function main(ns) {
         return help(ns);
     }
 
+    ns.disableLog("ALL");
+
     // for modules
     const l = new Logger(ns, {args: args});
-
-
 
     const server = args["_"][0];
 
@@ -345,7 +357,7 @@ export async function main(ns) {
     const outputToPort = debugMode       ? 0 : 1;
 
     if (!ns.serverExists(server)) {
-        l.g(1, "server %s do not exists", server);
+        l.e("server %s do not exists", server);
         return;
     }
 

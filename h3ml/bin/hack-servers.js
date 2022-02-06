@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/hack-servers.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Version = '0.3.5.5'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";

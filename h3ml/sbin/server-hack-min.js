@@ -1,14 +1,13 @@
-const Module  = '/h3ml/sbin/server-hack-min.js';
-const Version = '0.3.4.12'; // update this every time when edit the code!!!
+const Module  = '/h3ml/sbin/server-hack.js';
+const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
-import {Target}      from "/h3ml/lib/target-min.js";
-import {Server}      from "/h3ml/lib/server-list.js";
+import {Target}      from "/h3ml/lib/target.js";
 import {BotNet}      from "/h3ml/lib/botnet.js";
 import {Table}       from "/h3ml/lib/utils.js";
 import {Units}       from "/h3ml/lib/units.js";
-import {updateInfo}  from "/h3ml/lib/server-info-min.js";
+import {updateInfo, calcGrowth, calcHack} from "/h3ml/lib/server-info.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -43,9 +42,7 @@ async function writeToPort(l, port, format, ...data) {
     if (port > 0) {
         await ns.tryWritePort(ctrlPort, ns.sprintf("%d|%d|#|%s", Date.now(), protocolVersion, str));
     }
-    else {
-        l.g(1, "%s", str);
-    }
+    l.g(1, "%s", str);
 }
 
 async function hackServer(l, target, once, analyze, port) {
@@ -57,31 +54,38 @@ async function hackServer(l, target, once, analyze, port) {
 
     server.hackAction = actionNone;
     server.preferAction = actionNone;
-    updateInfo(ns, server);
 
     const table = new Table(ns,
         [
+            // this information from servers
             ["    Name" , "%s"      ],  // server name
             ["Chance"   , "%.2f%%"  ],  // hack  chance
             ["Min "     , "%.2f"    ],  // min sucity
-            ["Cur"      , "%.2f"    ],  // cure: security
+            ["Cur"      , "%.2f"    ],  // cure security
             ["Avail"    , "%.2f%s"  ],  // available money
             ["Max"      , "%.2f%s"  ],  // max money
             ["R"        , "%.2f"    ],  // rate to grow from available to max money
             ["Gr"       , "%d"      ],  // server growth effectivness
-            ["Hp"       , "%.8f"    ],  // hack money part
-            ["Hth"      , "%d"      ],  // hack threads to hack all avail money
-            ["Gth"      , "%d"      ],  // grow threads to grow max
-            ["Wth"      , "%d"      ],  // weaken threads to down security to minimum
-            ["Max Oth"  , "%d"      ],  // maximum optimal threads required for server
+            ["Htm"      , "%.2f%s"  ],  // hack time
+            ["Gtm"      , "%.2f%s"  ],  // grow time
+            ["Wtm"      , "%.2f%s"  ],  // weaken time
+            // this is calculated by server-info.updateInfo
+            ["Hth"      , "%d"      ],  // hack threads to hack money to grow server at once
+            ["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
+            ["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
+            ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
+            ["Oth"      , "%d"      ],  // optimal max threads
+            ["sz"       , "%s"      ],  // server size require
         ],
     );
+
+    updateInfo(ns, server);
 
     while (true) {
 
         const t = botnet.workers;
 
-        if (t == 0) {
+        if (t <= 0) {
             await writeToPort(l, port, "=> '%s' unable to do anything, not enough resource on botnet ", target);
             await ns.sleep(1000);
             botnet.update();
@@ -92,7 +96,22 @@ async function hackServer(l, target, once, analyze, port) {
 
         l.g(2, "%s analyze grow/hack on max threads %d", target, t);
 
+
         const availMoney = ns.getServerMoneyAvailable(target);
+        const diffMoney = Units.money(availMoney - server.availMoney.value);
+        const currentSecurity = ns.getServerSecurityLevel(target);
+        switch (server.hackAction) {
+                case actionGrow:
+                    l.g(1, "<= '%s' grow +%s => %s", target, diffMoney.pretty(ns), Units.money(availMoney).pretty(ns));
+                    break;
+                case actionHack:
+                    l.g(1, "<= '%s' hack -%s => %s", target, diffMoney.pretty(ns), Units.money(availMoney).pretty(ns));
+                    break;
+                case actionWeak:
+                    l.g(1, "<= '%s' weak %.2f => %.2f", target, currentSecurity - server.currentSecurity, currentSecurity);
+                    break;
+        }
+
         l.g(2, "%s previous action %d, avail money availMoney %f, last %f", target, server.hackAction, availMoney, server.availMoney.value);
         if (server.hackAction == actionGrow || server.hackAction == actionHack) {
             // analize previous step result
@@ -109,8 +128,7 @@ async function hackServer(l, target, once, analyze, port) {
         updateInfo(ns, server);
 
 
-        const moneyHackRate = Units.money(server.threadRate);
-        if (lg.logLevel > 1) table.push(
+        table.push(
             server.name,
             100 * server.hackChances,
             server.minSecurity,
@@ -119,20 +137,25 @@ async function hackServer(l, target, once, analyze, port) {
             [server.maxMoney.amount, server.maxMoney.unit],
             server.moneyRatio,
             server.serverGrowth,
-            server.hackMoney,
+            [server.hackTime.time, server.hackTime.unit],
+            [server.growTime.time, server.growTime.unit],
+            [server.weakTime.time, server.weakTime.unit],
             server.hackThreads,
             server.growThreads,
             server.weakThreads,
+            [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
             server.optimalThreads,
+            Units.size(server.optimalThreads*botnet.workerRam*1024*1024).pretty(ns),
         );
 
-        if (l.logLevel > 1) ns.tprintf("%s", table.print());
+        if (analyze) table.print();
 
         const server_info = ns.sprintf(
-            "sec %.2f/%.2f, a %.2f%s m %.2f%s, r %.2f",
-            server.minSecurity, server.currentSecurity,
+            "ch %.2f, sec %.2f/%.2f, a %.2f%s m %.2f%s, r %.2f, ht %.2f%s, gt %.2f%s, wt %.2f%s",
+            100 * server.hackChances, server.minSecurity, server.currentSecurity,
             server.availMoney.amount, server.availMoney.unit, server.maxMoney.amount, server.maxMoney.unit,
-            server.moneyRatio
+            server.moneyRatio, server.hackTime.time, server.hackTime.unit,
+            server.growTime.time, server.growTime.unit, server.weakTime.time, server.weakTime.unit,
         );
 
         const wt = Math.min(server.weakThreads, t);
@@ -308,7 +331,7 @@ export async function main(ns) {
         [ 'log'          , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'        , 0     ], // debug level
         [ 'verbose'      , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'        , false ], // quiet mode, short analog of --log-level 0
+        [ 'quiet'        , true  ], // quiet mode, short analog of --log-level 0
         [ 'once'         , false ],
         [ 'analyze'      , false ]
 
@@ -321,10 +344,10 @@ export async function main(ns) {
         return help(ns);
     }
 
+    ns.disableLog("ALL");
+
     // for modules
     const l = new Logger(ns, {args: args});
-
-
 
     const server = args["_"][0];
 
@@ -334,7 +357,7 @@ export async function main(ns) {
     const outputToPort = debugMode       ? 0 : 1;
 
     if (!ns.serverExists(server)) {
-        l.g(1, "server %s do not exists", server);
+        l.e("server %s do not exists", server);
         return;
     }
 
