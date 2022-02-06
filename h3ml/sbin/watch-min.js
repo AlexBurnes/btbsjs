@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Version = '0.3.5.7'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -302,7 +302,7 @@ async function actionCtrl(watcher, time, data) {
 
     const socket = new Socket(ns, data[0]);
 
-    l.g(1, "ctrl receive %s, port %d", data[1], data[0]);
+    l.d(1, "ctrl receive %s, port %d", data[1], data[0]);
 
     switch (data[1]) {
         case "server-hacking-list":

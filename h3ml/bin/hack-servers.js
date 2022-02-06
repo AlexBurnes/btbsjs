@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/hack-servers.js';
-const Version = '0.3.5.5'; // update this every time when edit the code!!!
+const Version = '0.3.5.7'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -7,7 +7,7 @@ import {Servers}    from "/h3ml/lib/server-list.js";
 import {Server}     from "/h3ml/lib/server.js";
 import {BotNet}     from "/h3ml/lib/botnet.js";
 import {Socket}     from "/h3ml/lib/network.js";
-import {hackInfo}   from "/h3ml/lib/hack-server.js";
+import {HackInfo}   from "/h3ml/lib/hack-server.js";
 import {Units}      from "/h3ml/lib/units.js";
 
 const protocolVersion = Constants.protocolVersion;
@@ -82,6 +82,8 @@ export async function main(ns) {
 
     if (tail) ns.tail(Module, ns.getHostname(), "tail");
 
+    const hackInfo = new HackInfo(l);
+
     while (true) {
         const hacking_list = await listHackingServers(l, 5000);
         const hacking_servers = new Map();
@@ -119,7 +121,7 @@ export async function main(ns) {
                 botnet.servers.length, botnet.maxRam, botnet.maxWorkers, botnet.workers,
                 botnet.usedRam, 100 * botnet.usedRam / botnet.maxRam
             );
-        const data = hackInfo(l, botnet, servers, hacking_servers);
+        const data = hackInfo.info(botnet, servers, hacking_servers);
         if (!tail) {
             l.g(1, "output data and break");
             l.g(1, "%s", botnetData);
