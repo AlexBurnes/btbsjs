@@ -1,6 +1,7 @@
 const Module  = '/h3ml/bin/server-cost.js';
 const Version = '0.3.5.4'; // update this every time when edit the code!!!
 
+import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
 import {Units}      from "/h3ml/lib/units.js";
 import {Table}      from "/h3ml/lib/utils.js"
@@ -51,7 +52,7 @@ export async function main(ns) {
     const [requestSizeGb] = args["_"];
 
     const minSizeGb = typeof (requestSizeGb) === 'number' ? requestSizeGb : 1;
-    const maxSizeGb = typeof (requestSizeGb) === 'number' ? requestSizeGb : Math.pow(2, 20);
+    const maxSizeGb = typeof (requestSizeGb) === 'number' ? requestSizeGb : Constants.uGb;
 
     const table = new Table(ns, [
         ["Size",    "%d%s"],
@@ -66,8 +67,8 @@ export async function main(ns) {
         const sizeFmt = Units.size(sizeGb * Constants.uGb);
         table.push(
             [sizeFmt.size, sizeFmt.unit],
-            i++,
-            sizeGb,
+            //i++,
+            //sizeGb,
             [costFmt.amount, costFmt.unit]
         );
     }

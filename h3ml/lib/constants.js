@@ -12,7 +12,7 @@ const _rootKitFiles = {
     "SQLInject.exe" : 5
 };
 
-const _uGb = Math.pow(2^30);
+const _uGb = Math.pow(2, 30);
 
 const _logLevel     = settings.logLevel   || 1;    // default log level for all scripts
 const _debugLevel   = settings.debugLevel || 0;    // default debug level for all scripts
