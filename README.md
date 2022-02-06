@@ -12,6 +12,7 @@
 
     0.3.5 add stock autotrade
 
+
 # Change log
 
     0.3.0 all scripts at /h3ml directory
