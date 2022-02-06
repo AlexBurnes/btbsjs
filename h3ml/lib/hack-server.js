@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.5.4';     // update this every time when edit the code!!!
+const Version = '0.3.5.6';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Servers}    from "/h3ml/lib/server-list.js";
@@ -43,11 +43,11 @@ export class HackInfo {
                 //FIXME add spent time on action
                 ["Diff"     , "%s%.2f%s"],  // available money diff, + grow, - hack
                 ["Sec"      , "%.2f"    ],  // secutity diff of prvious action
-                ["Total"    , "%.2f%s"  ],  // total amount hacked from server
-            ],
+                ["Total"    , "%.2f%s"  ]   // total amount hacked from server
+            ]
         );
     }
-    function info(botnet, servers, hacking_servers) {
+    info(botnet, servers, hacking_servers) {
         const ns = this.ns;
         const l  = this.lg;
         const table = this.table;
@@ -124,8 +124,8 @@ export class HackInfo {
             );
         });
         data.push(ns.sprintf("%s", table.print()));
+        return data;
     }
-    return data;
 }
 
 /**
