@@ -10,13 +10,13 @@
 
 # Version
 
-    0.3.3 prepare for automate h3ml
+    0.3.5 add stock autotrade
 
 # Change log
 
     0.3.0 all scripts at /h3ml directory
     0.3.1 update h3ml scripts, core files work properly
     0.3.2 all scripts support updater
-
+    0.3.3 prepare for automate h3ml
 
 
