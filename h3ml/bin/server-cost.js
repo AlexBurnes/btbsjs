@@ -55,8 +55,8 @@ export async function main(ns) {
 
     const table = new Table(ns, [
         ["Size",    "%d%s"],
-        ["2^n",     "2^%d"],
-        ["Size Gb", "%d"],
+        //["2^n",     "2^%d"],
+        //["Size Gb", "%d"],
         ["Price",   "%0.2f%s"]
     ]);
 
