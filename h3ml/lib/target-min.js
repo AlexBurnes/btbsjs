@@ -1,22 +1,21 @@
 const Module  = '/h3ml/lib/target-min.js';
-const Version = '0.3.3.5'; // update this every time when edit the code!!!
+const Version = '0.3.5.10'; // update this every time when edit the code!!!
 
-import {Constants}  from "/h3ml/lib/constants.js";
+import {Constants}   from "/h3ml/lib/constants.js";
 import {ScriptFiles} from "/h3ml/etc/scripts.js";
-import {serversData} from "/h3ml/etc/servers.js";
+import {Server}      from "/h3ml/lib/server-min.js";
 
 const scriptRamRequire = ScriptFiles[Constants.workerScriptFile];
 
-export class Target {
+export class Target extends Server {
     /**
      * @param {import("Ns").NS } ns
      * @param {string} name
      * @param {Array{server}} hosts
      */
     constructor(l, name, hosts) {
+        super(l.ns, name);
         this.l     = l;
-        this.ns    = l.ns;
-        this.name  = name;
         this.hosts = hosts;
 
     }
@@ -81,14 +80,14 @@ export class Target {
         //FIXME need to provide Server class with method maxRam, usedRam
 
         this.hosts.sort(function(a, b){
-            return (serversData[b.name].maxRam - ns.getServerUsedRam(b.name)) -
-                (serversData[b.name].maxRam - ns.getServerUsedRam(a.name))
+            return (ns.getServerMaxRam(b.name) - ns.getServerUsedRam(b.name)) -
+                (ns.getServerMaxRam(a.name) - ns.getServerUsedRam(a.name))
         });
         let scripts = [];
         this.hosts
             .forEach(server => {
                 if (threads > 0) {
-                    const serverMaxRam = serversData[servers.name].maxRam;
+                    const serverMaxRam = ns.getServerMaxRam(server.name);
                     const serverUsedRam = ns.getServerUsedRam(server.name);
                     const reserveRam = server.name == "home" ? Constants.reserveRam : 0;
                     const hostThreads = (serverMaxRam - serverUsedRam - reserveRam) / scriptRamRequire;

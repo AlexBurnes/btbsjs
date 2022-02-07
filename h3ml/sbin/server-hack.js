@@ -105,7 +105,7 @@ async function hackServer(l, target, once, analyze, port) {
                     l.g(1, "<= '%s' grow +%s => %s", target, diffMoney.pretty(ns), Units.money(availMoney).pretty(ns));
                     break;
                 case actionHack:
-                    l.g(1, "<= '%s' hack -%s => %s", target, diffMoney.pretty(ns), Units.money(availMoney).pretty(ns));
+                    l.g(1, "<= '%s' hack %s => %s", target, diffMoney.pretty(ns), Units.money(availMoney).pretty(ns));
                     break;
                 case actionWeak:
                     l.g(1, "<= '%s' weak %.2f => %.2f", target, currentSecurity - server.currentSecurity, currentSecurity);

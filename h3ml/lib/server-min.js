@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-min.js';
-const Version = '0.3.4.11';     // update this every time when edit the code!!!
+const Version = '0.3.5.10';     // update this every time when edit the code!!!
 
 import {Units}       from "/h3ml/lib/units.js";
 import {serversData} from "/h3ml/etc/servers.js";
@@ -12,8 +12,9 @@ export class Server {
         this.childs = childs;
         this.data   = serversData[name];
         // avoid undefined value
-        if (data == undefined) {
-            data = {
+        if (this.data == undefined) {
+            this.data = {
+                serverGrowth: 1,
                 maxRam: 0,
                 maxMoney: 0,
                 minSecurity: 0,
@@ -24,14 +25,15 @@ export class Server {
         }
     }
 
+    get serverGrowth()      {return this.data["serverGrowth"];}
     get maxRam()            {return this.ns.getServerMaxRam(this.name);}
     get usedRam()           {return this.ns.getServerUsedRam(this.name);}
-    get maxMoney()          {return Units.money(this.data.maxMoney);}
-    get minSecurity()       {return this.data.minSecurity;}
+    get maxMoney()          {return Units.money(this.data["maxMoney"]);}
+    get minSecurity()       {return this.data["minSecurity"];}
     get currentSecurity()   {return this.ns.getServerSecurityLevel(this.name);}
-    get hackLevel()         {return this.data.hackDifficulty;}
-    get faction()           {return this.data.factionServer;}
-    get purshaced()         {return this.data.purshacedServer;}
+    get hackLevel()         {return this.data["hackDifficulty"];}
+    get faction()           {return this.data["factionServer"];}
+    get purshaced()         {return this.data["purshacedServer"];}
 }
 
 /**
@@ -70,4 +72,3 @@ export async function main(ns) {
     help(ns);
     return;
 }
-

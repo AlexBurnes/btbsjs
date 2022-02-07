@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/utils.js';
-const Version = '0.3.5.4';     // update this every time when edit the code!!!
+const Version = '0.3.5.10';     // update this every time when edit the code!!!
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Level tree dumper
@@ -141,6 +141,116 @@ export function round(number, precise) {
     }
     return Math.round(number);
 }
+
+
+export class _Dumper {
+    constructor() {
+        if (!_Dumper._intance) {
+            _Dumper._instance = this;
+        }
+        return _Dumper._instance;
+    }
+    // private
+    _walk(object, lambda, filter, lvs, depth) {
+        if (lvs == undefined) {
+            lvs = new Lvs();
+            lvs.map = new Map();
+            lambda(lvs.empty, typeof(object), object, lvs);
+            lvs.id = 0;
+            lvs.items = 0;
+            depth = 1;
+        }
+
+        if (depth > this.maxDepth) {
+            lambda(lvs.pad(depth, 1), 'too deep ...', '');
+            return;
+        }
+        if (lvs.items++ >= this.maxItems) {
+            if (lvs.items == this.maxItems) {
+                lambda(lvs.pad(depth, 1), 'too many items ...', '');
+            }
+            return;
+        }
+
+        switch(typeof(object)) {
+            case 'object':
+                if (lvs.map.has(object)) {
+                //avoid loop
+                    lambda(lvs.pad(depth, 1), object, 'already dumped ...');
+                    return;
+                }
+                lvs.map.set(object, ++lvs.id);
+
+                const keys = Object.keys(object);
+                for(let i=0; i < keys.length; i++) {
+                    const child = object[keys[i]];
+                    if (filter && !filter(keys[i])) continue;
+                    if (child == undefined) {
+                        lambda(lvs.pad(depth, i == keys.length-1 ? 1 : 0), keys[i], 'undefined');
+                        continue;
+                    }
+                    lambda(lvs.pad(depth, i == keys.length-1 ? 1 : 0), keys[i], child);
+                    if (typeof(child) == 'object') {
+                        // deep down into rabbit hole
+                        this._walk(child, lambda, filter, lvs, depth + 1);
+                    }
+                }
+                break;
+            case 'function':
+                lambda(lvs.pad(depth, 1), typeof(object), '()');
+                break;
+            default:
+                lambda(lvs.pad(depth, 1), typeof(object), object);
+        }
+    }
+
+    // FIXME add options depth max depth of dump object, items max number of dump items
+    //public
+    dump(object, options = {}) {
+        const data = [];
+        this.maxDepth = options.depth || 10;
+        this.maxItems = options.items || 1000;
+        this._walk(object,
+            (pad, name, object) => {
+                const type = typeof(object);
+                switch (typeof(object)) {
+                    case 'object':
+                        data.push(`${pad} ${name}:`);
+                        break;
+                    case 'function':
+                        data.push(`${pad} ${name}()`);
+                        break;
+                    default:
+                        data.push(`${pad} ${name} = ${object}`);
+                }
+            },
+            options.filter
+        );
+        return data.join("\n");
+    }
+}
+
+export const Dumper = new _Dumper;
+
+/* example usage
+
+    const test = {
+        "one" : 1,
+        "two" : [ 2, 3],
+        "three": {
+            "three-one": 1,
+            "three-two": 2,
+        }
+    };
+    //make loop
+    test["four"] = test;
+    ns.tprint(Dumper.dump(test));
+
+    const unclickable = document.getElementById('unclickable');
+
+    ns.tprint(Dumper.dump(unclickable, {filter: name => !name.match(/\_react/), depth: 2, items: 100}));
+
+*/
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // update-fetch support
