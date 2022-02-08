@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/utils.js';
-const Version = '0.3.5.11';     // update this every time when edit the code!!!
+const Version = '0.3.6.1';     // update this every time when edit the code!!!
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Level tree dumper
@@ -117,7 +117,7 @@ export class Table {
      * @params {Number} a allign 0 left, 1 center, 2 right, default left
     **/
     column(g, l, r, a = 0) {
-        return r.map(r => this.header(g, l, r, a, k)).join("\n");
+        return r.map(r => this.header(g, l, r, a)).join("\n");
     }
 
     print() {
