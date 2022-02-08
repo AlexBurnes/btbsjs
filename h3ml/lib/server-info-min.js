@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info-min.js';
-const Version = '0.3.5.10'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Units}        from "/h3ml/lib/units.js";
 import {securityData} from "/h3ml/etc/security.js";
@@ -16,21 +16,39 @@ export function updateInfo(ns, target) {
     //FIXME this information need gather before, for different, but if this information is player depended?
     target.weakSecurityRate = securityData["weakRate"][0];
     target.hackSecurity     = securityData["hackRate"];  // security grow on hack by one thread
-    target.growSecurity     = securityData["growRate"];  // security groe on hack by one thread
+    target.growSecurity     = securityData["growRate"];  // security grow on hack by one thread
 
-    target.serverMaxGrowthThreads = Math.ceil(ns.growthAnalyze(target.name, target.serverGrowth));
+    const serverGrowth = target.serverGrowth > 1  ? target.serverGrowth : 2;
+
+    //ns.tprint(`${target.name}, ${target.serverGrowth}`);
+    target.serverMaxGrowthThreads = Math.ceil(ns.growthAnalyze(target.name, serverGrowth));
 
     target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
+    target.maxMoney = Units.money(ns.getServerMaxMoney(target.name));
+
+    target.minSecurity = ns.getServerMinSecurityLevel(target.name);
 
     target.weakThreads = Math.ceil((target.currentSecurity - target.minSecurity) / target.weakSecurityRate);
 
     target.weakMaxThreads = Math.ceil((100 - target.minSecurity) / target.weakSecurityRate);
 
-    // money to stole, to grow current value at once!
-    target.hackMaxThreads = Math.floor(target.availMoney.value) > 0 ? ns.hackAnalyzeThreads(target.name, target.availMoney.value * (1-1/target.serverGrowth)) : 0;
+    // money to stole, to grow current value at once! :)
+    target.minMoney = target.maxMoney.value / serverGrowth;
+
+    target.hackMaxThreads =
+        Math.floor(target.availMoney.value) > target.minMoney && target.currentSecurity < 100
+        ? ns.hackAnalyzeThreads(target.name, Math.floor(target.availMoney.value * (1-1/serverGrowth)))
+        : 0;
+
+    if (isNaN(target.hackMaxThreads)) target.hackMaxThreads = 0;
+
     // max threads to hack maxMoney
-    target.hackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity
-    target.growSecurityThreads = (100 - target.minSecurity)/target.growSecurity
+    target.hackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity;
+    target.growSecurityThreads = (100 - target.minSecurity)/target.growSecurity;
+
+    target.growTime = Units.time(ns.getGrowTime(target.name)/1000);
+    target.hackTime = Units.time(ns.getHackTime(target.name)/1000);
+    target.weakTime = Units.time(ns.getWeakenTime(target.name)/1000);
 
     target.moneyRatio =
         target.availMoney.value > 0
@@ -38,6 +56,7 @@ export function updateInfo(ns, target) {
                 ? 1
                 : target.maxMoney.value / target.availMoney.value
             : 0;
+    if (target.moneyRatio < 1) target.moneyRatio = 0;
 
     let growThreads;
     switch (target.moneyRatio) {
@@ -48,24 +67,31 @@ export function updateInfo(ns, target) {
             growThreads = 0;
             break;
         default:
-            growThreads = Math.floor(ns.growthAnalyze(target.name, Math.min(target.moneyRatio, target.serverGrowth)));
+            //ns.tprint(`${target.name}, ${target.moneyRatio}, ${target.serverGrowth}`);
+            growThreads = Math.floor(ns.growthAnalyze(target.name, Math.min(target.moneyRatio, serverGrowth)));
     }
     target.growMaxThreads = growThreads; // max threads to grow money to maxMoney
 
-    target.hackThreads = Math.min(target.hackSecurityThreads, target.hackMaxThreads);
-    target.growThreads = Math.min(target.growSecurityThreads, target.growMaxThreads);
+    target.hackThreads = target.hackMaxThreads;
+    target.growThreads = target.growMaxThreads;
 
     // how mach money could be stolen to grow once to max
-    target.hackAmount = target.maxMoney.value * (1-1/target.serverGrowth);
+    target.hackAmount = target.maxMoney.value * (1-1/serverGrowth);
 
-    //optimal hack threads
+    //optimal hack threads, this is wrong when vailMone < maxMoney, you could't not calculate so need calc it by other way
     target.optimalHackMoney   = Units.money(target.hackAmount);
-    target.optimalHackThreads = target.hackMaxThreads;
+    target.optimalHackThreads = target.currentSecurity < 100 ? Math.max(ns.hackAnalyzeThreads(target.name, target.hackAmount), target.hackThreads) : 0;
 
     //optimal grow threads
     target.optimalGrowThreads = target.serverMaxGrowthThreads || 0;
     target.optimalThreads     = Math.max(target.optimalGrowThreads, target.optimalHackThreads);
 
+    //ns.tprint(`${target.name} ${target.optimalGrowThreads}  ${target.growSecurity}\
+    //${target.optimalGrowThreads} ${target.weakSecurityRate}  ${target.optimalHackThreads}  ${target.hackSecurity}\
+    //${target.optimalHackThreads} ${target.weakSecurityRate}`);
+    target.cycleThreads       = target.optimalGrowThreads + Math.ceil(target.growSecurity * target.optimalGrowThreads/target.weakSecurityRate)
+                              + target.optimalHackThreads + Math.ceil(target.hackSecurity * target.optimalHackThreads/target.weakSecurityRate);
+    target.cycleTime          = Units.time(Math.max(target.growTime.value, target.hackTime.value, target.weakTime.value) + 4 * 500/1000);
 }
 
 // recalculate growth for max threads t
@@ -105,15 +131,17 @@ export function calcHack(l, server, hm, ht, t) {
         // nothing to recalc
         return [hm, t];
     }
+    if (Math.floor(hm) == 0) {
+        return [0, 0];
+    }
     const a = server.availMoney.value;
     const hpt = Math.min(t, ht);
     const hpm_c = hpt * (a * server.hackMoney);  // check math
     let hpm = hm/(hpt/ht);
     let hnt = Math.floor(ns.hackAnalyzeThreads(server.name, hpm));
     let hpm_ = (hm - hpm)/2;
-    // ? так, а это точно рассчитывается, поэтому не нужно считать интервалами
     l.d(1, "hm %f ht %d hpt %d hnt %d", hm, ht, hpt, hnt);
-    l.d(1, "hm %.2f, hpm_c %.2f hpm %.2f, diff %f", hm, hpm_c, hpm, hpm_);
+    l.d(1, "hm %.2f, hpm %.2f, diff %f", hm, hpm, hpm_);
     let i = 0;
     while (Math.abs(hnt - hpt) > 1) { //
         if (i++ > 1000) {break};

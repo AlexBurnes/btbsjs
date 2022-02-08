@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/utils.js';
-const Version = '0.3.5.10';     // update this every time when edit the code!!!
+const Version = '0.3.5.11';     // update this every time when edit the code!!!
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Level tree dumper
@@ -101,10 +101,10 @@ export class Table {
                 (i <= 1 ? g[0] : g[2]) +
                 this.ns.vsprintf("%s%s%s",
                     a == 0
-                    ? [d, g[1].repeat(al), " "]
+                    ? [d, g[1].repeat(al), g[1]]
                     : a == 1
                         ? [g[1].repeat(al/2), d, g[1].repeat(al/2) + g[1].repeat(al%2)]
-                        : [g[1].repeat(al), d, " "]
+                        : [g[1].repeat(al), d, g[1]]
                 ) +
                 (i == r.length - 1 ? g[0] : "")
             ).join('');
@@ -117,7 +117,7 @@ export class Table {
      * @params {Number} a allign 0 left, 1 center, 2 right, default left
     **/
     column(g, l, r, a = 0) {
-        return r.map(r => this.header(g, l, r, a)).join("\n");
+        return r.map(r => this.header(g, l, r, a, k)).join("\n");
     }
 
     print() {
@@ -125,7 +125,7 @@ export class Table {
             this.border(this.graph[0], this.columns),                   // top
             this.header(this.graph[1], this.columns, this.headers),     // header
             this.border(this.graph[2], this.columns),                   // border
-            this.column(this.graph[1], this.columns, this.rows, 2),          // rows
+            this.column(this.graph[1], this.columns, this.rows, 2),     // rows
             this.border(this.graph[4], this.columns)                    // bottom
         ].join("\n");
         this.rows = [];  // clean rows
@@ -150,15 +150,49 @@ export class _Dumper {
         }
         return _Dumper._instance;
     }
+
+    /*
+        another way to define object identity
+        (function() {
+            var id_counter = 1;
+            Object.defineProperty(Object.prototype, "__uniqueId", {
+                writable: true
+            });
+            Object.defineProperty(Object.prototype, "uniqueId", {
+                get: function() {
+                    if (this.__uniqueId == undefined)
+                        this.__uniqueId = id_counter++;
+                    return this.__uniqueId;
+                }
+            });
+        }());
+
+    */
+    // fixme decompose set id and check loop, map must contain both id and dump flag!
+    _dumped(lvs, object) {
+        if (lvs.map.has(object)) {
+            return 1;
+        }
+        lvs.map.set(object, ++lvs.id);
+        return 0;
+    }
+
+    _id(lvs, object) {
+        if (lvs.map.has(object)) {
+            return lvs.map["get"](object);
+        }
+        return 0;
+    }
+
     // private
     _walk(object, lambda, filter, lvs, depth) {
         if (lvs == undefined) {
-            lvs = new Lvs();
-            lvs.map = new Map();
+            lvs       = new Lvs();  // level pad
+            lvs.map   = new Map();  // identity map object => id
+            lvs.id    = 0;          // id of object identity
+            lvs.items = 0;          // current dumping item number
+            depth     = 1;          // curent dumping depth of object
             lambda(lvs.empty, typeof(object), object, lvs);
-            lvs.id = 0;
-            lvs.items = 0;
-            depth = 1;
         }
 
         if (depth > this.maxDepth) {
@@ -174,12 +208,9 @@ export class _Dumper {
 
         switch(typeof(object)) {
             case 'object':
-                if (lvs.map.has(object)) {
-                //avoid loop
-                    lambda(lvs.pad(depth, 1), object, 'already dumped ...');
-                    return;
+                if (this._dumped(lvs, object)) {
+                    return lambda(lvs.pad(depth, 1), object, 'already dumped ...');
                 }
-                lvs.map.set(object, ++lvs.id);
 
                 const keys = Object.keys(object);
                 for(let i=0; i < keys.length; i++) {
@@ -204,7 +235,6 @@ export class _Dumper {
         }
     }
 
-    // FIXME add options depth max depth of dump object, items max number of dump items
     //public
     dump(object, options = {}) {
         const data = [];

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/botnet.js';
-const Version = '0.3.4.17';     // update this every time when edit the code!!!
+const Version = '0.3.5.11';     // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Servers}     from "/h3ml/lib/server-list.js";
@@ -24,7 +24,6 @@ function help(ns) {
     ns.tprintf("this module is a library, import {BotNet} from '%s'", Module); // in case of a library
     return;
 }
-
 
 export class BotNet {
     constructor(ns) {

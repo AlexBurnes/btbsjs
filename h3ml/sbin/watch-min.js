@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.5.10'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -10,12 +10,7 @@ import {Servers}        from "/h3ml/lib/server-list.js";
 import {Server}         from "/h3ml/lib/server-min.js";
 import {HackInfo}       from "/h3ml/lib/hack-server-min.js";
 import {serversData}    from "/h3ml/etc/servers.js";
-
-/*
-import {updateInfo}     from "/h3ml/lib/server-info-min.js";
-import {Target}         from "/h3ml/lib/target-min.js"
-import {BotNet}         from "/h3ml/lib/botnet-min.js"
-*/
+import {scriptFiles}    from "/h3ml/var/files.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -441,8 +436,9 @@ function hackInfo(l, watcher) {
         procs
             .filter(proc => proc.filename.match(/server-hack(-min)?\.js$/))
             .forEach(proc => {
+                //ns.tprint(`${proc.args}`);
                 proc.args
-                    .filter(arg => !arg.match(/^--/))
+                    //.filter(arg => !arg.match(/^--/))
                     .forEach(arg => {scripts.set(arg, true); l.d(1, "set %s hack %s", server.name, arg);})
             });
         });
@@ -488,6 +484,32 @@ function hackInfo(l, watcher) {
     ns.clearLog();
     ns.print(botnetData);
     ns.print(data.join("\n"));
+}
+
+async function wormTarget(l, target) {
+    const ns = l.ns;
+    if (!ns.hasRootAccess(target)) {
+        await tryCatchIgnore(() => ns.brutessh(target))
+        await tryCatchIgnore(() => ns.relaysmtp(target))
+        await tryCatchIgnore(() => ns.httpworm(target))
+        await tryCatchIgnore(() => ns.ftpcrack(target))
+        await tryCatchIgnore(() => ns.sqlinject(target))
+        await tryCatchIgnore(() => ns.nuke(target))
+        l.r("worm '%s'", target);
+    }
+}
+
+async function scpTarget(l, target) {
+    const ns = l.ns;
+    await tryCatchIgnore(async () =>
+        await ns.scp(
+            scriptFiles.filter(f => f.match(/worker.js|constants.js|network.js|log.js|quiet.js|verbose.js|h3ml-settings.js/), source, target.name)
+        )
+    );
+}
+
+async function scpServer(l, server) {
+    await tryCatchIgnore(async () => await ns.scp(scriptFiles, source, server.name));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -567,5 +589,17 @@ export async function main(ns) {
                 }
             }
         );
+    }
+}
+
+/**
+ * @param {(() => Promise<void>) | (() => void)} lambda
+ * @returns {Promise<void>}
+ */
+async function tryCatchIgnore(lambda) {
+    try {
+        await lambda();
+    } catch (e) {
+        // ignore
     }
 }

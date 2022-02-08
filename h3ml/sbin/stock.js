@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/stock.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"
@@ -37,6 +37,7 @@ class Symbol {
         this.price  = position[1];
         this.shares = position[0];
         this.total  = 0;
+        this.trade  = 1;  //default is trading
     }
 }
 
@@ -83,6 +84,9 @@ class _Stock {
 
 const Stock = new _Stock;
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// control of module
+
 async function ctrl(time, data) {
     const ns = l.ns;
 
@@ -101,15 +105,83 @@ async function ctrl(time, data) {
             break;
         case "sell-all":
             sell_all(l, socket, args);
-
+            break;
+        case "buy-all":
+            buy_all(l, socket, args);
+            break;
         default:
             socket.write("#|Error|unknown command");
     }
     return 1;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// trade start
+async function trade_start(l, socket, args) {
+    const [symb] = args;
+    if (!Stock.symbols["has"](symb);) {
+        return await socket.write('#', 'Error', 'start-trade', `share symbol '${symb}' unknow`);
+    }
+    const data = Stock.symbols["get"](symb);
+    data.trade = 1;
+    return await socket.write('#', 'OK', 'start-trade', `start trading share symbol '${symb}'`);
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// trade stop
+async function trade_start(l, socket, args) {
+    const [symb] = args;
+    if (!Stock.symbols["has"](symb);) {
+        return await socket.write('#', 'Error', 'stop-trade', `share symbol '${symb}' unknow`);
+    }
+    const data = Stock.symbols["get"](symb);
+    data.trade = 0;
+    return await socket.write('#', 'OK', 'stop-trade', `stop trading share symbol '${symb}'`);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// stop trading and sell all shares
+async function sell_all(l, socket, args) {
+    //first stop trading on all symbols
+    symbols.forEach(symb => {
+        const data = Stock.symbols["get"](symb);
+        data.trade = 0;
+        if (data.shares > 0) {
+            // sell stocks
+            l.d(1, "sell shares %d", data.shares);
+            const price = st.sell(symb, data.shares);
+            if (price) {
+                const profit = (price - data.price) * data.shares;
+                data.total += profit;
+                data.shares = 0;
+                ns.toast(ns.sprintf("%s %s", symb, Units.money(profit).pretty(ns)), profit > 0 ? "success" : "error", 30000);
+            }
+        }
+    }
+    return await socket.write('#', 'OK', 'sell-all', `stop trading all symbol shares and sell all owned shares`);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// start trading and allow to buy all symbol shares
+async function buy_all(l, socket, args) {
+    symbols.forEach(symb => {
+        const data = Stock.symbols["get"](symb);
+        data.trade = 1;
+    }
+    return await socket.write('#', 'OK', 'buy-all', `start trading all symbol shares`);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// info, maybe
+
 async function info() {
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// trade and show
 
 async function trade(l, table, symbols) {
 
@@ -133,9 +205,9 @@ async function trade(l, table, symbols) {
         data.shares = position[0];
 
         const signal =
-            (data.forecast > 50 && forecast < 50 || (false && forecast < 50 && data.forecast > forecast))
+            (data.forecast > 51 && forecast < 49)
             ? "sell"
-            : (data.forecast < 50 && forecast > 50 || (false && forecast > 50 && data.forecast < forecast))
+            : (data.forecast < 49 && forecast > 51)
             ? "buy"
             : "";
         data.forecast = forecast;

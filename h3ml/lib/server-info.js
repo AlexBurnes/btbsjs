@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info.js';
-const Version = '0.3.5.8'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Units}      from "/h3ml/lib/units.js"
@@ -20,29 +20,31 @@ export function updateInfo(ns, target) {
     target.hackSecurity     = ns.hackAnalyzeSecurity(1);    // security grow on hack by one thread
     target.growSecurity     = ns.growthAnalyzeSecurity(1);  // security groe on hack by one thread
 
-    target.serverMaxGrowthThreads = Math.ceil(ns.growthAnalyze(target.name, target.serverGrowth));
+    //ns.tprint(`${target.name}, ${target.serverGrowth}`);
+    target.serverMaxGrowthThreads = Math.ceil(ns.growthAnalyze(target.name, target.serverGrowth)) || 0;
 
     target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
+    target.maxMoney = Units.money(ns.getServerMaxMoney(target.name));
 
     target.hackChances = ns.hackAnalyzeChance(target.name);
-    target.hackMoney = ns.hackAnalyze(target.name); // part of amount hacked by one thread
+    target.hackMoney   = ns.hackAnalyze(target.name); // part of amount hacked by one thread
 
     target.weakThreads = Math.ceil((target.currentSecurity - target.minSecurity) / target.weakSecurityRate);
     target.weakMaxThreads = Math.ceil((100 - target.minSecurity) / target.weakSecurityRate);
 
     // money to stole, to grow current value at once!
-    target.hackMaxThreads = target.hackMoney ? ns.hackAnalyzeThreads(target.name, target.availMoney.value * (1-1/target.serverGrowth)) : 0;
+    target.minMoney = target.maxMoney.value / target.serverGrowth;
+
+    target.hackMaxThreads = Math.floor(target.availMoney.value) > target.minMoney
+        ? ns.hackAnalyzeThreads(target.name, target.availMoney.value * (1-1/target.serverGrowth))
+        : 0;
     // max threads to hack maxMoney
-    target.maxHackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity
-    target.maxGrowSecutiryThreads = (100 - target.minSecurity)/target.growSecurity
+    target.hackSecurityThreads = (100 - target.minSecurity)/target.hackSecurity
+    target.growSecurityThreads = (100 - target.minSecurity)/target.growSecurity
 
     target.growTime = Units.time(ns.getGrowTime(target.name)/1000);
     target.hackTime = Units.time(ns.getHackTime(target.name)/1000);
     target.weakTime = Units.time(ns.getWeakenTime(target.name)/1000);
-
-    target.gapSecurity = 100 - target.currentSecurity;
-    target.growSecurityThreads = Math.floor(target.gapSecurity/target.growSecurity); // how many threads affected by grow to up to high value
-    target.hackSecurityThreads = Math.floor(target.gapSecurity/target.hackSecurity); // how many threads affected by hack to up to high value
 
     target.moneyRatio =
         target.availMoney.value > 0
@@ -50,6 +52,7 @@ export function updateInfo(ns, target) {
                 ? 1
                 : target.maxMoney.value / target.availMoney.value
             : 0;
+    if (target.moneyRatio < 1) target.moneyRatio = 0;
 
     let growThreads;
     switch (target.moneyRatio) {
@@ -60,31 +63,20 @@ export function updateInfo(ns, target) {
             growThreads = 0;
             break;
         default:
+            //ns.tprint(`${target.name}, ${target.moneyRatio}, ${target.serverGrowth}`);
             growThreads = Math.floor(ns.growthAnalyze(target.name, Math.min(target.moneyRatio, target.serverGrowth)));
     }
-
     target.growMaxThreads = growThreads; // max threads to grow money to maxMoney
 
     target.hackThreads = Math.min(target.hackSecurityThreads, target.hackMaxThreads);
     target.growThreads = Math.min(target.growSecurityThreads, target.growMaxThreads);
 
-    target.hackAmount = Units.money(target.hackThreads * (target.availMoney.value * target.hackMoney));
-    target.growAmount = Units.money(target.moneyRatio > 1 && target.growMaxThreads > 0
-        ? (target.growThreads / target.growMaxThreads) * (target.maxMoney.value - target.availMoney.value)
-        : 0
-    );
-    target.weakAmount = target.weakThreads * target.weakSecurityRate;
-
-    // calculate optmial hack
-    // target.serverMaxGrowthThreads
     // how mach money could be stolen to grow once to max
-    const ha = target.maxMoney.value * (1-1/target.serverGrowth);
-    //const ht = target.hackMoney >0 ? ha/(target.maxMoney.value * target.hackMoney) : 0;
-    const ht = ns.hackAnalyzeThreads(target.name, ha);
+    target.hackAmount = target.maxMoney.value * (1-1/target.serverGrowth);
 
     //optimal hack threads
-    target.optimalHackMoney   = Units.money(ha);
-    target.optimalHackThreads = target.hackMaxThreads;
+    target.optimalHackMoney   = Units.money(target.hackAmount);
+    target.optimalHackThreads = target.currentSecurity < 100 ? ns.hackAnalyzeThreads(target.name, target.hackAmount) : 0;
 
     //optimal grow threads
     target.optimalGrowThreads = target.serverMaxGrowthThreads || 0;
@@ -129,6 +121,9 @@ export function calcHack(l, server, hm, ht, t) {
         // nothing to recalc
         return [hm, t];
     }
+    if (Math.floor(hm) == 0) {
+        return [0, 0];
+    }
     const a = server.availMoney.value;
     const hpt = Math.min(t, ht);
     const hpm_c = hpt * (a * server.hackMoney);  // check math
@@ -148,7 +143,6 @@ export function calcHack(l, server, hm, ht, t) {
     }
     return [hpm, hnt];
 }
-
 
 /**
     @param {NS} ns

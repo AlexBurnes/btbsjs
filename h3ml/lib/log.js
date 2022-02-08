@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/log.js';
-const Version = '0.3.3';  // update this every time when edit the code!!!
+const Version = '0.3.5.11';  // update this every time when edit the code!!!
 
 /*
     logger
@@ -48,22 +48,22 @@ export class Logger {
     constructor(ns, options = {}) {
         this.ns = ns;
 
-        this.debugLevel = options["debugLevel"] || Constants.debugLevel; //default debug level
-        this.logLevel   = options["logLevel"]   || Constants.logLevel;   //default log level
+        this.debugLevel = options["debugLevel"] || 0;
+        this.logLevel   = options["logLevel"] || 0;
         this.quiet = 0;
 
         if (options["args"]) {
             const args = options["args"];
-            this.debugLevel = args["debug"] || this.debugLevel;
-            this.logLevel   = args["log"]   || this.logLevel;
-            if (args["verbose"]) {
-                this.logLevel = 1;
-            }
+            this.debugLevel = args["debug"]  !== undefined ? args["debug"] : this.debugLevel;
+            this.logLevel   = args["log"] !== undefined ? args["log"] :  this.logLevel;
             if (args["quiet"]) {
                 this.quiet = 1;
             }
+            if (args["verbose"]) {
+                this.logLevel = args["log"] || 1;
+                this.quiet = 0;
+            }
         }
-
     }
     // debug
     /** @param {Number} level 0..N **/
@@ -100,7 +100,6 @@ export class Logger {
         if (Constants.toastLogResult) {
             this.ns.toast(text, "info", Constants.toastInfoTimeout);
         }
-        if (this.quiet) return;
         this.ns.tprintf("%s", text);
         return;
     }
@@ -110,7 +109,6 @@ export class Logger {
     e(format, ...args) {
         const text = this.ns.sprintf("ERROR: %s", this.ns.vsprintf(format, args));
         this.ns.print(text);
-        if (this.quiet) return;
         this.ns.tprintf("%s", text);
     }
     // log error, allways without level
@@ -119,7 +117,6 @@ export class Logger {
     w(format, ...args) {
         const text = this.ns.sprintf("WARNING: %s", this.ns.vsprintf(format, args));
         this.ns.print(text);
-        if (this.quiet) return;
         this.ns.tprintf("%s", text);
     }
 }

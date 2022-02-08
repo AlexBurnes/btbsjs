@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/target.js';
-const Version = '0.3.3.16'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Server}     from "/h3ml/lib/server.js";
@@ -147,9 +147,10 @@ export class Target extends Server {
                     else if (now.getUTCMinutes() > 10) await this.ns.sleep(1000 * 60 * 10)
                     else if (now.getUTCMinutes()) await this.ns.sleep(1000 * 60)
                     else if (now.getUTCSeconds() > 10) await this.ns.sleep(1000 * 10)
-                    else await this.ns.sleep(1000)
+                    else if (now.getUTCSeconds() > 1) await this.ns.sleep(1000)
+                    else await this.ns.sleep(100)
                 }
-                else await this.ns.sleep(1000)
+                else await this.ns.sleep(100)
                 //await this.l.g("[%s:%d] work done for '%s' job '%s' in %s", this.host, pid, this.name, cmd, timeout.toUTCString().substr(17, 8));
             }
             resolve();

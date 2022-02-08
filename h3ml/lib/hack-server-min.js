@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/hack-server-min.js';
-const Version = '0.3.5.10';     // update this every time when edit the code!!!
+const Version = '0.3.5.11';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Table}      from "/h3ml/lib/utils.js";
@@ -22,6 +22,10 @@ export class HackInfo {
                 ["Mr"        , "%.2f"   ],  // rate to grow from available to max money
                 ["Gr"       , "%d"      ],  // server growth effectivness
 
+                ["Htm"      , "%.2f%s"  ],  // hack time
+                ["Gtm"      , "%.2f%s"  ],  // grow time
+                ["Wtm"      , "%.2f%s"  ],  // weaken time
+
                 // this is calculated by server-info.updateInfo
                 ["Hth"      , "%d"      ],  // hack threads to hack money to grow server at once
                 ["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
@@ -30,7 +34,10 @@ export class HackInfo {
                 ["Oth"      , "%d"      ],  // optimal max threads
                 ["sz"       , "%s"      ],  // server size require
 
-                // this come from wather
+                ["Cth"      , "%s"      ],
+                ["Ct"       , "%s"      ],
+
+                // this come from watcher
                 ["Ca"       , "%s"      ],  // current action
                 ["Time"     , "%.2f%s"  ],  // remain time
                 ["La"       , "%s"      ],  // previous action
@@ -73,11 +80,17 @@ export class HackInfo {
         servers.sort(
             function (b, a) {
                 return (
-                      1/Math.floor(Math.log10(b.maxMoney.value))*(1/b.minSecurity)*b.serverGrowth
-                    - 1/Math.floor(Math.log10(a.maxMoney.value))*(1/a.minSecurity)*a.serverGrowth
+                      1/Math.floor(Math.log10(b.maxMoney.value))*(1/b.minSecurity)*b.serverGrowth*1/b.cycleTime.value
+                    - 1/Math.floor(Math.log10(a.maxMoney.value))*(1/a.minSecurity)*a.serverGrowth*1/b.cycleTime.value
                 )
             }
         );
+
+        /*servers.sort(
+            function (a, b) {
+                return (b.cycleTime.value - a.cycleTime.value)
+            }
+        );*/
 
         // need to find nearest > 2^n Gb server :)
         const allServersRam = Math.ceil(botnet.workerRam * allServerThreads);
@@ -99,12 +112,20 @@ export class HackInfo {
                 [server.maxMoney.amount, server.maxMoney.unit],
                 server.moneyRatio,
                 server.serverGrowth,
+
+                [server.hackTime.time, server.hackTime.unit],
+                [server.growTime.time, server.growTime.unit],
+                [server.weakTime.time, server.weakTime.unit],
+
                 server.hackThreads,
                 server.growThreads,
                 server.weakThreads,
                 [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
                 server.optimalThreads,
                 Units.size(server.optimalThreads*botnet.workerRam*Constants.uGb).pretty(ns),
+                Units.money(server.cycleThreads).pretty(ns),
+                server.cycleTime.pretty(ns),
+
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
                 hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
@@ -154,4 +175,3 @@ export async function main(ns) {
     help(ns);
     return;
 }
-

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server.js';
-const Version = '0.3.4.14';     // update this every time when edit the code!!!
+const Version = '0.3.5.11';     // update this every time when edit the code!!!
 
 import {Units} from "/h3ml/lib/units.js";
 
@@ -9,13 +9,14 @@ export class Server {
         this.name   = name;
         this.depth  = depth;
         this.childs = childs;
+        this.maxMoney    = Units.money(this.ns.getServerMaxMoney(this.name));
+        this.minSecurity = this.ns.getServerMinSecurityLevel(this.name);
+
     }
-    get maxRam()            {return this.ns.getServerMaxRam(this.name);}
-    get usedRam()           {return this.ns.getServerUsedRam(this.name);}
-    get maxMoney()          {return Units.money(this.ns.getServerMaxMoney(this.name));}
-    get minSecurity()       {return this.ns.getServerMinSecurityLevel(this.name);}
-    get currentSecurity()   {return this.ns.getServerSecurityLevel(this.name);}
-    get hackLevel()         {return this.ns.getServerRequiredHackingLevel(this.name);}
+    get maxRam()                {return this.ns.getServerMaxRam(this.name);}
+    get usedRam()               {return this.ns.getServerUsedRam(this.name);}
+    get currentSecurity()       {return this.ns.getServerSecurityLevel(this.name);}
+    get hackLevel()             {return this.ns.getServerRequiredHackingLevel(this.name);}
 
     get faction() {
         if (this.ns.getServerMaxRam(this.name) >= 0 &&

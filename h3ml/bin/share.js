@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/share.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -63,6 +63,9 @@ export async function main(ns) {
             if (pid) totalThreads += threads;
         }
     }
+    if (totalThreads > 0) {
+        await ns.sleep(1000);
+    }
 
     const powerAfter = ns.getSharePower();
     if (totalThreads > 0) {
@@ -70,5 +73,6 @@ export async function main(ns) {
             totalThreads, powerBefore, powerAfter, powerAfter/powerBefore,  (powerAfter-powerBefore)/totalThreads
         );
     }
+
     l.r(`Share power ${powerAfter}`);
 }

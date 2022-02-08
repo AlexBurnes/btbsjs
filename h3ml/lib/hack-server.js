@@ -1,9 +1,7 @@
 const Module  = '/h3ml/lib/hack-server.js';
-const Version = '0.3.5.6';     // update this every time when edit the code!!!
+const Version = '0.3.5.11';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
-import {Servers}    from "/h3ml/lib/server-list.js";
-import {BotNet}     from "/h3ml/lib/botnet.js";
 import {Table}      from "/h3ml/lib/utils.js";
 import {updateInfo} from "/h3ml/lib/server-info.js";
 import {Units}      from "/h3ml/lib/units.js"
@@ -22,7 +20,7 @@ export class HackInfo {
                 ["Cur"      , "%.2f"    ],  // cure security
                 ["Avail"    , "%.2f%s"  ],  // available money
                 ["Max"      , "%.2f%s"  ],  // max money
-                ["Mr"        , "%.2f"    ],  // rate to grow from available to max money
+                ["Mr"        , "%.2f"   ],  // rate to grow from available to max money
                 ["Gr"       , "%d"      ],  // server growth effectivness
                 ["Htm"      , "%.2f%s"  ],  // hack time
                 ["Gtm"      , "%.2f%s"  ],  // grow time

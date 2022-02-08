@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/h3ml.js';
-const Version = '0.3.4.18'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -88,7 +88,7 @@ export async function main(ns) {
                 l.g(2, "%s already haking", server.name);
             }
             else {
-                const pid = ns.exec("/h3ml/sbin/server-hack.js", hack_server, 1, server.name);
+                const pid = ns.exec("/h3ml/sbin/server-hack-min.js", hack_server, 1, server.name);
                 if (pid) {
                     l.g(1, "%s start hacking at '%s' pid %d", server.name, hack_server, pid);
                 }

@@ -1,18 +1,16 @@
 const Module  = '/h3ml/sbin/watcher.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
 import {Socket}         from "/h3ml/lib/network.js";
 import {Units}          from "/h3ml/lib/units.js";
-import {serversData}    from "/h3ml/etc/servers.js";
+import {BotNet}         from "/h3ml/lib/botnet.js";
 import {Servers}        from "/h3ml/lib/server-list.js";
-
-/*
-import {updateInfo}     from "/h3ml/lib/server-info-min.js";
-import {Target}         from "/h3ml/lib/target-min.js"
-import {BotNet}         from "/h3ml/lib/botnet-min.js"
-*/
+import {Server}         from "/h3ml/lib/server.js";
+import {HackInfo}       from "/h3ml/lib/hack-server.js";
+import {serversData}    from "/h3ml/etc/servers.js";
+import {scriptFiles}    from "/h3ml/var/files.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -89,6 +87,7 @@ class _Watcher {
         this.ns = l.ns;
         this.socket = new Socket(this.ns, Constants.watchPort);
         this.targets_ = new Map();
+        this.hackInfo = new HackInfo(l);
         this.maxNameLength = 0;
         Object.keys(serversData)
             .forEach(name => {
@@ -288,6 +287,8 @@ async function actionStop(watcher, time, data) {
                     doHackAction(l, Watcher, target);
                 }
 
+                hackInfo(l, Watcher);
+
             }
         }
     }
@@ -385,7 +386,7 @@ async function serversHackList(l, watcher, socket) {
         const procs = ns.ps(server.name);
         //ns.tprint(procs);
         procs
-            .filter(proc => proc.filename == "/h3ml/sbin/server-hack.js")
+            .filter(proc => proc.filename.match(/server-hack(-min)?\.js$/))
             .forEach(proc => {
                 proc.args
                     .filter(arg => !arg.match(/^--/))
@@ -422,6 +423,96 @@ async function actionInfo(watcher, time, data) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// show hack stat on servers
+
+function hackInfo(l, watcher) {
+    const ns = l.ns;
+
+    const scripts = new Map();
+    Servers.list(ns).forEach(server => {
+        //l.g(1, "server %s", server.name);
+        const procs = ns.ps(server.name);
+        //ns.tprint(procs);
+        procs
+            .filter(proc => proc.filename.match(/server-hack(-min)?\.js$/))
+            .forEach(proc => {
+                //ns.tprint(`${proc.args}`);
+                proc.args
+                    //.filter(arg => !arg.match(/^--/))
+                    .forEach(arg => {scripts.set(arg, true); l.d(1, "set %s hack %s", server.name, arg);})
+            });
+        });
+
+    const hacking_servers = new Map();
+    scripts.forEach( (_, name) => {
+        if (watcher.targets.has(name)) {
+            const target = watcher.targets["get"](name);
+            const timeout = target.startTime - Date.now() + parseInt(target.endTime);
+            const estimate = Units.time(target.currentAction !== undefined && timeout > 0 ? timeout/1000 : 0);
+            const diff_amount = target.diffAvailMoney;
+            const total_amount = Units.money(target.totalAmount);
+            const diff_security = target.diffSecuriry;
+            hacking_servers.set(name, [
+                target.name,
+                target.currentAction,
+                estimate,
+                target.lastAction,
+                diff_amount,
+                diff_security,
+                total_amount
+            ]);
+        }
+    });
+
+    const servers = Servers.list(ns, Server)
+        .filter(server => server.name !== 'home') // not home
+        .filter(server => ns.getServerMaxMoney(server.name)) // has money
+        .filter(server => ns.hasRootAccess(server.name)) // with root access
+        .filter(server => ns.getServerRequiredHackingLevel(server.name) <= ns.getHackingLevel()); // hackable
+
+
+    const botnet = new BotNet(ns);
+    const botnetData =
+        ns.sprintf("botnet %d memory %s max threads %s, free %s, used memory %s usage %.2f%%",
+            botnet.servers.length, Units.size(botnet.maxRam * Constants.uGb).pretty(ns),
+            Units.money(botnet.maxWorkers).pretty(ns),
+            Units.money(botnet.workers).pretty(ns),
+            Units.size(botnet.usedRam * Constants.uGb).pretty(ns), 100 * botnet.usedRam / botnet.maxRam
+        );
+
+    const data = watcher.hackInfo.info(botnet, servers, hacking_servers);
+    ns.clearLog();
+    ns.print(botnetData);
+    ns.print(data.join("\n"));
+}
+
+async function wormTarget(l, target) {
+    const ns = l.ns;
+    if (!ns.hasRootAccess(target)) {
+        await tryCatchIgnore(() => ns.brutessh(target))
+        await tryCatchIgnore(() => ns.relaysmtp(target))
+        await tryCatchIgnore(() => ns.httpworm(target))
+        await tryCatchIgnore(() => ns.ftpcrack(target))
+        await tryCatchIgnore(() => ns.sqlinject(target))
+        await tryCatchIgnore(() => ns.nuke(target))
+        l.r("worm '%s'", target);
+    }
+}
+
+async function scpTarget(l, target) {
+    const ns = l.ns;
+    await tryCatchIgnore(async () =>
+        await ns.scp(
+            scriptFiles.filter(f => f.match(/worker.js|constants.js|network.js|log.js|quiet.js|verbose.js|h3ml-settings.js/), source, target.name)
+        )
+    );
+}
+
+async function scpServer(l, server) {
+    await tryCatchIgnore(async () => await ns.scp(scriptFiles, source, server.name));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // main
 
 /** @param {NS} ns **/
@@ -432,8 +523,8 @@ export async function main(ns) {
         [ 'help'        , false ],
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'       , 0     ], // debug level
-        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+        [ 'verbose'     , false ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , true ]  // quiet mode, short analog of --log-level 0
     ]);
 
     if (args['version']) {
@@ -444,6 +535,7 @@ export async function main(ns) {
     }
 
     ns.disableLog("ALL");
+    ns.tail(Module);
 
     const l = new Logger(ns, {args: args});
 
@@ -454,7 +546,9 @@ export async function main(ns) {
         if (target.currentAction == 1) {
             doHackAction(l, Watcher, target);
         }
-    })
+    });
+
+    hackInfo(l, Watcher);
 
     // drop all old events
     let oldTime = Date.now();
@@ -490,10 +584,22 @@ export async function main(ns) {
                 //idle: Watcher.idle
                 idle: async () => {
                     //check events;
-                    l.d(1, "idle, do checks");
+                    hackInfo(l, Watcher);
                     return 1;
                 }
             }
         );
+    }
+}
+
+/**
+ * @param {(() => Promise<void>) | (() => void)} lambda
+ * @returns {Promise<void>}
+ */
+async function tryCatchIgnore(lambda) {
+    try {
+        await lambda();
+    } catch (e) {
+        // ignore
     }
 }

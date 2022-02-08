@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/target-min.js';
-const Version = '0.3.5.10'; // update this every time when edit the code!!!
+const Version = '0.3.5.11'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {ScriptFiles} from "/h3ml/etc/scripts.js";
@@ -29,7 +29,7 @@ export class Target extends Server {
     hack(threads, options = {}) {
         return this.execute('hack', threads, {
             ...options,
-            await: options.await && 1000
+            await: options.await && this.ns.getHackTime(this.name)
         });
     }
 
@@ -42,7 +42,7 @@ export class Target extends Server {
     weaken(threads, options = {}) {
         return this.execute('weaken', threads, {
             ...options,
-            await: options.await && 1000
+            await: options.await && this.ns.getWeakenTime(this.name)
         });
     }
 
@@ -55,7 +55,7 @@ export class Target extends Server {
     grow(threads, options = {}) {
         return this.execute('grow', threads, {
             ...options,
-            await: options.await && 1000
+            await: options.await && this.ns.getGrowTime(this.name)
         });
     }
 
@@ -127,9 +127,10 @@ export class Target extends Server {
                     else if (now.getUTCMinutes() > 10) await this.ns.sleep(1000 * 60 * 10)
                     else if (now.getUTCMinutes()) await this.ns.sleep(1000 * 60)
                     else if (now.getUTCSeconds() > 10) await this.ns.sleep(1000 * 10)
-                    else await this.ns.sleep(1000)
+                    else if (now.getUTCSeconds() > 1) await this.ns.sleep(1000)
+                    else await this.ns.sleep(100)
                 }
-                else await this.ns.sleep(1000)
+                else await this.ns.sleep(100)
                 //await this.l.g("[%s:%d] work done for '%s' job '%s' in %s", this.host, pid, this.name, cmd, timeout.toUTCString().substr(17, 8));
             }
             resolve();
