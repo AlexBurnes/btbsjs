@@ -38,7 +38,7 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    const [target, method, time, host, threads, end] = args["_"];
+    const [target, method, time, host, threads, end, batch] = args["_"];
 
     if (time > Date.now()) await ns.sleep(time - Date.now());
     const hostName   = host    == undefined ? "" : host;
@@ -46,11 +46,11 @@ export async function main(ns) {
 
     const socket = new Socket(ns, Constants.watchPort);
 
-    await socket.write(">", hostName, time, threadsNum, target, method, end);
+    await socket.write(">", hostName, time, threadsNum, target, method, end, batch);
 
     const result = await ns[method](target);
 
-    await socket.write("<", hostName, time, threadsNum, target, method, result);
+    await socket.write("<", hostName, time, threadsNum, target, method, result, batch);
 
 }
 

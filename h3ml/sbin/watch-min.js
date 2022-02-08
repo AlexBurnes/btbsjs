@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.5.11'; // update this every time when edit the code!!!
+const Version = '0.3.6.0'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -52,6 +52,7 @@ class WatchTarget {
         this.startTime      = 0;
         this.endTime        = 0;
         this.hosts          = new Map();
+        this.batches        = new Map();
         this.info();
     }
     method(method, start, end) {
@@ -61,7 +62,6 @@ class WatchTarget {
         this.actionTime     = start;
         this.startTime      = start;
         this.endTime        = end;
-        this.hosts          = new Map();
         this.info();
     }
     info() {
@@ -100,6 +100,7 @@ class _Watcher {
         l.d(1, "max length name %d", this.maxNameLength);
         const watchData = this.ns.read(watchDataFile);
         if (watchData) {
+            //FIXME use json parse and stringify for this
             l.g(1, "there is a watch data, use it for init watcher");
             const rows = watchData.split(";\n");
             rows.forEach(row => {
@@ -136,6 +137,7 @@ class _Watcher {
     async info() {};
     save() {
         this.lg.g(1, "save watch data");
+        //FIXME use json
         let watchData = "";
         this.targets
             .forEach((target, name) => {
@@ -169,7 +171,7 @@ const Watcher = new _Watcher;
 async function actionStart(watcher, time, data) {
     const l = watcher.lg;
     const ns = l.ns;
-    const [host, start, threads, server, method, end] = data;
+    const [host, start, threads, server, method, end, batch] = data;
 
     if (!Watcher.targets.has(server)) {
         Watcher.targets.set(server, new WatchTarget(ns, server));
@@ -177,6 +179,12 @@ async function actionStart(watcher, time, data) {
 
     if (Watcher.targets.has(server)) {
         const target = Watcher.targets["get"](server);
+
+        if (batch !== undefined) {
+            //FIXME later
+            return;
+        }
+
         if (target.actionTime <= start) {
             if (target.actionTime < start) {
                 target.method(method, start, end);
@@ -197,7 +205,13 @@ async function actionStop(watcher, time, data) {
     const l = watcher.lg;
     const ns = l.ns;
 
-    const [host, eventTime, threads, server, method, result] = data;
+    const [host, eventTime, threads, server, method, result, batch] = data;
+
+    if (batch !== undefined) {
+        //FIXME later
+        return;
+    }
+
     let resultStr = "";
     switch (method) {
         case "weaken":

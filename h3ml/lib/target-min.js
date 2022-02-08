@@ -94,8 +94,8 @@ export class Target extends Server {
                     //ns.tprintf("server %s %d/%d CPU %d, threads allow %d", server.name, serverMaxRam, serverUsedRam, cpuCores, hostThreads);
                     if (hostThreads > 0) {
                         server.workerThreads = Math.min(hostThreads, threads);
-                        const pid = ns.exec(Constants.workerScriptFile, server.name, server.workerThreads,
-                            this.name, cmd, start, server.name, server.workerThreads, options.await
+                        const pid = ns.exec(Constants.workerScriptFile, server.name, server.workerThreads,              //start options
+                            this.name, cmd, start, server.name, server.workerThreads, options.await, options.batch      //args
                         );
                         server.workerPid = pid;
                         scripts.push(server);
@@ -118,7 +118,9 @@ export class Target extends Server {
                 //this.ns.isRunning('worker.js', this.host, this.name, cmd, start)
                 scripts =
                     scripts
-                        .filter(server => this.ns.isRunning(Constants.workerScriptFile, server.name, this.name, cmd, start, server.name, server.workerThreads, options.await));
+                        .filter(server => this.ns.isRunning(Constants.workerScriptFile, server.name,                    //start options (without thread!)
+                            this.name, cmd, start, server.name, server.workerThreads, options.await, options.batch      //args
+                        ));
 
                 if (end.getTime() > Date.now()) {
                     const now = new Date(end.getTime() - Date.now());
