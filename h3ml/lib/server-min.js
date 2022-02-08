@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-min.js';
-const Version = '0.3.5.10';     // update this every time when edit the code!!!
+const Version = '0.3.5.12';     // update this every time when edit the code!!!
 
 import {Units}       from "/h3ml/lib/units.js";
 import {serversData} from "/h3ml/etc/servers.js";
@@ -23,17 +23,13 @@ export class Server {
                 purshacedServer: false
             }
         }
-        this._maxMoney = Units.money(this.data["maxMoney"]);
-        this._minSecurity = this.data["minSecurity"];
+        this.maxMoney = Units.money(this.data["maxMoney"]);
+        this.minSecurity = this.data["minSecurity"];
     }
 
     get serverGrowth()          {return this.data["serverGrowth"];}
     get maxRam()                {return this.ns.getServerMaxRam(this.name);}
     get usedRam()               {return this.ns.getServerUsedRam(this.name);}
-    get maxMoney()              {this._maxMoney;}
-    set maxMoney(money)         {this._maxMoney = money;}
-    get minSecurity()           {this._minSecurity;}
-    set minSecurity(security)   {this._minSecurity = security;}
     get currentSecurity()       {return this.ns.getServerSecurityLevel(this.name);}
     get hackLevel()             {return this.data["hackDifficulty"];}
     get faction()               {return this.data["factionServer"];}
