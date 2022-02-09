@@ -97,7 +97,7 @@ async function hackServer(l, target, once, analyze) {
         ],
     );
 
-    const gap_timeout = 100;
+    const gap_timeout = Constants.gapTimeout;
     l.g(1, "'%s' initial state", server.name);
     updateInfo(ns, server);
     while (true) {

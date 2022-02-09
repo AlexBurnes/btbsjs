@@ -1,12 +1,12 @@
 const Module  = '/h3ml/lib/hack-server-min.js';
-const Version = '0.3.6.3';     // update this every time when edit the code!!!
+const Version = '0.3.6.4';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Table}      from "/h3ml/lib/utils.js";
 import {updateInfo} from "/h3ml/lib/server-info-min.js";
 import {Units}      from "/h3ml/lib/units.js"
 
-const gapTimeout = 500/1000;
+const gapTimeout = 5 * Constants.gapTimeout/1000;
 
 export class HackInfo {
     constructor (l) {
@@ -24,14 +24,14 @@ export class HackInfo {
                 ["Mr"        , "%s"     ],  // rate to grow from available to max money
                 ["Gr"       , "%d"      ],  // server growth effectivness
 
-                ["Htm"      , "%.2f%s"  ],  // hack time
-                ["Gtm"      , "%.2f%s"  ],  // grow time
-                ["Wtm"      , "%.2f%s"  ],  // weaken time
+                //["Htm"      , "%.2f%s"  ],  // hack time
+                //["Gtm"      , "%.2f%s"  ],  // grow time
+                //["Wtm"      , "%.2f%s"  ],  // weaken time
 
                 // this is calculated by server-info.updateInfo
-                ["Hth"      , "%d"      ],  // hack threads to hack money to grow server at once
-                ["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
-                ["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
+                //["Hth"      , "%d"      ],  // hack threads to hack money to grow server at once
+                //["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
+                //["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
                 ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
                 ["Cth"      , "%s"      ],  // cycle threas
                 ["Ct"       , "%s"      ],  // cycle time
@@ -42,10 +42,10 @@ export class HackInfo {
                 // this come from watcher
                 ["Ca"       , "%s"      ],  // current action
                 ["Time"     , "%.2f%s"  ],  // remain time
-                ["La"       , "%s"      ],  // previous action
+                //["La"       , "%s"      ],  // previous action
                 //FIXME add spent time on action
-                ["Diff"     , "%s%.2f%s"],  // available money diff, + grow, - hack
-                ["Sec"      , "%.2f"    ],  // secutity diff of prvious action
+                //["Diff"     , "%s%.2f%s"],  // available money diff, + grow, - hack
+                //["Sec"      , "%.2f"    ],  // secutity diff of prvious action
                 ["Total"    , "%.2f%s"  ]   // total amount hacked from server
             ]
         );
@@ -118,13 +118,13 @@ export class HackInfo {
                 Units.money(server.moneyRatio).pretty(ns),
                 server.serverGrowth,
 
-                [server.hackTime.time, server.hackTime.unit],
-                [server.growTime.time, server.growTime.unit],
-                [server.weakTime.time, server.weakTime.unit],
+                //[server.hackTime.time, server.hackTime.unit],
+                //[server.growTime.time, server.growTime.unit],
+                //[server.weakTime.time, server.weakTime.unit],
 
-                server.hackThreads,
-                server.growThreads,
-                server.weakThreads,
+                //server.hackThreads,
+                //server.growThreads,
+                //server.weakThreads,
                 [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
                 Units.money(server.cycleThreads).pretty(ns),
                 server.cycleTime.pretty(ns),
@@ -134,9 +134,9 @@ export class HackInfo {
 
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
-                hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
-                hack_info !== undefined ? [hack_info[3] == "hack" ? "-" : "+", hack_info[4].amount, hack_info[4].unit] : ["", 0, ""],
-                hack_info !== undefined ? hack_info[5] : 0,
+                //hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
+                //hack_info !== undefined ? [hack_info[3] == "hack" ? "-" : "+", hack_info[4].amount, hack_info[4].unit] : ["", 0, ""],
+                //hack_info !== undefined ? hack_info[5] : 0,
                 hack_info !== undefined ? [hack_info[6].amount, hack_info[6].unit] : [0, ""]
             );
         });
