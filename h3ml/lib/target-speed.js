@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/target-speed.js';
-const Version = '0.3.6.2'; // update this every time when edit the code!!!
+const Version = '0.3.6.1'; // update this every time when edit the code!!!
 
 import {Server}      from "/h3ml/lib/server-min.js";
 

@@ -1,10 +1,12 @@
 const Module  = '/h3ml/lib/hack-server-min.js';
-const Version = '0.3.5.11';     // update this every time when edit the code!!!
+const Version = '0.3.6.3';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Table}      from "/h3ml/lib/utils.js";
 import {updateInfo} from "/h3ml/lib/server-info-min.js";
 import {Units}      from "/h3ml/lib/units.js"
+
+const gapTimeout = 500/1000;
 
 export class HackInfo {
     constructor (l) {
@@ -19,7 +21,7 @@ export class HackInfo {
                 ["Cur"      , "%.2f"    ],  // cure security
                 ["Avail"    , "%.2f%s"  ],  // available money
                 ["Max"      , "%.2f%s"  ],  // max money
-                ["Mr"        , "%.2f"   ],  // rate to grow from available to max money
+                ["Mr"        , "%s"     ],  // rate to grow from available to max money
                 ["Gr"       , "%d"      ],  // server growth effectivness
 
                 ["Htm"      , "%.2f%s"  ],  // hack time
@@ -31,11 +33,11 @@ export class HackInfo {
                 ["Gth"      , "%d"      ],  // grow threads to grow from avail by max posible grow
                 ["Wth"      , "%d"      ],  // weaken threads to down security to minimum from current
                 ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
-                ["Oth"      , "%d"      ],  // optimal max threads
+                ["Cth"      , "%s"      ],  // cycle threas
+                ["Ct"       , "%s"      ],  // cycle time
                 ["sz"       , "%s"      ],  // server size require
-
-                ["Cth"      , "%s"      ],
-                ["Ct"       , "%s"      ],
+                ["HSth"     , "%s"      ],  // high speed hack threads requirement
+                ["HSsz"     , "%s"      ],  // high speed hack memory requirement
 
                 // this come from watcher
                 ["Ca"       , "%s"      ],  // current action
@@ -69,12 +71,14 @@ export class HackInfo {
 
         let allServerThreads = 0;
         let maxServerThreads = 0;
+        let speedHackThreads = 0;
         servers.forEach(server => {
             updateInfo(ns, server);
-            if (maxServerThreads < server.optimalThreads) {
-                maxServerThreads = server.optimalThreads;
+            if (maxServerThreads < server.cycleThreads) {
+                maxServerThreads = server.cycleThreads;
             }
-            allServerThreads += server.optimalThreads;
+            allServerThreads += server.cycleThreads;
+            speedHackThreads += server.cycleThreads * Math.ceil(server.hackTime.value / (5 * gapTimeout));
         });
 
         servers.sort(
@@ -95,9 +99,10 @@ export class HackInfo {
         // need to find nearest > 2^n Gb server :)
         const allServersRam = Math.ceil(botnet.workerRam * allServerThreads);
         const oneServerRam = Math.ceil(botnet.workerRam * maxServerThreads);
+        const speedHackRam = Math.ceil(botnet.workerRam * speedHackThreads)
         data.push(ns.sprintf("hacking %d/%d servers", hacking_servers.size, servers.length));
-        data.push(ns.sprintf("for optimal hack require max single server size %s, total size %s",
-            Units.size(oneServerRam*Constants.uGb).pretty(ns), Units.size(allServersRam*Constants.uGb).pretty(ns)
+        data.push(ns.sprintf("for optimal hack require max single server size %s, total size %s, speed hack size %s",
+            Units.size(oneServerRam*Constants.uGb).pretty(ns), Units.size(allServersRam*Constants.uGb).pretty(ns), Units.size(speedHackRam*Constants.uGb).pretty(ns)
         ));
 
         servers.forEach(server => {
@@ -110,7 +115,7 @@ export class HackInfo {
                 server.currentSecurity,
                 [server.availMoney.amount, server.availMoney.unit],
                 [server.maxMoney.amount, server.maxMoney.unit],
-                server.moneyRatio,
+                Units.money(server.moneyRatio).pretty(ns),
                 server.serverGrowth,
 
                 [server.hackTime.time, server.hackTime.unit],
@@ -121,10 +126,11 @@ export class HackInfo {
                 server.growThreads,
                 server.weakThreads,
                 [server.optimalHackMoney.amount, server.optimalHackMoney.unit],
-                server.optimalThreads,
-                Units.size(server.optimalThreads*botnet.workerRam*Constants.uGb).pretty(ns),
                 Units.money(server.cycleThreads).pretty(ns),
                 server.cycleTime.pretty(ns),
+                Units.size(server.cycleThreads * botnet.workerRam * Constants.uGb).pretty(ns),
+                Units.money(server.cycleThreads * Math.ceil(server.hackTime.value / (5 * gapTimeout))).pretty(ns),
+                Units.size(server.cycleThreads * Math.ceil(server.hackTime.value / (5 * gapTimeout)) * botnet.workerRam * Constants.uGb).pretty(ns),
 
                 hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],

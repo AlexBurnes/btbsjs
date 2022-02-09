@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack-batch.js';
-const Version = '0.3.6.2'; // update this every time when edit the code!!!
+const Version = '0.3.6.3'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -118,11 +118,13 @@ async function hackServer(l, target, once, analyze) {
         ],
     );
 
-    const period_timeout = 1000;
     const gap_timeout = 50;
     l.g(1, "'%s' initial state", server.name);
     updateInfo(ns, server);
+    botnet.update();
+    let t = botnet.workers;
     showInfo(l, table, server, botnet);
+
     while (true) {
         // initial state
 
@@ -136,6 +138,15 @@ async function hackServer(l, target, once, analyze) {
             const cs = server.currentSecurity;
             const wt = Math.ceil((cs - ms) / ws + gt * gs / ws);
 
+            if (Math.max(gt, wt) > t) {
+                l.g(1, "bot not has not enough resources to grow and week");
+                await ns.sleep(1000);
+                updateInfo(ns, server);
+                botnet.update();
+                t = botnet.workers;
+                continue;
+            }
+
             if (gt == 0 && wt == 0) break;
 
             const batch_time = Date.now();
@@ -145,6 +156,8 @@ async function hackServer(l, target, once, analyze) {
             if (gt > 0) { await server["grow"](gt, {start: grow_time, batch: batch_time})};
             await server["weaken"](wt, {start: batch_time, batch: batch_time, await: true});
             updateInfo(ns, server);
+            botnet.update();
+            t = botnet.workers;
             showInfo(l, table, server, botnet);
             await ns.sleep(gap_timeout); // just in case
         }
@@ -154,7 +167,7 @@ async function hackServer(l, target, once, analyze) {
         showInfo(l, table, server, botnet);
 
         botnet.update();
-        let t = botnet.workers;
+        t = botnet.workers;
 
         /*
             cycle_time = weak_timeout + 6 * gap_timeout
@@ -183,15 +196,12 @@ async function hackServer(l, target, once, analyze) {
         const weak_grow_threads = Math.ceil(server.growSecurity * grow_threads/server.weakSecurityRate);
         const weak_timeout = server.weakTime * 1000;
 
+        const cycle_time = hack_timeout - gap_timeout;
+        const period_times = Math.floor(cycle_time / (5 * gap_timeout));
 
-        const cycle_time = weak_timeout - gap_timeout;// becouse hack is first
-        const period_times = Math.floor(cycle_time / (period_timeout + 5 * gap_timeout));
-        const period_align = (cycle_time % (period_timeout + 5 * gap_timeout));
-
-        l.g(1, "cycle_time %d period times %d period align %d", cycle_time, period_times, period_align);
+        l.g(1, "cycle_time %d period times %d", cycle_time, period_times);
 
         let i = 0;
-        let j = 0;
         let period_start;
         //l.g(1, "period cycle %d cycles %d timeout error %f", i, j, (end - period_start) % (cycle_time + 5 * gap_timeout));
         //FIXME calculate error timeout align
@@ -206,7 +216,7 @@ async function hackServer(l, target, once, analyze) {
             const hack_time = hack_weak_time + weak_timeout - gap_timeout - hack_timeout;
             const grow_weak_time = hack_weak_time + 2 * gap_timeout;
             const grow_time = grow_weak_time + weak_timeout - gap_timeout - grow_timeout;
-            l.g(1, "cycle time %.3f gap %.3f, T %.3f align %.3f", cycle_time, 5 * gap_timeout, period_times, period_align);
+            l.g(1, "cycle time %.3f gap %.3f, T %.3f", cycle_time, 5 * gap_timeout, period_times);
             l.g(1, "ht  time %s => %s <<%d>>", time2str(ns, new Date(hack_time)),      time2str(ns, new Date(hack_time + hack_timeout))      , hack_threads);
             l.g(1, "wht time %s => %s <<%d>>", time2str(ns, new Date(hack_weak_time)), time2str(ns, new Date(hack_weak_time + weak_timeout)) , weak_hack_threads);
             l.g(1, "gt  time %s => %s <<%d>>", time2str(ns, new Date(grow_time)),      time2str(ns, new Date(grow_time + grow_timeout))      , grow_threads);
@@ -215,19 +225,19 @@ async function hackServer(l, target, once, analyze) {
             await server["hack"]  (hack_threads,      {start: hack_time,         batch: batch_time});
             await server["weaken"](weak_hack_threads, {start: hack_weak_time,    batch: batch_time});
             await server["grow"]  (grow_threads,      {start: grow_time,         batch: batch_time});
-            await server["weaken"](weak_grow_threads, {start: grow_weak_time,    batch: batch_time});
+            await server["weaken"](weak_grow_threads, {start: grow_weak_time,    batch: batch_time, await: i == period_times ? true : false});
             //ns.clearLog();
             let end = Date.now();
-            if (++i == period_times) {
+            if (i == period_times) {
+                await ns.sleep(gap_timeout);
                 i = 0;
-                const sleep_timeout = period_align - (end - start);
-                start = end;
-                if (sleep_timeout > 0) await ns.sleep(sleep_timeout);
-                l.g(1, "%s sleeped period aling %d", time2str(ns, new Date(Date.now())), period_align);
-                //FIXME seems need sleep 1 gap?
+                updateInfo(ns, server); // check
+                botnet.update();
+                t = botnet.workers;
+                continue;
             }
-            j++;
-            let sleep_timeout = period_timeout + 4*gap_timeout - (end - start);
+            i++;
+            let sleep_timeout = 4 * gap_timeout - (end - start);
             if (sleep_timeout > 0) await ns.sleep(sleep_timeout);
             start = Date.now();
             updateInfo(ns, server); // check
@@ -238,10 +248,8 @@ async function hackServer(l, target, once, analyze) {
             botnet.update();
             t = botnet.workers;
             await ns.sleep(gap_timeout); //just in case
-
         }
         //sleep forward i cycles and correct amount to max
-        l.g(1, 'something goes wrong, done %d sycles, %d periods', j, j/period_times);
         showInfo(l, table, server, botnet);
         await ns.sleep(gap_timeout);
     }
