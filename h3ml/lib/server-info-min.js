@@ -76,11 +76,11 @@ export function updateInfo(ns, target) {
     target.growThreads = target.growMaxThreads;
 
     // how mach money could be stolen to grow once to max
-    target.hackAmount = target.maxMoney.value * (1-1/serverGrowth);
+    target.hackAmount = target.availMoney.value * (1-1/serverGrowth);
 
     //optimal hack threads, this is wrong when vailMone < maxMoney, you could't not calculate so need calc it by other way
     target.optimalHackMoney   = Units.money(target.hackAmount);
-    target.optimalHackThreads = target.currentSecurity < 100 ? Math.max(ns.hackAnalyzeThreads(target.name, target.hackAmount), target.hackThreads) : 0;
+    target.optimalHackThreads = target.hackMaxThreads;
 
     //optimal grow threads
     target.optimalGrowThreads = target.serverMaxGrowthThreads || 0;
@@ -89,9 +89,10 @@ export function updateInfo(ns, target) {
     //ns.tprint(`${target.name} ${target.optimalGrowThreads}  ${target.growSecurity}\
     //${target.optimalGrowThreads} ${target.weakSecurityRate}  ${target.optimalHackThreads}  ${target.hackSecurity}\
     //${target.optimalHackThreads} ${target.weakSecurityRate}`);
-    target.cycleThreads       = target.optimalGrowThreads + Math.ceil(target.growSecurity * target.optimalGrowThreads/target.weakSecurityRate)
-                              + target.optimalHackThreads + Math.ceil(target.hackSecurity * target.optimalHackThreads/target.weakSecurityRate);
-    target.cycleTime          = Units.time(Math.max(target.growTime.value, target.hackTime.value, target.weakTime.value) + 4 * 500/1000);
+    target.weakCycleThreads = Math.ceil(target.growSecurity * target.optimalGrowThreads/target.weakSecurityRate)
+                              + Math.ceil(target.hackSecurity * target.optimalHackThreads/target.weakSecurityRate)
+    target.cycleThreads     = target.optimalGrowThreads + target.optimalHackThreads + target.weakCycleThreads;
+    target.cycleTime        = Units.time(Math.max(target.growTime.value, target.hackTime.value, target.weakTime.value));
 }
 
 // recalculate growth for max threads t

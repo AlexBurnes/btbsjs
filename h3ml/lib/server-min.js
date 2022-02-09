@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-min.js';
-const Version = '0.3.5.10';     // update this every time when edit the code!!!
+const Version = '0.3.6.1';     // update this every time when edit the code!!!
 
 import {Units}       from "/h3ml/lib/units.js";
 import {serversData} from "/h3ml/etc/servers.js";

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.6.0'; // update this every time when edit the code!!!
+const Version = '0.3.6.2'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -44,6 +44,8 @@ class WatchTarget {
         this.currentThreads = 0;
         this.currentValue   = 0;
         this.totalAmount    = 0;
+        this.surgeTimeout = Date.now();
+        this.surgeAmount  = 0;
         this.actionTime     = Date.now();
         this.lastAction     = "";
         this.diffAvailMoney = Units.money(0);
@@ -181,7 +183,7 @@ async function actionStart(watcher, time, data) {
         const target = Watcher.targets["get"](server);
 
         if (batch !== undefined) {
-            //FIXME later
+            target.method("batch", start, end);
             return;
         }
 
@@ -207,11 +209,6 @@ async function actionStop(watcher, time, data) {
 
     const [host, eventTime, threads, server, method, result, batch] = data;
 
-    if (batch !== undefined) {
-        //FIXME later
-        return;
-    }
-
     let resultStr = "";
     switch (method) {
         case "weaken":
@@ -236,6 +233,29 @@ async function actionStop(watcher, time, data) {
 
     if (Watcher.targets.has(server)) {
         const target = Watcher.targets["get"](server);
+
+        if (batch !== undefined) {
+            target.currentAction = "batch";
+            if (method == "hack") {
+                target.totalAmount += Number(result);
+                target.surgeAmount += Number(result);
+                if (Date.now() - target.surgeTimeout > 60*1000 ) { // 1 minute
+                    target.surgeTimeout = Date.now();
+                    const money = Units.money(target.surgeAmount).pretty(ns);
+                    target.surgeAmount = 0;
+                    const text = ns.sprintf("%s%s+%s",
+                        // !!! " " is a utf8 FIGURE SPACE !!
+                        server, " ".repeat(Watcher.maxNameLength-server.length + 8 - money.length), money,
+                    );
+                    let timeout = Math.log10(result/1000000)*5;
+                    if (timeout < 5) timeout = 5;
+                    if (timeout > 60) timeout = 60;
+                    ns.toast(text, "success", timeout * 1000);
+                }
+            };
+            return;
+        }
+
 
         l.d(1, "%s event time %d target action %s time %d host %s, wait hosts %d",
             server, time, target.currentAction, target.actionTime, host, target.hosts.size);
@@ -400,7 +420,7 @@ async function serversHackList(l, watcher, socket) {
         const procs = ns.ps(server.name);
         //ns.tprint(procs);
         procs
-            .filter(proc => proc.filename.match(/server-hack(-min)?\.js$/))
+            .filter(proc => proc.filename.match(/server-hack(\-[^\.]+?)?\.js$/))
             .forEach(proc => {
                 proc.args
                     .filter(arg => !arg.match(/^--/))
@@ -448,7 +468,7 @@ function hackInfo(l, watcher) {
         const procs = ns.ps(server.name);
         //ns.tprint(procs);
         procs
-            .filter(proc => proc.filename.match(/server-hack(-min)?\.js$/))
+            .filter(proc => proc.filename.match(/server-hack((\-[^\.]+?))?\.js$/))
             .forEach(proc => {
                 //ns.tprint(`${proc.args}`);
                 proc.args

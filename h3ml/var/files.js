@@ -37,6 +37,7 @@ export const scriptFiles = [
     "/h3ml/lib/botnet-min.js",
     "/h3ml/lib/target.js",
     "/h3ml/lib/target-min.js",
+    "/h3ml/lib/target-speed.js",
     "/h3ml/lib/hack-server.js",
     "/h3ml/lib/hack-server-min.js",
 
@@ -80,10 +81,12 @@ export const scriptFiles = [
     "/h3ml/sbin/watcher.js",
     "/h3ml/sbin/watch-min.js",
     "/h3ml/sbin/worker.js",
+    "/h3ml/sbin/worker-min.js",
     "/h3ml/sbin/sharing.js",
     "/h3ml/sbin/server-hack.js",
     "/h3ml/sbin/server-hack-min.js",
     "/h3ml/sbin/server-hack-batch.js",
+    "/h3ml/sbin/server-hack-speed.js",
     "/h3ml/sbin/gather-security-data.js",
     "/h3ml/sbin/gather-servers-data.js",
 
