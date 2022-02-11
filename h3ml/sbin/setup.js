@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.15'; // update this every time when edit the code!!!
+const Version = '0.3.6.18'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -155,7 +155,7 @@ class ProgressBar {
     }
     progress(i) {
         const percent = (100/this.total)*i;
-        const text = this.ns.sprintf("setup [%s%s] %.2f%%",
+        const text = this.ns.sprintf("[%s%s] %.2f%%",
             percent == 0 ?   "" : "█".repeat(Math.floor((percent/100)*this.length)),
             percent == 100 ? "" : "▒".repeat(Math.floor(this.length-(percent/100)*this.length)),
             percent
@@ -298,7 +298,7 @@ export async function main(ns) {
         update_data = await socket.read({wait: message_timeout});
         if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1
-        draw(ns, "core", bar.progress(i));
+        draw(ns, "system", bar.progress(i));
     }
 
     update_data = await socket.read({wait: message_timeout});
