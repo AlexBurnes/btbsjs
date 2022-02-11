@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.6.20'; // update this every time when edit the code!!!
+const Version = '0.3.6.24'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -47,8 +47,8 @@ export async function main(ns) {
         [ 'help'            , false ],
         [ 'log'             , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'           , 0     ], // debug level
-        [ 'verbose'         , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'           , false ]  // quiet mode, short analog of --log-level 0
+        [ 'verbose'         , false ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'           , true  ]  // quiet mode, short analog of --log-level 0
 
     ]);
     const [baseUrl, host, setupPort] = args["_"];
@@ -76,7 +76,7 @@ async function wait_setup(ns, ...data) {
     const start_time = Date.now();
     while (true) {
         const str = await ns.peek(setupPort);
-        ns.tprint(str);
+        //ns.tprint(str);
         if (str == 'NULL PORT DATA') break;
         if (Date.now() - start_time > wait_timeout) {
             ns.tprintf("ERROR setup is not working, something goes wrong");
@@ -145,7 +145,7 @@ async function update(l, baseUrl, host) {
     }
 
 
-    if (!await wait_setup(ns, "post-setup-phase", scriptFiles.length)) return;
+    if (!await wait_setup(ns, "post-setup-phase")) return;
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
     l.g(1, "check core files %d", core_files.length);
@@ -180,10 +180,6 @@ async function update(l, baseUrl, host) {
 
     await updateRamScriptsFile(l, scripts);
     l.r("updating done");
-
-    // gather meta
-    l.g(1, "run setup on host %s", host);
-    ns.run("/h3ml/sbin/setup.js", 1, host);
 
 }
 

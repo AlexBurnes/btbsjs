@@ -1,10 +1,11 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.23'; // update this every time when edit the code!!!
+const Version = '0.3.6.24'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
 const tail_height     = 30;
 const tail_width      = 62;
+const wait_upload     = 60 * 1000;
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,7 +23,7 @@ class Socket {
         const start = Date.now();
         while (true) {
             const str = await ns.readPort(this.port);
-            ns.print(str);
+            //ns.print(str);
             if (str !== "NULL PORT DATA") {
                 const data = str.split("|");
                 return data;
@@ -218,8 +219,8 @@ export async function main(ns) {
         [ 'help'        , false ],
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
         [ 'debug'       , 0     ], // debug level
-        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+        [ 'verbose'     , false ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , true  ]  // quiet mode, short analog of --log-level 0
     ]);
 
     if (args['version']) {
@@ -271,7 +272,7 @@ export async function main(ns) {
     const core_bar = new ProgressBar(ns, core_total);
     let i = 0;
     while (i < core_total) {
-        update_data = await socket.read({wait: message_timeout});
+        update_data = await socket.read({wait: wait_upload});
         if (!update_data.length || update_data[0] !== "pre-uploading-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1;
         draw(ns, ns.sprintf("core %s", core_bar.progress(i)));
@@ -299,7 +300,7 @@ export async function main(ns) {
     const upload_bar = new ProgressBar(ns, upload_total);
     i = 0;
     while (i < upload_total) {
-        update_data = await socket.read({wait: 10000});
+        update_data = await socket.read({wait: wait_upload});
         if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1
         draw(ns, ns.sprintf("system %s", upload_bar.progress(i)));
