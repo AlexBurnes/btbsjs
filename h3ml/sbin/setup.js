@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.14'; // update this every time when edit the code!!!
+const Version = '0.3.6.15'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -268,7 +268,7 @@ export async function main(ns) {
     ns.print(update_data);
     if (!update_data.length || update_data[0] !== "pre-upload-phase") return draw(ns, "matrix is brocken");
 
-    const core_total = update_data[1];
+    const core_total = Number(update_data[1]);
     const bar = new ProgressBar(ns, core_total);
     let i = 0;
     while (i < core_total) {
