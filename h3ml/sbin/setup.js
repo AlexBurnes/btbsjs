@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.12'; // update this every time when edit the code!!!
+const Version = '0.3.6.13'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -203,7 +203,7 @@ function matrix() {
 function draw(ns, ...data) {
     ns.clearLog();
     // FIXME if string is more than console width, if data is more then conslole height
-    ns.print(data.join("\n"), "\n".repeat(tail_height - data.length() - 1));
+    ns.print(data.join("\n"), "\n".repeat(tail_height - data.length - 1));
     return;
 }
 
