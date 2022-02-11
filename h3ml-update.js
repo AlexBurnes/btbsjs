@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.6.16'; // update this every time when edit the code!!!
+const Version = '0.3.6.17'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 const setupPort  = 6;
@@ -75,7 +75,7 @@ export async function main(ns) {
         ns.tprintf("failed update");
         return;
     }
-    ns.printf("done updating");
+    ns.print("done updating");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ async function wait_setup(ns, ...data) {
     const start_time = Date.now();
     while (true) {
         const str = await ns.peek(setupPort);
-        ns.tprint(str);
+        //ns.tprint(str);
         if (str == 'NULL PORT DATA') break;
         if (Date.now() - start_time > wait_timeout) {
             ns.tprintf("ERROR setup is not working, something goes wrong");
