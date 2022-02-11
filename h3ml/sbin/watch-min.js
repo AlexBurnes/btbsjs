@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/watch-min.js';
-const Version = '0.3.6.2'; // update this every time when edit the code!!!
+const Version = '0.3.6.28'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js"
@@ -183,7 +183,7 @@ async function actionStart(watcher, time, data) {
         const target = Watcher.targets["get"](server);
 
         if (batch !== undefined) {
-            target.method("batch", start, end);
+            target.method(method, start, end);
             return;
         }
 
@@ -235,7 +235,6 @@ async function actionStop(watcher, time, data) {
         const target = Watcher.targets["get"](server);
 
         if (batch !== undefined) {
-            target.currentAction = "batch";
             if (method == "hack") {
                 target.totalAmount += Number(result);
                 target.surgeAmount += Number(result);
@@ -321,7 +320,7 @@ async function actionStop(watcher, time, data) {
                     doHackAction(l, Watcher, target);
                 }
 
-                hackInfo(l, Watcher);
+                //hackInfo(l, Watcher);
 
             }
         }

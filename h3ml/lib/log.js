@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/log.js';
-const Version = '0.3.6.6';  // update this every time when edit the code!!!
+const Version = '0.3.6.28';  // update this every time when edit the code!!!
 
 /*
     logger
@@ -49,7 +49,7 @@ export class Logger {
         this.ns = ns;
 
         this.quiet   = 0; // 1 do not output log to console, 0 - output log to console
-        this.console = 0; // 0 do not output log to log, 1 - output log to log
+        this.console = 1; // 0 do not output log to log, 1 - output log to log
         this.debugLevel = options["debugLevel"] || 0;
         this.logLevel   = options["logLevel"]   || 0;
 
@@ -65,7 +65,7 @@ export class Logger {
                 this.quiet = 0;
             }
             if (args["console"]) {
-                this.console = args["console"] == true ? 0 : 1 || 1;
+                this.console = args["console"] == true ? 0 : 1;
             }
         }
     }

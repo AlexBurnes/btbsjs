@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack-speed.js';
-const Version = '0.3.6.9'; // update this every time when edit the code!!!
+const Version = '0.3.6.28'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -231,8 +231,11 @@ async function hackServer(l, target, once, analyze) {
 
             total_threads += hack_threads + weak_hack_threads + grow_threads + weak_grow_threads;
 
-            await server["hack"]  (hack_threads,      {start: hack_time,         batch: batch_time});
-            await server["weaken"](weak_hack_threads, {start: hack_weak_time,    batch: batch_time});
+            // last batch without hack
+            if (period_times > 1 && i < period_times || period_times == 1) {
+                await server["hack"]  (hack_threads,      {start: hack_time,         batch: batch_time});
+                await server["weaken"](weak_hack_threads, {start: hack_weak_time,    batch: batch_time});
+            }
             await server["grow"]  (grow_threads,      {start: grow_time,         batch: batch_time});
             if (i >= period_times) { //  || check_time + period_timeout < start
                 l.g(1, "%s hack & grow time %s gap %.3fms, T %.3f timeout %s, i %d", time2str(ns, new Date(start_time)), Units.time(cycle_time/1000).pretty(ns), period_timeout,
