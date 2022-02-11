@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.6.0';
+const Version = '0.3.6.8';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -89,6 +89,7 @@ export const scriptFiles = [
     "/h3ml/sbin/server-hack-speed.js",
     "/h3ml/sbin/gather-security-data.js",
     "/h3ml/sbin/gather-servers-data.js",
+    "/h3ml/sbin/ps.js", //FIXME move it into bin catalog
 
     "/h3ml-update.js"
 ];

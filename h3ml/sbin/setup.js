@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.7'; // update this every time when edit the code!!!
+const Version = '0.3.6.8'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -14,6 +14,7 @@ class Socket {
         if (!this.port) return [];
         const ns = this.ns;
         const timeout = options.timeout || 100;
+        const wait = options.wait || 0; // wait infinit
         const start = Date.now();
         while (true) {
             const str = await ns.readPort(this.port);
@@ -21,7 +22,7 @@ class Socket {
                 const data = str.split("|");
                 return data;
             }
-            if (options.timeout && Date.now() - start >= options.timeout) break;
+            if (options.wait && Date.now() - start >= options.wait) break;
             await ns.sleep(timeout);
         }
         return [];
@@ -222,7 +223,7 @@ export async function main(ns) {
     /// just wait while caller free memory :)
     ns.print("knock, knock ...", "\n".repeat(tail_height-1));
     await ns.sleep(message_timeout);
-    let update_data = socket.read(message_timeout);
+    let update_data = socket.read({wait: message_timeout});
     if (!update_data.length) {
         ns.clearLog();
         ns.print("matrix is brocken", "\n".repeat(tail_height-1));
