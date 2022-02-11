@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.6'; // update this every time when edit the code!!!
+const Version = '0.3.6.7'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -162,7 +162,7 @@ function help(ns) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// matrix effect, not yet ready, draft
-function matrix {
+function matrix() {
     /*
         we have field of 30 columns on 62 rows
         calculate
@@ -173,6 +173,7 @@ function matrix {
         output rows.map(row => row.join('')).join("\n");
 
     */
+    return;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
