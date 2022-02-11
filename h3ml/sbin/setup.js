@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.20'; // update this every time when edit the code!!!
+const Version = '0.3.6.21'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -150,12 +150,12 @@ class ProgressBar {
         this.ns = ns;
         this.total = total;
         // FIXME make this parameters is defined
-        this.length = 30;
+        this.length = 40;
 
     }
     progress(i) {
         const percent = (100/this.total)*i;
-        const text = this.ns.sprintf("[%s%s] %.2f%%",
+        const text = this.ns.sprintf("[%s%s] %d%%",
             percent == 0 ?   "" : "█".repeat(Math.floor((percent/100)*this.length)),
             percent == 100 ? "" : "▒".repeat(Math.floor(this.length-(percent/100)*this.length)),
             percent
@@ -268,13 +268,13 @@ export async function main(ns) {
     if (!update_data.length || update_data[0] !== "pre-upload-phase") return draw(ns, "matrix is brocken");
 
     const core_total = Number(update_data[1]);
-    const bar = new ProgressBar(ns, core_total);
+    const core_bar = new ProgressBar(ns, core_total);
     let i = 0;
     while (i < core_total) {
         update_data = await socket.read({wait: message_timeout});
         if (!update_data.length || update_data[0] !== "pre-uploading-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1;
-        draw(ns, ns.sprintf("core %s", bar.progress(i)));
+        draw(ns, ns.sprintf("core %s", core_bar.progress(i)));
     }
     await ns.sleep(message_timeout);
 
@@ -302,7 +302,7 @@ export async function main(ns) {
         update_data = await socket.read({wait: message_timeout});
         if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1
-        draw(ns, ns.sprintf("system %s", bar.progress(i)));
+        draw(ns, ns.sprintf("system %s", upload_bar.progress(i)));
     }
     await ns.sleep(message_timeout);
 
