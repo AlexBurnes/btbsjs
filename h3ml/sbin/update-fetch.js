@@ -1,7 +1,6 @@
-
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.6.6'; // update this every time when edit the code!!!
+const Version = '0.3.6.19'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -14,6 +13,8 @@ import {Logger}      from "/h3ml/lib/log.js";
 const core_files = ["/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
 const waitTimeout = 5000; //default wait timwout for version from module
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// version
 async function version(ns, port) {
     if (port !== undefined && port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
@@ -23,11 +24,19 @@ async function version(ns, port) {
     return;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// help
 function help(ns) {
     ns.tprintf("usage: %s url host | [--version [--update-port]] | [--help]", Module);
     ns.tprintf("update all scripts");
     return;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///
+/// main
+///
 
 /** @param {NS} ns **/
 export async function main(ns) {
@@ -57,6 +66,28 @@ export async function main(ns) {
     return;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// wait while seupt is readed data from port
+async function wait_setup(ns, ...data) {
+    await ns.tryWritePort(setupPort, data.join("|"));
+    //FIXME timeout
+    const wait_timeout = 3000;
+    const start_time = Date.now();
+    while (true) {
+        const str = await ns.peek(setupPort);
+        //ns.tprint(str);
+        if (str == 'NULL PORT DATA') break;
+        if (Date.now() - start_time > wait_timeout) {
+            ns.tprintf("ERROR setup is not working, something goes wrong");
+            return false;
+        }
+        await ns.sleep(100);
+    }
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// upload files
 /** @param { Logger } lg **/
 /** @param { String } baseUrl **/
 async function update(l, baseUrl, host) {
@@ -70,13 +101,13 @@ async function update(l, baseUrl, host) {
 
     l.g(1, "version of system is %s", Constants.version);
 
-    // is it possible write file for script sizes?
+    if (!await wait_setup(ns, "upload-updater-phase", scriptFiles.length)) return;
     const scripts = new Map();
     await updateRamScriptsFile(l, scripts, host);
 
     for (let i = 0; i < scriptFiles.length; i++) {
         const file = scriptFiles[i];
-
+        if (!await wait_setup(ns, "uploading-updater-phase", i)) return;
         l.g(2, "[%d/%d] get file %s", i+1, scriptFiles.length, file);
 
         if (! await ns.wget(`${baseUrl}${file}`, file)) {
@@ -111,6 +142,9 @@ async function update(l, baseUrl, host) {
 
         l.g(1, "[%d/%d] got file %s success, version %s, memory require %.2fGb", i+1, scriptFiles.length, file, module_version, scripts["get"](file));
     }
+
+
+    if (!await wait_setup(ns, "post-setup-phase", scriptFiles.length)) return;
 
     //FIXME check core files versions updated by h3ml-update.js to shure that version from git is not hier than in file!
     l.g(1, "check core files %d", core_files.length);
@@ -152,6 +186,8 @@ async function update(l, baseUrl, host) {
 
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// upddate script files ram requirement data
 /** @param {Logger} l
     @param {Map{String, Number}} scripts
     @param {String} host
@@ -171,6 +207,8 @@ async function updateRamScriptsFile(l, scripts, host) {
     return;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// check uploaded module version
 async function checkVersion(l, host, file) {
     const [module_name, module_version] = await getModuleVersion(l, host, file);
     l.d(1, "module %s identify as %s version %s", file, module_name, module_version);
@@ -185,6 +223,8 @@ async function checkVersion(l, host, file) {
     return [module_name, module_version];
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// get uploaded module version
 async function getModuleVersion(l, host, module) {
     // this will not save from show up errors, run modules and do what they do, but it helps do not break the job for this module!!!
     // every script that must updated by this module must be writed in module.js way!!!
@@ -227,6 +267,8 @@ async function getModuleVersion(l, host, module) {
     return [];
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// lambda ignore error
 /**
  * @param {(() => Promise<void>) | (() => void)} lambda
  * @returns {Promise<void>}

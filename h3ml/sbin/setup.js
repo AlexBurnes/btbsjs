@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.18'; // update this every time when edit the code!!!
+const Version = '0.3.6.19'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -277,6 +277,7 @@ export async function main(ns) {
         i = Number(update_data[1]) + 1;
         draw(ns, "core", bar.progress(i));
     }
+    await ns.sleep(message_timeout);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// run setup after update
@@ -285,9 +286,13 @@ export async function main(ns) {
     update_data = await socket.read({wait: message_timeout});
     if (!update_data.length || update_data[0] !== "pre-setup-phase") return draw(ns, "matrix is brocken");
 
+    await ns.sleep(message_timeout);
+
     update_data = await socket.read({wait: message_timeout});
     if (!update_data.length || update_data[0] !== "run-updater-phase") return draw(ns, "matrix is brocken");
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // upload files
     update_data = await socket.read({wait: message_timeout});
     if (!update_data.length || update_data[0] !== "upload-updater-phase") return draw(ns, "matrix is brocken");
 
@@ -300,9 +305,11 @@ export async function main(ns) {
         i = Number(update_data[1]) + 1
         draw(ns, "system", bar.progress(i));
     }
+    await ns.sleep(message_timeout);
 
     update_data = await socket.read({wait: message_timeout});
     if (!update_data.length || update_data[0] !== "post-setup-phase") return draw(ns, "matrix is brocken");
+    await ns.sleep(message_timeout);
 
     l.g(1, "setup system on host %s", host);
     l.g(1, "\tgather servers data");

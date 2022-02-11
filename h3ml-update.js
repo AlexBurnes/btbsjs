@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.6.18'; // update this every time when edit the code!!!
+const Version = '0.3.6.19'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 const setupPort  = 6;
@@ -96,7 +96,6 @@ async function wait_setup(ns, ...data) {
         await ns.sleep(100);
     }
     return true;
-
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
