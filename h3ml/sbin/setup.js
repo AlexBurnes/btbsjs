@@ -3,6 +3,10 @@ const Version = '0.3.6.9'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
+const tail_height     = 30;
+const tail_width      = 62;
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// network socket class simple implemtation
 class Socket {
@@ -140,6 +144,25 @@ class Logger {
     }
 }
 
+class ProgressBar {
+    constructor(ns, total) {
+        this.ns = ns;
+        this.total = total;
+        // FIXME make this parameters is defined
+        this.length = 30;
+
+    }
+    progress(i) {
+        const percent = (100/this.total)*i;
+        const text = this.ns.sprintf("setup [%s%s] %.2f%%",
+            percent == 0 ?   "" : "█".repeat(Math.floor((percent/100)*this.length)),
+            percent == 100 ? "" : "▒".repeat(Math.floor(this.length-(percent/100)*this.length)),
+            percent
+        );
+        return text;
+    }
+}
+
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -216,8 +239,6 @@ export async function main(ns) {
         return l.e("setup port is undefined");
     }
 
-    const tail_height     = 30;
-    const tail_width      = 62;
     const message_timeout = 1500;
 
     const socket = new Socket(ns, setupPort);
@@ -233,16 +254,53 @@ export async function main(ns) {
     draw("knock, knock ...");
     await ns.sleep(message_timeout);
     update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length) return draw("matrix is brocken");
+    if (!update_data.length || update_data[0] !== "initial-phase") return draw("matrix is brocken");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // run setup scripts
     draw("wake up bithacker ...");
     await ns.sleep(message_timeout);
-    update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length) return draw("matrix is brocken");
 
-    ns.print(update_data);
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // wait upload core files data
+    update_data = await socket.read({wait: message_timeout});
+    if (!update_data.length || update_data[0] !== "pre-upload-phase") return draw("matrix is brocken");
+
+    const core_total = update_data[1];
+    const bar = new ProgressBar(ns, core_total);
+    let i = 0;
+    while (i < core_total) {
+        update_data = await socket.read({wait: message_timeout});
+        if (!update_data.length || update_data[0] !== "pre-uploading-phase") return draw("matrix is brocken");
+        i = update_data[i]
+        draw("core", bar.progress(i));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// run setup after update
+    draw("follow the rabbit ...");
+    await ns.sleep(message_timeout);
+    update_data = await socket.read({wait: message_timeout});
+    if (!update_data.length || update_data[0] !== "pre-setup-phase") return draw("matrix is brocken");
+
+    update_data = await socket.read({wait: message_timeout});
+    if (!update_data.length || update_data[0] !== "run-updater-phase") return draw("matrix is brocken");
+
+    update_data = await socket.read({wait: message_timeout});
+    if (!update_data.length || update_data[0] !== "upload-updater-phase") return draw("matrix is brocken");
+
+    const upload_total = update_data[1];
+    const upload_bar = new ProgressBar(ns, upload_total);
+    i = 0;
+    while (i < upload_total) {
+        update_data = await socket.read({wait: message_timeout});
+        if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw("matrix is brocken");
+        i = update_data[i]
+        draw("core", bar.progress(i));
+    }
+
+    update_data = await socket.read({wait: message_timeout});
+    if (!update_data.length || update_data[0] !== "post-setup-phase") return draw("matrix is brocken");
 
     l.g(1, "setup system on host %s", host);
     l.g(1, "\tgather servers data");
@@ -256,32 +314,6 @@ export async function main(ns) {
     if (!pid_1) {
         l.e("failed run %s", "/h3ml/sbin/gather-security-data.js");
     }
-    await ns.sleep(message_timeout);
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// just message without meaning
-    ns.clearLog();
-    draw("follow the rabbit ...");
-    await ns.sleep(message_timeout);
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// test progress bar
-    const timeout = 10000;
-    const gap_timeout = 50;
-    const n = timeout/gap_timeout;
-    const progress_bar_length = 30;
-    let i = 0;
-    while (i++ < n) {
-        const percent = (100/n)*i;
-        const text = ns.sprintf("setup [%s%s] %.2f%%",
-            percent == 0 ?   "" : "█".repeat(Math.floor((percent/100)*progress_bar_length)),
-            percent == 100 ? "" : "▒".repeat(Math.floor(progress_bar_length-(percent/100)*progress_bar_length)),
-            percent
-        );
-        draw(text);
-        await ns.sleep(gap_timeout);
-    }
-
     await ns.sleep(message_timeout);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

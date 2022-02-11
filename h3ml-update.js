@@ -69,13 +69,33 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    ns.tprint(Module, " ", Version);
+    ns.print(Module, " ", Version);
     const result = await update(ns);
     if (!result) {
         ns.tprintf("failed update");
         return;
     }
-    ns.tprintf("done updating");
+    ns.printf("done updating");
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// wait while seupt is readed data from port
+const wait_setup(...data) {
+    await ns.tryWritePort(setupPort, data.join("|"));
+    //FIXME timeout
+    const wait_timeout = 3000;
+    const start_time = Date.now();
+    while (true) {
+        const str = await ns.peek(setupPort)
+        if (str == 'NULL PORT DATA') break;
+        if (Date.now() - start_time > wait_timeout) {
+            ns.tprintf("ERROR setup is not working, something goes wrong");
+            return false;
+        }
+        await ns.sleep(100);
+    }
+    return true;
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -100,36 +120,26 @@ async function update(ns) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // write to setup start working
-    await ns.tryWritePort(setupPort, "initial-phase");
-    // wait wile setup will not be ready and write our message
-    const wait_timeout = 3000;
-    const start_time = Date.now();
-    while (await ns.peek(setupPort) !== 'NULL PORT DATA') {
-        await ns.sleep(100);
-        if (Date.now() - start_time > wait_timeout) {
-            ns.tprintf("ERROR setup is not working, something goes wrong");
-            return false;
-        }
-    }
+    if (!await wait_setup("initial-phase")) return;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // upload core files
-    await ns.tryWritePort(setupPort, "pre-upload-phase", files_list.length);
+    if (!await wait_setup("pre-upload-phase", files_list.length)) return;
 
-    ns.tprintf("uploading core files from %s", baseUrl);
+    ns.print("uploading core files from ", baseUrl);
     for(let i = 0; i < files_list.length; i++) {
         const file = files_list[i];
         if (! await ns.wget(`${baseUrl}${file}`, file)) {
-            ns.tprintf("[%d/%d] failed get %s", i+1, files_list.length, file);
+            ns.tprintf("ERROR failed get %s", i+1, files_list.length, file);
             return false;
         }
-        await ns.tryWritePort(setupPort, "pre-uploading-phase", i);
-        ns.tprintf("[%d/%d] %s uploaded", i+1, files_list.length, file);
+        if (!await wait_setup("pre-uploading-phase", i)) return;
+        ns.print(ns.sprintf("[%d/%d] %s uploaded", i+1, files_list.length, file));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // copy settings if not exists
-    await ns.tryWritePort(setupPort, "pre-setup-phase");
+    if (!await wait_setup("pre-setup-phase")) return;
     // settings files, if not exists copy it, is user configurated file
     if (!ns.fileExists("h3ml-settings", host)) {
         await ns.mv(host, "/h3ml/etc/settings.js", "h3ml-settings.js");
@@ -137,8 +147,8 @@ async function update(ns) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // run updater
-    await ns.tryWritePort(setupPort, "run-updater-phase");
-    ns.tprintf("run h3ml update-fetch to complite updating");
+    if (!await wait_setup("run-updater-phase")) return;
+    ns.print("run h3ml update-fetch to complite updating");
     const pid = ns.run(update_fetch, 1, baseUrl, host, setupPort);
     if (pid == 0) {
         ns.tprintf("ERROR failed run update script");
