@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.6.15'; // update this every time when edit the code!!!
+const Version = '0.3.6.16'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 const setupPort  = 6;
@@ -106,6 +106,8 @@ async function wait_setup(ns, ...data) {
 async function update(ns) {
     const host = ns.getHostname();
     const update_success = true;
+
+    ns.clearPort(setupPort);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // before upload core files, upload setup and run it
