@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.9'; // update this every time when edit the code!!!
+const Version = '0.3.6.12'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -200,7 +200,7 @@ function matrix() {
     return;
 }
 
-function draw(...data) {
+function draw(ns, ...data) {
     ns.clearLog();
     // FIXME if string is more than console width, if data is more then conslole height
     ns.print(data.join("\n"), "\n".repeat(tail_height - data.length() - 1));
@@ -251,56 +251,56 @@ export async function main(ns) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// just wait while caller free memory :)
-    draw("knock, knock ...");
+    draw(ns, "knock, knock ...");
     await ns.sleep(message_timeout);
     update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length || update_data[0] !== "initial-phase") return draw("matrix is brocken");
+    if (!update_data.length || update_data[0] !== "initial-phase") return draw(ns, "matrix is brocken");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // run setup scripts
-    draw("wake up bithacker ...");
+    draw(ns, "wake up bithacker ...");
     await ns.sleep(message_timeout);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // wait upload core files data
     update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length || update_data[0] !== "pre-upload-phase") return draw("matrix is brocken");
+    if (!update_data.length || update_data[0] !== "pre-upload-phase") return draw(ns, "matrix is brocken");
 
     const core_total = update_data[1];
     const bar = new ProgressBar(ns, core_total);
     let i = 0;
     while (i < core_total) {
         update_data = await socket.read({wait: message_timeout});
-        if (!update_data.length || update_data[0] !== "pre-uploading-phase") return draw("matrix is brocken");
+        if (!update_data.length || update_data[0] !== "pre-uploading-phase") return draw(ns, "matrix is brocken");
         i = update_data[i]
-        draw("core", bar.progress(i));
+        draw(ns, "core", bar.progress(i));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// run setup after update
-    draw("follow the rabbit ...");
+    draw(ns, "follow the rabbit ...");
     await ns.sleep(message_timeout);
     update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length || update_data[0] !== "pre-setup-phase") return draw("matrix is brocken");
+    if (!update_data.length || update_data[0] !== "pre-setup-phase") return draw(ns, "matrix is brocken");
 
     update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length || update_data[0] !== "run-updater-phase") return draw("matrix is brocken");
+    if (!update_data.length || update_data[0] !== "run-updater-phase") return draw(ns, "matrix is brocken");
 
     update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length || update_data[0] !== "upload-updater-phase") return draw("matrix is brocken");
+    if (!update_data.length || update_data[0] !== "upload-updater-phase") return draw(ns, "matrix is brocken");
 
     const upload_total = update_data[1];
     const upload_bar = new ProgressBar(ns, upload_total);
     i = 0;
     while (i < upload_total) {
         update_data = await socket.read({wait: message_timeout});
-        if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw("matrix is brocken");
+        if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw(ns, "matrix is brocken");
         i = update_data[i]
-        draw("core", bar.progress(i));
+        draw(ns, "core", bar.progress(i));
     }
 
     update_data = await socket.read({wait: message_timeout});
-    if (!update_data.length || update_data[0] !== "post-setup-phase") return draw("matrix is brocken");
+    if (!update_data.length || update_data[0] !== "post-setup-phase") return draw(ns, "matrix is brocken");
 
     l.g(1, "setup system on host %s", host);
     l.g(1, "\tgather servers data");
