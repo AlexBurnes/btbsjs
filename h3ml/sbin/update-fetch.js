@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.6.24'; // update this every time when edit the code!!!
+const Version = '0.3.6.25'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -126,6 +126,12 @@ async function update(l, baseUrl, host) {
 
         if (scripts["get"](file) == 0) {
             l.e("[%d/%d] %s uploaded, but unable to check its version, scrip require 0Gb, syntax error", i+1, scriptFiles.length, file);
+            continue;
+        }
+
+        if (file == "/h3ml/sbin/worker-min.js") {
+            // this file does not have module and version identites,ignore
+            l.g(1, "[%d/%d] got file %s success, %.2fGb", i+1, scriptFiles.length, file, module_version, scripts["get"](file));
             continue;
         }
 

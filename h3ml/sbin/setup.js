@@ -1,12 +1,12 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.24'; // update this every time when edit the code!!!
+const Version = '0.3.6.25'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
 const tail_height     = 30;
 const tail_width      = 62;
 const wait_upload     = 60 * 1000;
-
+const message_timeout = 1500;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// network socket class simple implemtation
@@ -38,7 +38,6 @@ class Socket {
         const ns = this.ns;
         return await ns.tryWritePort(this.port, data.join("|"));
     }
-
     async listen(callback, options = {}) {
         if (!this.port) return;
         const ns = this.ns;
@@ -151,7 +150,7 @@ class ProgressBar {
         this.ns = ns;
         this.total = total;
         // FIXME make this parameters is defined
-        this.length = 40;
+        this.length = 38;
 
     }
     progress(i) {
@@ -203,7 +202,7 @@ function matrix() {
 }
 
 function draw(ns, ...data) {
-    //ns.clearLog();
+    ns.clearLog();
     ns.print(data.join("\n"), "\n".repeat(tail_height - data.length));
     return;
 }
@@ -239,8 +238,6 @@ export async function main(ns) {
     if (setupPort == undefined) {
         return l.e("setup port is undefined");
     }
-
-    const message_timeout = 1500;
 
     const socket = new Socket(ns, setupPort);
 
@@ -329,6 +326,11 @@ export async function main(ns) {
     /// done
 
     l.g(1, "setup done");
+
+    while (true) {
+        // do something
+        await ns.sleep(100);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
