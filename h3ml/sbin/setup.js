@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.8'; // update this every time when edit the code!!!
+const Version = '0.3.6.9'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -177,6 +177,13 @@ function matrix() {
     return;
 }
 
+function draw(...data) {
+    ns.clearLog();
+    // FIXME if string is more than console width, if data is more then conslole height
+    ns.print(data.join("\n"), "\n".repeat(tail_height - data.length() - 1));
+    return;
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///
 /// main
@@ -219,21 +226,23 @@ export async function main(ns) {
     ns.clearLog();
     ns.tail();
 
+    let update_data = "";
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// just wait while caller free memory :)
-    ns.print("knock, knock ...", "\n".repeat(tail_height-1));
+    draw("knock, knock ...");
     await ns.sleep(message_timeout);
-    let update_data = socket.read({wait: message_timeout});
-    if (!update_data.length) {
-        ns.clearLog();
-        ns.print("matrix is brocken", "\n".repeat(tail_height-1));
-        return;
-    }
+    update_data = await socket.read({wait: message_timeout});
+    if (!update_data.length) return draw("matrix is brocken");
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // run setup scripts
-    ns.clearLog();
-    ns.print("wake up bithacker ...", "\n".repeat(tail_height-1));
+    draw("wake up bithacker ...");
+    await ns.sleep(message_timeout);
+    update_data = await socket.read({wait: message_timeout});
+    if (!update_data.length) return draw("matrix is brocken");
+
+    ns.print(update_data);
 
     l.g(1, "setup system on host %s", host);
     l.g(1, "\tgather servers data");
@@ -252,7 +261,7 @@ export async function main(ns) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// just message without meaning
     ns.clearLog();
-    ns.print("follow the rabbit ...", "\n".repeat(tail_height-1));
+    draw("follow the rabbit ...");
     await ns.sleep(message_timeout);
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -264,13 +273,12 @@ export async function main(ns) {
     let i = 0;
     while (i++ < n) {
         const percent = (100/n)*i;
-        const text = ns.sprintf("setup [%s%s] %.2f%%%s",
+        const text = ns.sprintf("setup [%s%s] %.2f%%",
             percent == 0 ?   "" : "█".repeat(Math.floor((percent/100)*progress_bar_length)),
             percent == 100 ? "" : "▒".repeat(Math.floor(progress_bar_length-(percent/100)*progress_bar_length)),
-            percent, "\n".repeat(tail_height-1)
+            percent
         );
-        ns.clearLog();
-        ns.print(text);
+        draw(text);
         await ns.sleep(gap_timeout);
     }
 
