@@ -1,12 +1,12 @@
 const Module  = '/h3ml/lib/hack-server-min.js';
-const Version = '0.3.6.4';     // update this every time when edit the code!!!
+const Version = '0.3.6.5';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Table}      from "/h3ml/lib/utils.js";
 import {updateInfo} from "/h3ml/lib/server-info-min.js";
 import {Units}      from "/h3ml/lib/units.js"
 
-const gapTimeout = 5 * Constants.gapTimeout/1000;
+const gapTimeout = 500/1000;
 
 export class HackInfo {
     constructor (l) {
@@ -132,7 +132,7 @@ export class HackInfo {
                 Units.money(server.cycleThreads * Math.ceil(server.hackTime.value / (5 * gapTimeout))).pretty(ns),
                 Units.size(server.cycleThreads * Math.ceil(server.hackTime.value / (5 * gapTimeout)) * botnet.workerRam * Constants.uGb).pretty(ns),
 
-                hack_info !== undefined ? hack_info[1].substr(0, 1) : "",
+                hack_info !== undefined ? hack_info[1] : "",
                 hack_info !== undefined ? [hack_info[2].time, hack_info[2].unit] : [0, ""],
                 //hack_info !== undefined ? hack_info[3].substr(0, 1) : "",
                 //hack_info !== undefined ? [hack_info[3] == "hack" ? "-" : "+", hack_info[4].amount, hack_info[4].unit] : ["", 0, ""],

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack-batch.js';
-const Version = '0.3.6.4'; // update this every time when edit the code!!!
+const Version = '0.3.6.5'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -169,7 +169,7 @@ async function hackServer(l, target, once, analyze) {
 
             // if can speed hack, why not grow using the same technic? what about speed grow mr smith? :|:):0
             let grow_periods = Math.min(
-                Math.ceil(Math.log(server.moneyRatio)/Math.log(server.serverGrowth)) || 1,
+                Math.ceil(Math.log(server.moneyRatio)/Math.log(server.serverGrowth > 1 ? server.serverGrowth : 2)) || 1,
                 Math.ceil((server.growTime.value * 1000 - gap_timeout)/(3 * gap_timeout))
             )
             l.g(1, "money ratio %s, growth %d, grow periods %d (%f) possible %f", Units.money(server.moneyRatio).pretty(ns), server.serverGrowth, grow_periods,

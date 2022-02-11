@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info-min.js';
-const Version = '0.3.5.11'; // update this every time when edit the code!!!
+const Version = '0.3.6.5'; // update this every time when edit the code!!!
 
 import {Units}        from "/h3ml/lib/units.js";
 import {securityData} from "/h3ml/etc/security.js";
@@ -7,21 +7,21 @@ import {securityData} from "/h3ml/etc/security.js";
 /** @param {NS} ns
  *  @param {Target||Server} target
 **/
-export function updateInfo(ns, target) {
+export function updateInfo(ns, target, cores = 1) {
 
     //FIXME use h3ml/ect/servers instead
     // find another way to prepare this information
     // like server.json
 
     //FIXME this information need gather before, for different, but if this information is player depended?
-    target.weakSecurityRate = securityData["weakRate"][0];
+    target.weakSecurityRate = securityData["weakRate"][cores-1];
     target.hackSecurity     = securityData["hackRate"];  // security grow on hack by one thread
     target.growSecurity     = securityData["growRate"];  // security grow on hack by one thread
 
     const serverGrowth = target.serverGrowth > 1  ? target.serverGrowth : 2;
 
     //ns.tprint(`${target.name}, ${target.serverGrowth}`);
-    target.serverMaxGrowthThreads = Math.ceil(ns.growthAnalyze(target.name, serverGrowth));
+    target.serverMaxGrowthThreads = Math.ceil(ns.growthAnalyze(target.name, serverGrowth, cores));
 
     target.availMoney = Units.money(ns.getServerMoneyAvailable(target.name));
     target.maxMoney = Units.money(ns.getServerMaxMoney(target.name));
@@ -68,7 +68,7 @@ export function updateInfo(ns, target) {
             break;
         default:
             //ns.tprint(`${target.name}, ${target.moneyRatio}, ${target.serverGrowth}`);
-            growThreads = Math.floor(ns.growthAnalyze(target.name, Math.min(target.moneyRatio, serverGrowth)));
+            growThreads = Math.floor(ns.growthAnalyze(target.name, Math.min(target.moneyRatio, serverGrowth), cores));
     }
     target.growMaxThreads = growThreads; // max threads to grow money to maxMoney
 
