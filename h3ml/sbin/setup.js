@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.13'; // update this every time when edit the code!!!
+const Version = '0.3.6.14'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -22,6 +22,7 @@ class Socket {
         const start = Date.now();
         while (true) {
             const str = await ns.readPort(this.port);
+            //ns.print(str);
             if (str !== "NULL PORT DATA") {
                 const data = str.split("|");
                 return data;
@@ -264,6 +265,7 @@ export async function main(ns) {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // wait upload core files data
     update_data = await socket.read({wait: message_timeout});
+    ns.print(update_data);
     if (!update_data.length || update_data[0] !== "pre-upload-phase") return draw(ns, "matrix is brocken");
 
     const core_total = update_data[1];
@@ -272,14 +274,14 @@ export async function main(ns) {
     while (i < core_total) {
         update_data = await socket.read({wait: message_timeout});
         if (!update_data.length || update_data[0] !== "pre-uploading-phase") return draw(ns, "matrix is brocken");
-        i = update_data[i]
+        i = Number(update_data[1]) + 1;
         draw(ns, "core", bar.progress(i));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// run setup after update
     draw(ns, "follow the rabbit ...");
-    await ns.sleep(message_timeout);
+
     update_data = await socket.read({wait: message_timeout});
     if (!update_data.length || update_data[0] !== "pre-setup-phase") return draw(ns, "matrix is brocken");
 
@@ -295,7 +297,7 @@ export async function main(ns) {
     while (i < upload_total) {
         update_data = await socket.read({wait: message_timeout});
         if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw(ns, "matrix is brocken");
-        i = update_data[i]
+        i = Number(update_data[1]) + 1
         draw(ns, "core", bar.progress(i));
     }
 
