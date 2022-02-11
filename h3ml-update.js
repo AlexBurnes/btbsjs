@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.6.10'; // update this every time when edit the code!!!
+const Version = '0.3.6.11'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 const setupPort  = 6;
@@ -80,7 +80,7 @@ export async function main(ns) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // wait while seupt is readed data from port
-async function wait_setup(...data) {
+async function wait_setup(ns, ...data) {
     await ns.tryWritePort(setupPort, data.join("|"));
     //FIXME timeout
     const wait_timeout = 3000;
@@ -120,11 +120,11 @@ async function update(ns) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // write to setup start working
-    if (!await wait_setup("initial-phase")) return;
+    if (!await wait_setup(ns, "initial-phase")) return;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // upload core files
-    if (!await wait_setup("pre-upload-phase", files_list.length)) return;
+    if (!await wait_setup(ns, "pre-upload-phase", files_list.length)) return;
 
     ns.print("uploading core files from ", baseUrl);
     for(let i = 0; i < files_list.length; i++) {
@@ -133,13 +133,13 @@ async function update(ns) {
             ns.tprintf("ERROR failed get %s", i+1, files_list.length, file);
             return false;
         }
-        if (!await wait_setup("pre-uploading-phase", i)) return;
+        if (!await wait_setup(ns, "pre-uploading-phase", i)) return;
         ns.print(ns.sprintf("[%d/%d] %s uploaded", i+1, files_list.length, file));
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // copy settings if not exists
-    if (!await wait_setup("pre-setup-phase")) return;
+    if (!await wait_setup(ns, "pre-setup-phase")) return;
     // settings files, if not exists copy it, is user configurated file
     if (!ns.fileExists("h3ml-settings", host)) {
         await ns.mv(host, "/h3ml/etc/settings.js", "h3ml-settings.js");
@@ -147,7 +147,7 @@ async function update(ns) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     // run updater
-    if (!await wait_setup("run-updater-phase")) return;
+    if (!await wait_setup(ns, "run-updater-phase")) return;
     ns.print("run h3ml update-fetch to complite updating");
     const pid = ns.run(update_fetch, 1, baseUrl, host, setupPort);
     if (pid == 0) {
