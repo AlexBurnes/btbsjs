@@ -76,7 +76,7 @@ async function wait_setup(ns, ...data) {
     const start_time = Date.now();
     while (true) {
         const str = await ns.peek(setupPort);
-        //ns.tprint(str);
+        ns.tprint(str);
         if (str == 'NULL PORT DATA') break;
         if (Date.now() - start_time > wait_timeout) {
             ns.tprintf("ERROR setup is not working, something goes wrong");

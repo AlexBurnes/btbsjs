@@ -22,7 +22,7 @@ class Socket {
         const start = Date.now();
         while (true) {
             const str = await ns.readPort(this.port);
-            //ns.print(str);
+            ns.print(str);
             if (str !== "NULL PORT DATA") {
                 const data = str.split("|");
                 return data;
@@ -202,7 +202,7 @@ function matrix() {
 }
 
 function draw(ns, ...data) {
-    ns.clearLog();
+    //ns.clearLog();
     ns.print(data.join("\n"), "\n".repeat(tail_height - data.length));
     return;
 }
