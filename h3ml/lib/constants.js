@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.6.9'; // update this every time when edit the code!!!
+const Version = '0.3.6.10'; // update this every time when edit the code!!!
 
 import {settings}  from "/h3ml-settings.js";
 

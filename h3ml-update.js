@@ -7,7 +7,7 @@
 */
 "use strict";
 const Module  = '/h3ml-update.js';
-const Version = '0.3.6.9'; // update this every time when edit the code!!!
+const Version = '0.3.6.10'; // update this every time when edit the code!!!
 
 const baseUrl    = "https://raw.githubusercontent.com/AlexBurnes/h3ml/devel";
 const setupPort  = 6;
@@ -80,7 +80,7 @@ export async function main(ns) {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // wait while seupt is readed data from port
-const wait_setup(...data) {
+async function wait_setup(...data) {
     await ns.tryWritePort(setupPort, data.join("|"));
     //FIXME timeout
     const wait_timeout = 3000;
