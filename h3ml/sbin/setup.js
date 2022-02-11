@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.21'; // update this every time when edit the code!!!
+const Version = '0.3.6.23'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -299,7 +299,7 @@ export async function main(ns) {
     const upload_bar = new ProgressBar(ns, upload_total);
     i = 0;
     while (i < upload_total) {
-        update_data = await socket.read({wait: message_timeout});
+        update_data = await socket.read({wait: 10000});
         if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1
         draw(ns, ns.sprintf("system %s", upload_bar.progress(i)));
