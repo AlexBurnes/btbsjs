@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.6.19'; // update this every time when edit the code!!!
+const Version = '0.3.6.20'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -12,6 +12,7 @@ import {Logger}      from "/h3ml/lib/log.js";
 
 const core_files = ["/h3ml/sbin/update-fetch.js", "/h3ml/lib/constants.js", "/h3ml/lib/log.js"];
 const waitTimeout = 5000; //default wait timwout for version from module
+const setupPort   = 6;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // version
@@ -50,7 +51,7 @@ export async function main(ns) {
         [ 'quiet'           , false ]  // quiet mode, short analog of --log-level 0
 
     ]);
-    const [baseUrl, host] = args["_"];
+    const [baseUrl, host, setupPort] = args["_"];
 
     if (args['version']) {
         return version(ns, args['update-port']);

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/setup.js';
-const Version = '0.3.6.19'; // update this every time when edit the code!!!
+const Version = '0.3.6.20'; // update this every time when edit the code!!!
 
 // !!! WARNING this module must not have any library depdendency
 
@@ -203,8 +203,7 @@ function matrix() {
 
 function draw(ns, ...data) {
     ns.clearLog();
-    // FIXME if string is more than console width, if data is more then conslole height
-    ns.print(data.join("\n"), "\n".repeat(tail_height - data.length - 1));
+    ns.print(data.join("\n"), "\n".repeat(tail_height - data.length));
     return;
 }
 
@@ -275,7 +274,7 @@ export async function main(ns) {
         update_data = await socket.read({wait: message_timeout});
         if (!update_data.length || update_data[0] !== "pre-uploading-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1;
-        draw(ns, "core", bar.progress(i));
+        draw(ns, ns.sprintf("core %s", bar.progress(i)));
     }
     await ns.sleep(message_timeout);
 
@@ -303,7 +302,7 @@ export async function main(ns) {
         update_data = await socket.read({wait: message_timeout});
         if (!update_data.length || update_data[0] !== "uploading-updater-phase") return draw(ns, "matrix is brocken");
         i = Number(update_data[1]) + 1
-        draw(ns, "system", bar.progress(i));
+        draw(ns, ns.sprintf("system %s", bar.progress(i)));
     }
     await ns.sleep(message_timeout);
 
