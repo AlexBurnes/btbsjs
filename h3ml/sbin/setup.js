@@ -276,10 +276,6 @@ export async function main(ns) {
     }
     await ns.sleep(message_timeout);
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    /// run setup after update
-    draw(ns, "follow the rabbit ...");
-
     update_data = await socket.read({wait: message_timeout});
     if (!update_data.length || update_data[0] !== "pre-setup-phase") return draw(ns, "matrix is brocken");
 
@@ -308,6 +304,10 @@ export async function main(ns) {
     if (!update_data.length || update_data[0] !== "post-setup-phase") return draw(ns, "matrix is brocken");
     await ns.sleep(message_timeout);
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    /// run setup after update
+    draw(ns, "follow the rabbit ...");
+
     l.g(1, "setup system on host %s", host);
     l.g(1, "\tgather servers data");
     const pid_1 = await ns.exec("/h3ml/sbin/gather-servers-data.js", host, 1, host);
@@ -324,7 +324,6 @@ export async function main(ns) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// done
-
     l.g(1, "setup done");
 
     while (true) {

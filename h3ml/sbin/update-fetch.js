@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/sbin/update-fetch.js';
-const Version = '0.3.6.26'; // update this every time when edit the code!!!
+const Version = '0.3.6.27'; // update this every time when edit the code!!!
 
 /*
     update all scripts
@@ -59,9 +59,8 @@ export async function main(ns) {
     if (args['help']) {
         return help(ns);
     }
-    ns.tprint(Module, " ", Version);
     const l = new Logger(ns, {args: args});
-
+    l.g(1, "%s %s", Module, Version);
     await update(l, baseUrl, host);
 
     return;

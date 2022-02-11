@@ -1,15 +1,49 @@
+const Module  = '/h3ml/sbin/ps.js';
+const Version = '0.3.6.27';  // update this every time when edit the code!!!
+
+/**
+    @param {NS} ns
+    @param {Number} port
+**/
+async function version(ns, port) {
+    if (port !== undefined && port) {
+        const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
+        return ns.tryWritePort(port, data);
+    }
+    ns.tprintf("module %s version %s", Module, Version);
+    return;
+}
+
+function help(ns) {
+    ns.tprintf("usage: %s --version [--update-port] | --help", Module);
+    ns.tprintf("this module is a library, import {BotNet} from '%s'", Module); // in case of a library
+    return;
+}
+
 /** @param {NS} ns **/
 export async function main(ns) {
-    const host = ns.getHostname();
-    const args = ns.args;
+    const args = ns.flags([
+        [ 'version'     , false ],
+        [ 'update-port' , 0     ],
+        [ 'help'        , false ]
+    ]);
 
-    let cmd = args.shift();
+    if (args['version']) {
+        return version(ns, args['update-port']);
+    }
+    if (args['help']) {
+        return help(ns);
+    }
+
+    const host = ns.getHostname();
+    const options = args["_"];
+
+    let cmd = options.shift();
     let pattern = '.*';
     if (cmd == "|") {
-        cmd = args.shift();
+        cmd = options.shift();
         if (cmd = "grep") {
-            pattern = args.shift();
-
+            pattern = options.shift();
         }
     }
 
@@ -30,6 +64,5 @@ export async function main(ns) {
     else {
         ns.tprintf("no procs running on %s", host);
     }
-
 
 }
