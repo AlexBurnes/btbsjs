@@ -9,7 +9,7 @@ import {Target}      from "/h3ml/lib/target-speed.js";
 import {BotNet}      from "/h3ml/lib/botnet-min.js";
 import {Table}       from "/h3ml/lib/utils.js";
 import {Units}       from "/h3ml/lib/units.js";
-import {updateInfo} from "/h3ml/lib/server-info-min.js";
+import {updateInfo}  from "/h3ml/lib/server-info-min.js";
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -80,11 +80,6 @@ async function hackServer(l, target, once, analyze) {
     const botnet = new BotNet(ns);
     const server = new Target(l, target, botnet.servers);
 
-    server.hackAction   = actionNone;
-    server.preferAction = actionNone;
-
-    server.hackState    = hackInitial;
-
     const table = new Table(ns,
         [
             // this information from servers
@@ -95,7 +90,7 @@ async function hackServer(l, target, once, analyze) {
             ["Max"      , "%.2f%s"  ],  // max money
             ["R"        , "%s"      ],  // rate to grow from available to max money
             ["Gr"       , "%d"      ],  // server growth effectivness
-            // this is calculated by server-info.updateInfo
+
             ["Htm"      , "%.2f%s"  ],  // hack time
             ["Gtm"      , "%.2f%s"  ],  // grow time
             ["Wtm"      , "%.2f%s"  ],  // weaken time
@@ -106,33 +101,18 @@ async function hackServer(l, target, once, analyze) {
             ["Hom"      , "%.2f%s"  ],  // hack optimal money max - grow threshold value
             ["Oth"      , "%d"      ],  // optimal max threads
             ["sz"       , "%s"      ],  // server size require
-            ['Ct'       , "%s"      ],
-            ['Cth'      , "%s"      ],
+            ['Ct'       , "%s"      ],  // cycle time, basicaly it is a weak_time
+            ['Cth'      , "%s"      ],  // cycle threads requirements
         ],
     );
 
     const socket = new Socket(ns, Constants.watchPort);
 
-    //check workers
-    /*const workers = new Map();
-    Servers.list(ns).forEach(host => {
-        const procs = ns.ps(host.name);
-        procs
-            .filter(proc => proc.filename.match(/worker(\-[^\.]+?)?\.js$/))
-            .forEach(proc => {
-                proc.args
-                    .filter(arg => arg == server.name)
-                    .forEach(() => {
-                        workers.set(host.name, proc.args);
-                    })
-        });
-    });
-    workers.forEach((args, name) => {
-        l.g(1, "worker at %s args: %s", name, args.join(', '));
-    });*/
-
+    // fixme move to constants
     const gap_timeout = 50;
     const sap_timeout = 50;
+
+    // fixme hardcoded costant, need to plan what and were do hack - i.e work target and hack target
     const cores = 8;
     l.g(1, "'%s' initial state", server.name);
     updateInfo(ns, server, cores);
@@ -172,23 +152,26 @@ async function hackServer(l, target, once, analyze) {
             l.g(1, "money ratio %s, growth %d, grow periods %d (%f) possible %f", Units.money(server.moneyRatio).pretty(ns), server.serverGrowth, grow_periods,
                 Math.log(server.moneyRatio)/Math.log(server.serverGrowth), (server.growTime.value * 1000 - gap_timeout)/(sap_timeout + gap_timeout)
             );
+
             // don't care about wt we don't know a future result
             const start_time = Date.now();
-            let total_threads = 0;
-            let i = 0;
             const period_timeout = sap_timeout + gap_timeout;
+
+            let total_threads = 0;
             let batch_time = start_time;
-            // first why do we need sleep? make calculation of fire event in future start :)
+            let i = 0;
+
             while (gt + wt < t && i < grow_periods) {
                 i++;
-                //const start = Date.now();
                 batch_time += (grow_periods > 1 ? period_timeout : 0);
                 const weak_time = batch_time;
                 const weak_timeout = server.weakTime.value * 1000;
                 const grow_timeout = server.growTime.value * 1000;
                 const grow_time = weak_time + weak_timeout - sap_timeout - grow_timeout;
+
                 //l.d(1, "gt  time %s => %s <<%d>>", time2str(ns, new Date(grow_time)), time2str(ns, new Date(grow_time + grow_timeout)), gt);
                 //l.d(1, "wt  time %s => %s <<%d>>", time2str(ns, new Date(weak_time)), time2str(ns, new Date(weak_time + weak_timeout)), wt);
+
                 total_threads += gt + wt;
                 if (gt > 0) {await server["grow"](gt, {start: grow_time, batch: batch_time})};
                 if (i == grow_periods) {
@@ -196,13 +179,8 @@ async function hackServer(l, target, once, analyze) {
                         Units.time(weak_timeout/1000).pretty(ns), period_timeout, grow_periods, Units.time(weak_timeout/1000).pretty(ns), gt, wt
                     );
                     await socket.write(">", "", start_time, total_threads, server.name, "gw", weak_timeout + grow_periods * (period_timeout), start_time);
-                    //await ns.sleep(weak_time - Date.now() + weak_timeout + sap_timeout + gap_timeout);
                 }
                 await server["weaken"](wt, {start: weak_time, batch: batch_time, await: i == grow_periods ? true : false});
-                //const end = Date.now();
-                //const sleep_timeout = sap_timeout + gap_timeout - (end - start);
-                //if (grow_periods && sleep_timeout > 0) await ns.sleep(sleep_timeout);
-
                 botnet.update();
                 t = botnet.workers;
             }
@@ -218,59 +196,41 @@ async function hackServer(l, target, once, analyze) {
         botnet.update();
         t = botnet.workers;
 
-        /*
-            cycle_time = weak_timeout + 6 * gap_timeout
-                                    1 2 3 4 5 6
-                w                     |
-                    h               |
-                        w                |
-                            g          |
-                check                       | |
-                next cycle
-            times = int(cycle/5*gap) loop
-                sleep 4 gap check
-                sleep 1 gap next
-            sleep  cycle%5*gap + 5gap
-                check
-                sleep gap (сalc how much sleep)
-
-
-        */
-        const cycle_threads = server.cycleThreads;
-        const grow_threads  = server.optimalGrowThreads;
-        const grow_timeout  = server.growTime.value * 1000;
-        const hack_threads  = server.hackMaxThreads;
-        const hack_timeout  = server.hackTime.value * 1000;
+        const cycle_threads     = server.cycleThreads;
+        const grow_threads      = server.optimalGrowThreads;
+        const grow_timeout      = server.growTime.value * 1000;
+        const hack_threads      = server.hackMaxThreads;
+        const hack_timeout      = server.hackTime.value * 1000;
         const weak_hack_threads = Math.ceil(server.hackSecurity * hack_threads/server.weakSecurityRate);
         const weak_grow_threads = Math.ceil(server.growSecurity * grow_threads/server.weakSecurityRate);
-        const weak_timeout = server.weakTime.value * 1000;
-        const period_timeout = 2 * sap_timeout + 2 * gap_timeout;
-        const cycle_time = hack_timeout - gap_timeout;
-        const period_times = Math.floor(cycle_time / period_timeout);
+        const weak_timeout      = server.weakTime.value * 1000;
+        const period_timeout    = 2 * sap_timeout + 2 * gap_timeout;
+        const cycle_time        = hack_timeout - gap_timeout;
+        const period_times      = Math.floor(cycle_time / period_timeout);
 
         l.g(1, "cycle time %d period times %d", cycle_time, period_times);
 
         let i = 0;
         let start_time = Date.now();
-        //let check_time = start_time + cycle_time;
-
         let total_threads = 0;
         let batch_time = start_time;
+
         while (t >= cycle_threads && server.moneyRatio <= 2) {
             i++;
-            //let start = Date.now();
             batch_time += (period_times > 0 ? period_timeout : 0);
-            //l.d(1, "%s '%s' batch hacking cycle %d", time2str(ns, new Date(batch_time)), server.name, i);
             const hack_weak_time = batch_time;
             const hack_time = hack_weak_time + weak_timeout - sap_timeout - hack_timeout;
             const grow_weak_time = hack_weak_time + sap_timeout + gap_timeout;
             const grow_time = grow_weak_time + weak_timeout - sap_timeout - grow_timeout;
+
             //l.d(1, "cycle time %.3f gap %.3f, T %.3f", cycle_time, period_timeout, period_times);
             //l.d(1, "ht  time %s => %s <<%d>>", time2str(ns, new Date(hack_time)),      time2str(ns, new Date(hack_time + hack_timeout))      , hack_threads);
             //l.d(1, "wht time %s => %s <<%d>>", time2str(ns, new Date(hack_weak_time)), time2str(ns, new Date(hack_weak_time + weak_timeout)) , weak_hack_threads);
             //l.d(1, "gt  time %s => %s <<%d>>", time2str(ns, new Date(grow_time)),      time2str(ns, new Date(grow_time + grow_timeout))      , grow_threads);
             //l.d(1, "wgt time %s => %s <<%d>>", time2str(ns, new Date(grow_weak_time)), time2str(ns, new Date(grow_weak_time + weak_timeout)) , weak_grow_threads);
+
             total_threads += hack_threads + weak_hack_threads + grow_threads + weak_grow_threads;
+
             await server["hack"]  (hack_threads,      {start: hack_time,         batch: batch_time});
             await server["weaken"](weak_hack_threads, {start: hack_weak_time,    batch: batch_time});
             await server["grow"]  (grow_threads,      {start: grow_time,         batch: batch_time});
@@ -281,14 +241,8 @@ async function hackServer(l, target, once, analyze) {
                 await socket.write(">", "", start_time, total_threads, server.name, "hwgw", weak_timeout+period_times * period_timeout, start_time);
             }
             await server["weaken"](weak_grow_threads, {start: grow_weak_time,    batch: batch_time, await: i >= period_times ? true : false});
-            //ns.clearLog();
-            if (i >= period_times) { //  || check_time + period_timeout < start
-                /*l.g(1, "%s hack & grow time %s gap %.3fms, T %.3f timeout %s, i %d", time2str(ns, new Date(start_time)), Units.time(cycle_time/1000).pretty(ns), period_timeout,
-                    period_times, Units.time(weak_timeout/1000).pretty(ns), i
-                );
-                await socket.write(">", "", start_time, total_threads, server.name, "hwgw", weak_timeout+period_times * period_timeout, start_time);
-                */
-                //await ns.sleep(grow_weak_time - Date.now() + weak_timeout + 2 * period_timeout);
+
+            if (i >= period_times) {
                 i = 0;
                 updateInfo(ns, server, cores); // check
                 botnet.update();
@@ -298,38 +252,12 @@ async function hackServer(l, target, once, analyze) {
                 batch_time = start_time + 1000;
                 continue;
             }
-            //let end = Date.now();
-            //let sleep_timeout = period_timeout - (end - start);
-            //if (sleep_timeout > 0) await ns.sleep(sleep_timeout);
-            //start = end;
-            //updateInfo(ns, server, cores); // check
-            //l.d(1, "%s update info", time2str(ns, new Date(Date.now())));
-            //end = Date.now();
-            //sleep_timeout = 1*gap_timeout - (end - start);
-            //if (sleep_timeout > 0) await ns.sleep(sleep_timeout);
+
             botnet.update();
             t = botnet.workers;
             await ns.sleep(gap_timeout); // make it easy
         }
-        //sleep forward i cycles and correct amount to max
-        // check process with name
 
-        const workers = new Map();
-        /*Servers.list(ns).forEach(host => {
-            const procs = ns.ps(host.name);
-            procs
-                .filter(proc => proc.filename.match(/worker(\-[^\.]+?)?\.js$/))
-                .forEach(proc => {
-                    proc.args
-                        .filter(arg => arg == server.name)
-                        .forEach(() => {
-                            workers.set(host.name, proc.args);
-                        })
-            });
-        });
-        workers.forEach((args, name) => {
-            l.g(1, "worker at %s args: %s", name, args.join(', '));
-        });*/
         l.g(1, "%s something goes wrong", time2str(ns, new Date(Date.now())));
         showInfo(l, table, server, botnet);
         await ns.sleep(gap_timeout);
@@ -364,7 +292,6 @@ export async function main(ns) {
 
     ns.disableLog("ALL");
 
-    // for modules
     const l = new Logger(ns, {args: args});
 
     const target = args["_"][0];

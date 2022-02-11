@@ -90,8 +90,6 @@ export const scriptFiles = [
     "/h3ml/sbin/gather-security-data.js",
     "/h3ml/sbin/gather-servers-data.js",
 
-    "/h3ml/sbin/setup.js",
-
     "/h3ml-update.js"
 ];
 

@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.6.5'; // update this every time when edit the code!!!
+const Version = '0.3.6.6'; // update this every time when edit the code!!!
 
 import {settings}  from "/h3ml-settings.js";
 
@@ -32,6 +32,7 @@ const _ctrlPort         = 2; // port number for receive ctrl data?
 const _infoPort         = 3; // reserved port for hacking.js, hack-servers.js
 const _updatePort       = 4; // reserved port for updater.js
 const _stockPort        = 5; // reserved port for stock.js
+const _setupPort        = 6; // reserved port for setup.js
 
 // log toast
 const _toastLogResult         = true;
@@ -67,6 +68,7 @@ class _Constants {
     get ctrlPort()              {return _ctrlPort;}
     get infoPort()              {return _infoPort;}
     get stockPort()             {return _stockPort;}
+    get setupPort()             {return _setupPort;}
 
     get toastLogResult()        {return _toastLogResult;}
     get toastResultTimeout()    {return _toastResultTimeout;}
