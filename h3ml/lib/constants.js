@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.6.28'; // update this every time when edit the code!!!
+const Version = '0.3.6.30'; // update this every time when edit the code!!!
 
 import {settings}  from "/h3ml-settings.js";
 
@@ -61,7 +61,6 @@ class _Constants {
     get rootKitFiles()          {return _rootKitFiles;}
     get reserveRam()            {return _reserveRam;}
     get maxHomeCpuCores()       {return _maxHomeCpuCores;}
-
     get protocolVersion()       {return _protocolVersion;}
     get watchPort()             {return _watchPort;}
     get updatePort()            {return _updatePort;}

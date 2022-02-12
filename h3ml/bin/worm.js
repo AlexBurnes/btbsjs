@@ -1,5 +1,5 @@
 const Module  = '/h3ml/bin/worm.js';
-const Version = '0.3.5.4'; // update this every time when edit the code!!!
+const Version = '0.3.6.30'; // update this every time when edit the code!!!
 
 import {Constants}      from "/h3ml/lib/constants.js";
 import {Logger}         from "/h3ml/lib/log.js";
@@ -66,7 +66,7 @@ export async function main(ns) {
         .filter(f => f.match(/^.*\.js$/));
 
     const target_files = ns.ls(source)
-        .filter(f => f.match(/worker.js|constants.js|network.js|log.js|quiet.js|verbose.js|h3ml-settings.js/));
+        .filter(f => f.match(/worker(\-[^\.]+)?.js|constants.js|network.js|log.js|quiet.js|verbose.js|h3ml-settings.js/));
 
     for (let server of servers.map(e => e.name)) {
         if (!ns.hasRootAccess(server)) {

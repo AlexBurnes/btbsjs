@@ -56,6 +56,7 @@ export const scriptFiles = [
     "/h3ml/bin/hack-net.js",
     "/h3ml/bin/scan.js",
     "/h3ml/bin/worm.js",
+    "/h3ml/bin/stick.js",
 
     "/h3ml/bin/h3ml.js",
     "/h3ml/bin/hack.js",
@@ -83,6 +84,7 @@ export const scriptFiles = [
     "/h3ml/sbin/worker.js",
     "/h3ml/sbin/worker-min.js",
     "/h3ml/sbin/sharing.js",
+    "/h3ml/sbin/stock.js",
     "/h3ml/sbin/server-hack.js",
     "/h3ml/sbin/server-hack-min.js",
     "/h3ml/sbin/server-hack-batch.js",

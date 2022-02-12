@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/target-speed.js';
-const Version = '0.3.6.1'; // update this every time when edit the code!!!
+const Version = '0.3.6.30'; // update this every time when edit the code!!!
 
 import {Server}      from "/h3ml/lib/server-min.js";
 
@@ -71,10 +71,14 @@ export class Target extends Server {
 
     execute(cmd, threads, options = {}) {
         const ns = this.ns;
+        const l = this.l;
         const start = options.start || Date.now();
 
-        if (this.hosts.length == 0) return Promise.resolve(); // FIXME return error
-
+        if (this.hosts.length == 0) {
+            l.e("no hosts to do action");
+            return Promise.resolve(); // FIXME return error
+        }
+        //l.g(1, "target %s cmd %s threads %d", this.name, cmd, threads);
         //FIXME need to provide Server class with method maxRam, usedRam
         this.hosts.sort(function(a, b){
             return (ns.getServerMaxRam(b.name) - ns.getServerUsedRam(b.name)) -
@@ -87,10 +91,11 @@ export class Target extends Server {
                     const serverMaxRam = ns.getServerMaxRam(server.name);
                     const serverUsedRam = ns.getServerUsedRam(server.name);
                     const hostThreads = (serverMaxRam - serverUsedRam) / this.workerRam;
+                    //l.g(1, "server %s available threads %d", server.name, hostThreads)h;
                     if (hostThreads > 0) {
                         server.workerThreads = Math.min(hostThreads, threads);
                         const pid = ns.exec(this.workerScript, server.name, server.workerThreads,
-                            this.name, cmd, start, server.name, server.workerThreads, options.end, options.batch
+                            this.name, cmd, start, server.name, server.workerThreads, options.stock || 0, options.end, options.batch
                         );
                         server.workerPid = pid;
                         scripts.push(server);
@@ -102,15 +107,14 @@ export class Target extends Server {
 
         if (!options.await) return Promise.resolve();
 
-        const end = new Date(start + options.await);
-        const begin = Date.now();
+        const end = new Date(start + options.end);
 
         return new Promise(async resolve => {
             while (scripts.length) {
                 scripts =
                     scripts
                         .filter(server => this.ns.isRunning(this.workerScript, server.name,
-                            this.name, cmd, start, server.name, server.workerThreads, options.end, options.batch
+                            this.name, cmd, start, server.name, server.workerThreads, options.stock || 0, options.end, options.batch
                         ));
                 if (end.getTime() > Date.now()) {
                     const now = new Date(end.getTime() - Date.now());

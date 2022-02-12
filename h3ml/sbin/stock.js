@@ -195,6 +195,7 @@ async function trade(l, table, symbols) {
     let totalProfit = 0;
     let totalAmount = 0;
     let totalTotal  = 0;
+    let totalSharePrice = 0;
 
     symbols.forEach(symb => {
         const data = Stock.symbols["get"](symb);
@@ -269,6 +270,7 @@ async function trade(l, table, symbols) {
         totalProfit += profit;
         totalAmount += amount;
         totalTotal  += data.total;
+        totalSharePrice += st.getAskPrice(symb)*st.getMaxShares(symb);
 
         table.push(
             symb,
@@ -292,7 +294,7 @@ async function trade(l, table, symbols) {
         "",
         "",
         (avgVolityle/symbols.length)*100,
-        "",
+        Units.money(totalSharePrice).pretty(ns),
         "",
         (avgForecast),
         (avgForecast > 50 ? "+" : avgForecast == 50 ? "." : "-").repeat(Math.abs(avgForecast-50)/10+1),
