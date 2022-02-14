@@ -24,6 +24,7 @@ const files_list = [
     , "/h3ml/etc/scripts.js"
     , "/h3ml/etc/servers.js"
     , "/h3ml/etc/security.js"
+    , "/h3ml/etc/shares.js"
 
 ];
 

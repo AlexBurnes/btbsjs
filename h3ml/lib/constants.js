@@ -1,6 +1,6 @@
 "use strict";
 const Module  = '/h3ml/lib/constants.js';
-const Version = '0.3.6.30'; // update this every time when edit the code!!!
+const Version = '0.3.6.31'; // update this every time when edit the code!!!
 
 import {settings}  from "/h3ml-settings.js";
 
@@ -13,6 +13,7 @@ const _rootKitFiles = {
 };
 
 const _uGb = Math.pow(2, 20);
+const _uMs = 1000;
 
 const _logLevel     = settings.logLevel   || 1;    // default log level for all scripts
 const _debugLevel   = settings.debugLevel || 0;    // default debug level for all scripts
@@ -25,6 +26,9 @@ const _shareScriptFile  = "/h3ml/sbin/sharing.js";
 
 const _reserveRam       = 0;
 const _maxHomeCpuCores  = 8;
+
+const _sapTimeout       = 100; // 100ms timeout between actions hack-weak, or grow-weak
+const _gapTimeout       = 100; // 100ms timeout between group of action hw - gw - next cycle
 
 const _protocolVersion  = 2; // version of protocol for iteract on botnet network
 const _watchPort        = 1; // port number for recieve watch data
@@ -51,6 +55,8 @@ class _Constants {
     get debugLevel()            {return _debugLevel;}
 
     get uGb()                   {return _uGb;}
+    get gb()                    {return _uGb;}
+    get ms()                    {return _uMs;}
 
     get workerScriptFile()      {return _workerScriptFile;}
     get shareScriptFile()       {return _shareScriptFile;}
@@ -68,6 +74,9 @@ class _Constants {
     get infoPort()              {return _infoPort;}
     get stockPort()             {return _stockPort;}
     get setupPort()             {return _setupPort;}
+
+    get sapTimeout()            {return _sapTimeout;}
+    get gapTimeout()            {return _gapTimeout;}
 
     get toastLogResult()        {return _toastLogResult;}
     get toastResultTimeout()    {return _toastResultTimeout;}

@@ -10,6 +10,8 @@ import {Logger}     from "/h3ml/lib/log.js"
 import {Units}      from "/h3ml/lib/units.js"
 import {settings}   from "h3ml-settings.js";
 
+const ms = Constants.ms;
+
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -82,9 +84,9 @@ export async function main(ns) {
         const availMoney = ns.getServerMoneyAvailable("home");
 
         if (minUpgradeCost > 0 && Math.min(minUpgradeCost, nodeCost) > availMoney) {
-            let timeout = 1000;
+            let timeout = 1 * ms;
             if (productionRate > 0) {
-                timeout = ((Math.min(minUpgradeCost, nodeCost) - availMoney)/productionRate)*1000;
+                timeout = ((Math.min(minUpgradeCost, nodeCost) - availMoney)/productionRate) * ms;
             }
             await ns.sleep(timeout);
         }

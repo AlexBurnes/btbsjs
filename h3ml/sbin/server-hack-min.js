@@ -111,12 +111,18 @@ async function hackServer(l, target, once, analyze) {
         }
 
         server.preferAction = actionNone;
+        // cycle hack -> if failed weaken, else grow, next weak
         l.g(1, "%s previous action %d, avail money availMoney %f, last %f", target, server.hackAction, availMoney, server.availMoney.value);
         if (server.hackAction == actionGrow || server.hackAction == actionHack) {
-            // analize previous step result
-            if (Math.floor(server.availMoney.value) == Math.floor(availMoney)) {
-                await writeToPort(l, "=> '%s' previous action was ineffective, no avail money change, recommend to weak server", target);
+            if (server.hackAction == actionGrow) {
                 server.preferAction = actionWeak;
+            }
+            else {
+                // analize previous step result
+                if (Math.floor(server.availMoney.value) == Math.floor(availMoney)) {
+                    await writeToPort(l, "=> '%s' previous action was ineffective, no avail money change, recommend to weak server", target);
+                    server.preferAction = actionWeak;
+                }
             }
         }
 

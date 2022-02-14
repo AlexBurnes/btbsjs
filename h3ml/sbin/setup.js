@@ -324,6 +324,7 @@ export async function main(ns) {
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     /// done
+    draw(ns, read("/h3ml/var/images/bitburner.txt"));
     l.g(1, "setup done");
 
     while (true) {

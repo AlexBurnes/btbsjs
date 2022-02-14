@@ -93,6 +93,9 @@ export const scriptFiles = [
     "/h3ml/sbin/gather-servers-data.js",
     "/h3ml/sbin/ps.js", //FIXME move it into bin catalog
 
+    //images
+    "/h3ml/var/images/bitburner.txt",
+
     "/h3ml-update.js"
 ];
 

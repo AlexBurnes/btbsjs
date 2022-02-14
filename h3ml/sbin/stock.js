@@ -1,10 +1,12 @@
 const Module  = '/h3ml/sbin/stock.js';
-const Version = '0.3.5.11'; // update this every time when edit the code!!!
+const Version = '0.3.5.31'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js"
 import {Units}      from "/h3ml/lib/units.js";
 import {Table}      from "/h3ml/lib/utils.js";
+
+const ms = Constants.ms;
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -155,7 +157,7 @@ async function sell_all(l, socket, args) {
                 const profit = (price - data.price) * data.shares;
                 data.total += profit;
                 data.shares = 0;
-                ns.toast(ns.sprintf("%s %s", symb, Units.money(profit).pretty(ns)), profit > 0 ? "success" : "error", 30000);
+                ns.toast(ns.sprintf("%s %s", symb, Units.money(profit).pretty(ns)), profit > 0 ? "success" : "error", 30 * ms);
             }
         }
     }
@@ -238,13 +240,13 @@ async function trade(l, table, symbols) {
                         const profit = (price - data.price) * data.shares;
                         data.total += profit;
                         data.shares = 0;
-                        ns.toast(ns.sprintf("%s %s", symb, Units.money(profit).pretty(ns)), profit > 0 ? "success" : "error", 30000);
+                        ns.toast(ns.sprintf("%s %s", symb, Units.money(profit).pretty(ns)), profit > 0 ? "success" : "error", 30 * ms);
                     }
                 }
             }
         }
         // let signal show 60 seconds
-        if (data.time && data.time + 60000 < Date.now()) {
+        if (data.time && data.time + 60 * ms < Date.now()) {
             data.signal = "";
             data.time = 0;
         }
@@ -258,7 +260,7 @@ async function trade(l, table, symbols) {
                 const profit = (price - data.price) * data.shares;
                 data.total += profit;
                 data.shares = 0;
-                ns.toast(ns.sprintf("%s %s", symb, Units.money(profit).pretty(ns)), profit > 0 ? "success" : "error", 30000);
+                ns.toast(ns.sprintf("%s %s", symb, Units.money(profit).pretty(ns)), profit > 0 ? "success" : "error", 30 * ms);
             }
         }
 
@@ -378,7 +380,7 @@ export async function main(ns) {
             return 1; //continue
         },
         {
-            timeout: 1000,
+            timeout: ms,
             idle: async () => {
                 await trade(l, table, symbols);
                 return 1;

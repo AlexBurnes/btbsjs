@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/server-info-min.js';
-const Version = '0.3.6.30'; // update this every time when edit the code!!!
+const Version = '0.3.6.31'; // update this every time when edit the code!!!
 
 import {Units}        from "/h3ml/lib/units.js";
 import {securityData} from "/h3ml/etc/security.js";
@@ -77,6 +77,7 @@ export function updateInfo(ns, target, cores = 1) {
 
     // how mach money could be stolen to grow once to max
     target.hackAmount = target.availMoney.value * (1-1/serverGrowth);
+    target.hackMaxAmount = target.maxMoney.value * (1-1/serverGrowth);
 
     //optimal hack threads, this is wrong when vailMone < maxMoney, you could't not calculate so need calc it by other way
     target.optimalHackMoney   = Units.money(target.hackAmount);
@@ -86,13 +87,11 @@ export function updateInfo(ns, target, cores = 1) {
     target.optimalGrowThreads = target.serverMaxGrowthThreads || 0;
     target.optimalThreads     = Math.max(target.optimalGrowThreads, target.optimalHackThreads);
 
-    //ns.tprint(`${target.name} ${target.optimalGrowThreads}  ${target.growSecurity}\
-    //${target.optimalGrowThreads} ${target.weakSecurityRate}  ${target.optimalHackThreads}  ${target.hackSecurity}\
-    //${target.optimalHackThreads} ${target.weakSecurityRate}`);
-    target.weakCycleThreads = Math.ceil(target.growSecurity * target.optimalGrowThreads/target.weakSecurityRate)
-                              + Math.ceil(target.hackSecurity * target.optimalHackThreads/target.weakSecurityRate)
-    target.cycleThreads     = target.optimalGrowThreads + target.optimalHackThreads + target.weakCycleThreads;
-    target.cycleTime        = Units.time(Math.max(target.growTime.value, target.hackTime.value, target.weakTime.value));
+    target.cycleWeakHackThreads = Math.ceil(target.hackSecurity * target.optimalHackThreads/target.weakSecurityRate);
+    target.cycleWeakGrowThreads = Math.ceil(target.growSecurity * target.optimalGrowThreads/target.weakSecurityRate);
+    target.cycleThreads         = target.optimalGrowThreads + target.optimalHackThreads + target.cycleWeakHackThreads + target.cycleWeakGrowThreads;
+    target.cycleGrowThreads     = target.optimalGrowThreads + target.cycleWeakGrowThreads;
+    target.cycleTime            = Units.time(Math.max(target.growTime.value, target.hackTime.value, target.weakTime.value));
 }
 
 // recalculate growth for max threads t

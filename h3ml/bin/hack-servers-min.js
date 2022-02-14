@@ -14,6 +14,8 @@ const protocolVersion = Constants.protocolVersion;
 const watchPort       = Constants.watchPort;
 const infoPort        = Constants.infoPort;
 
+const ms              = Constants.ms;
+
 async function version(ns, port) {
     if (port !== undefined && port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
@@ -91,7 +93,7 @@ export async function main(ns) {
             const server = item.split(",");
             const timeout = server[2] - Date.now() + parseInt(server[3]);
             const now = Date.now();
-            const estimate = Units.time(server[1] !== undefined && timeout > 0 ? timeout/1000 : 0);
+            const estimate = Units.time(server[1] !== undefined && timeout > 0 ? timeout/ms : 0);
             const diff_amount = Units.money(server[5]);
             const total_amount = Units.money(server[6]);
             const diff_security = server[7];
@@ -133,6 +135,6 @@ export async function main(ns) {
         ns.clearLog();
         ns.print(botnetData);
         ns.print(data.join("\n"));
-        await ns.sleep(1000);
+        await ns.sleep(ms);
     }
 }
