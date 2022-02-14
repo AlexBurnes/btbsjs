@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/hack-server-min.js';
-const Version = '0.3.6.31';     // update this every time when edit the code!!!
+const Version = '0.3.6.32';     // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Table}      from "/h3ml/lib/utils.js";
@@ -7,6 +7,7 @@ import {updateInfo} from "/h3ml/lib/server-info-min.js";
 import {Units}      from "/h3ml/lib/units.js"
 
 const gapTimeout = Constants.gapTimeout;
+const ms         = Constants.ms;
 
 export class HackInfo {
     constructor (l) {
@@ -34,6 +35,7 @@ export class HackInfo {
 
                 // this come from watcher
                 ["Action"   , "%s"      ],  // current action
+                ["Th"       , "%s"      ],  // current action
                 ["Remain"   , "%s"      ],  // remain time
                 ["Total"    , "%s"      ]   // total amount hacked from server
             ]
@@ -63,15 +65,18 @@ export class HackInfo {
         let speedHackThreads = 0;
         let totalHackMoney   = 0;
         let totalUsedThreads = 0;
+        let totalHackThreads = 0;
         servers.forEach(server => {
             updateInfo(ns, server);
             if (maxServerThreads < server.cycleThreads) {
-                maxServerThreads = server.cycleThreads;
+                maxServerThreads = Number(server.cycleThreads);
             }
             allServerThreads += server.cycleThreads;
-            speedHackThreads += server.cycleThreads * Math.ceil(server.hackTime.value / (4 * gapTimeout * 1000));
+            speedHackThreads += server.cycleThreads * Math.ceil(server.hackTime.value / (4 * gapTimeout * ms));
             if (hacking_servers.has(server.name)) {
                 totalUsedThreads += server.cycleThreads;
+                const hack_info = hacking_servers["get"](server.name);
+                totalHackThreads += (hack_info[7] !== undefined ?  Number(hack_info[7]) : 0)
             }
         });
 
@@ -116,15 +121,16 @@ export class HackInfo {
                 , server.cycleTime.pretty(ns)
                 , Units.money(server.hackMaxAmount/server.cycleTime.value).pretty(ns)
                 , Units.size(server.cycleThreads * botnet.workerRam * Constants.uGb).pretty(ns)
-                , Units.money(server.cycleThreads * Math.ceil(server.hackTime.value / (4 * gapTimeout * 1000))).pretty(ns)
-                , Units.size(server.cycleThreads * Math.ceil(server.hackTime.value / (4 * gapTimeout * 1000)) * botnet.workerRam * Constants.uGb).pretty(ns)
+                , Units.money(server.cycleThreads * Math.ceil(server.hackTime.value / (4 * gapTimeout * ms))).pretty(ns)
+                , Units.size(server.cycleThreads * Math.ceil(server.hackTime.value / (4 * gapTimeout * ms)) * botnet.workerRam * Constants.uGb).pretty(ns)
                 , hack_info !== undefined ? hack_info[1] : ""
+                , hack_info !== undefined ? Units.money(hack_info[7] !== undefined ? hack_info[7] : 0 ).pretty(ns) : ""
                 , hack_info !== undefined ? hack_info[2].pretty(ns) : ""
                 , hack_info !== undefined ? hack_info[6].pretty(ns) : ""
             );
         });
         table.push(
-            "Total", "", 0, 0, "", "", "", 0, "", Units.money(totalUsedThreads).pretty(ns), "", "", "", "", "", "", "", "" , ""
+            "Total", "", 0, 0, "", "", "", 0, "", Units.money(totalUsedThreads).pretty(ns), "", "", "", "", "", "", "",  Units.money(totalHackThreads).pretty(ns), "" , ""
         )
         data.push(ns.sprintf("%s", table.print()));
         return data;

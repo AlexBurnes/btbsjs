@@ -11,10 +11,6 @@ import {Table}       from "/h3ml/lib/utils.js";
 import {Units}       from "/h3ml/lib/units.js";
 import {updateInfo, calcGrowth, calcHack} from "/h3ml/lib/server-info-min.js";
 
-const protocolVersion = Constants.protocolVersion;
-const ctrlPort        = Constants.ctrlPort;
-const ms              = Constants.ms;
-
 async function version(ns, port) {
     if (port !== undefined && port) {
         const data = ns.sprintf("%d|%s|%s", Date.now(), Module, Version);
@@ -33,6 +29,10 @@ function help(ns) {
     ns.tprintf("hack server NAME");
     return;
 }
+
+const protocolVersion = Constants.protocolVersion;
+const ctrlPort        = Constants.ctrlPort;
+const ms              = Constants.ms;
 
 function showInfo(l, table, server, botnet) {
     const ns = l.ns;

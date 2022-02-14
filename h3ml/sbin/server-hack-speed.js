@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack-speed.js';
-const Version = '0.3.6.9'; // update this every time when edit the code!!!
+const Version = '0.3.6.32'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -109,9 +109,9 @@ async function hackServer(l, target, once, analyze) {
 
     const socket = new Socket(ns, Constants.watchPort);
 
-    const sap_timeout = Constants.sapTimeout;
+    // fixme move to constants
     const gap_timeout = Constants.gapTimeout;
-
+    const sap_timeout = Constants.sapTimeout;
 
     // fixme hardcoded costant, need to plan what and were do hack - i.e work target and hack target
     const cores = 1;
@@ -179,7 +179,7 @@ async function hackServer(l, target, once, analyze) {
                     l.g(1, "%s grow & weak time %s gap %.3fms, T %.3f timeout %s, gt %d wt %d", time2str(ns, new Date(start_time)),
                         Units.time(weak_timeout/ms).pretty(ns), period_timeout, grow_periods, Units.time(weak_timeout/ms).pretty(ns), gt, wt
                     );
-                    await socket.write(">", "", batch_time, total_threads, server.name, "gw", weak_timeout + grow_periods * (period_timeout), start_time);
+                    await socket.write(">", "", batch_time, total_threads, server.name, "sgw", weak_timeout + grow_periods * (period_timeout), start_time);
                 }
                 await server["weaken"](wt, {start: weak_time, batch: batch_time, await: i == grow_periods ? true : false});
                 botnet.update();
@@ -243,7 +243,7 @@ async function hackServer(l, target, once, analyze) {
                 l.g(1, "%s hack & grow time %s gap %.3fms, T %.3f timeout %s, i %d", time2str(ns, new Date(start_time)), Units.time(cycle_time/ms).pretty(ns), period_timeout,
                     period_times, Units.time(weak_timeout/ms).pretty(ns), i
                 );
-                await socket.write(">", "", batch_time, total_threads, server.name, "hwgw", weak_timeout+period_times * period_timeout, start_time);
+                await socket.write(">", "", batch_time, total_threads, server.name, "shwgw", weak_timeout+period_times * period_timeout, start_time);
             }
             await server["weaken"](weak_grow_threads, {start: grow_weak_time,  batch: batch_time, await: i >= period_times ? true : false});
 
@@ -255,6 +255,7 @@ async function hackServer(l, target, once, analyze) {
                 //check_time = Date.now() + cycle_time;
                 start_time = Date.now();
                 batch_time = start_time;
+                total_threads = 0;
                 continue;
             }
 
