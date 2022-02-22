@@ -1,8 +1,11 @@
-const Module  = '/h3ml/bin/hack-net.js';
+const Module  = '/h3ml/bin/hack-hash.js';
 const Version = '0.3.6.34'; // update this every time when edit the code!!!
 
 /*
-    Grow hacknet to max nodes
+    Grow hacknet servers to max nodes and spend hashes for money or other goals
+
+    to work need source file getOwnedSourceFiles() 9.1
+
 */
 
 import {Constants}  from "/h3ml/lib/constants.js";
@@ -12,6 +15,25 @@ import {settings}   from "h3ml-settings.js";
 
 const ms = Constants.ms;
 
+const upgradeLevel = 0;
+const upgradeRam   = 1;
+const upgradeCpu   = 2;
+const upgradeCache = 3;
+
+/*
+[
+    "Sell for Money",
+    "Sell for Corporation Funds",
+    "Reduce Minimum Security",
+    "Increase Maximum Money",
+    "Improve Studying",
+    "Improve Gym Training",
+    "Exchange for Corporation Research",
+    "Exchange for Bladeburner Rank",
+    "Exchange for Bladeburner SP",
+    "Generate Coding Contract"
+]
+*/
 
 async function version(ns, port) {
     if (port !== undefined && port) {
@@ -66,30 +88,44 @@ export async function main(ns) {
 
     l.g(1, "hacknet nodes %d/%d", numNodes, maxNumNodes);
 
-    const maxLevel = 200;
-    const maxRam   = 64;
-    const maxCore  = 16;
+    // unknown -1
+    const maxLevel = -1;
+    const maxRam   = -1;
+    const maxCore  = -1;
+    const maxHash  = -1;
 
     let minUpgradeNode = -1;
     let minUpgradeCost = -1;
-    let minUpgradeWhat = -1; // 0 level, 1 ram, 2 cpu
+    let minUpgradeWhat = -1;
     let productionRate = 0;
 
-    let nodeCost = ns.hacknet.getPurchaseNodeCost();
+    let nodeCost = numNodes < maxNumNodes ? ns.hacknet.getPurchaseNodeCost() : -1;
 
-    let needUpgrade = true;
+    let needUpgrade = false;
 
-    while (nodeCost > 0 || needUpgrade) {
+    let hashCapacity = 0.5; // over 50 sell
+
+    const upgrade_fn = function (what, cost) {
+        if (cost.isFinite()) {
+            needUpgrade = true;
+            if (minUpgradeCost == -1 || minUpgradeCost > cost) {
+                minUpgradeCost = cost;
+                minUpgradeNode = node.index;
+                minUpgradeWhat = what;
+            }
+        }
+    }
+
+    const upgrade_reset = function() {
+        minUpgradeNode = -1;
+        minUpgradeCost = -1;
+        minUpgradeWhat = -1;
+        productionRate = 0;
+    }
+
+    while (true) {
 
         const availMoney = ns.getServerMoneyAvailable("home");
-
-        if (minUpgradeCost > 0 && Math.min(minUpgradeCost, nodeCost) > availMoney) {
-            let timeout = 1 * ms;
-            /*if (productionRate > 0) {
-                timeout = ((Math.min(minUpgradeCost, nodeCost) - availMoney)/productionRate) * ms;
-            }*/
-            await ns.sleep(timeout);
-        }
 
         let nodes = [];
         productionRate = 0;
@@ -106,33 +142,10 @@ export async function main(ns) {
         nodes
             .forEach( node => {
                 l.d(1, "node[%d] level %d ram %d cpu %d", node.index, node.level, node.ram, node.cores);
-                if (node.level < maxLevel) {
-                    needUpgrade = true;
-                    const cost = ns.hacknet.getLevelUpgradeCost(node.index, 1);
-                    if (minUpgradeCost == -1 || minUpgradeCost > cost) {
-                        minUpgradeCost = cost;
-                        minUpgradeNode = node.index;
-                        minUpgradeWhat = 0;
-                    }
-                }
-                if (node.ram < maxRam) {
-                    needUpgrade = true;
-                    const cost = ns.hacknet.getRamUpgradeCost(node.index, 1);
-                    if (minUpgradeCost == -1 || minUpgradeCost > cost) {
-                        minUpgradeCost = cost;
-                        minUpgradeNode = node.index;
-                        minUpgradeWhat = 1;
-                    }
-                }
-                if (node.cores < maxCore) {
-                    needUpgrade = true;
-                    const cost = ns.hacknet.getCoreUpgradeCost(node.index, 1);
-                    if (minUpgradeCost == -1 || minUpgradeCost > cost) {
-                        minUpgradeCost = cost;
-                        minUpgradeNode = node.index;
-                        minUpgradeWhat = 2;
-                    }
-                }
+                if (node.level < maxLevel || maxLevel ==1)   upgrade_fn(upgradeLevel, ns.hacknet.getLevelUpgradeCost(node.index, 1));
+                if (node.ram < maxRam     || maxRam == -1)   upgrade_fn(upgradeRam,   ns.hacknet.getRamUpgradeCost(node.index, 1));
+                if (node.cores < maxCore  || maxCore == -1)  upgrade_fn(upgradeCpu,   ns.hacknet.getCoreUpgradeCost(node.index, 1));
+                if (node.cache < maxCache || maxCache == -1) upgrade_fn(upgradeCache, ns.hacknet.getCacheUpgradeCost(node.index, 1));
             });
 
         l.d(1, "node cost %d, upgrade cost %d, upgrade node %d, upgrade what %d",
@@ -145,10 +158,7 @@ export async function main(ns) {
                 l.d(1, "purchase node for %.2f%s$", price.amount, price.unit);
                 ns.hacknet.purchaseNode();
                 numNodes = ns.hacknet.numNodes();
-                minUpgradeNode = -1;
-                minUpgradeCost = -1;
-                minUpgradeWhat = -1; // 0 level, 1 ram, 2 cpu
-                productionRate = 0;
+                upgrade_reset();
                 nodeCost = numNodes < maxNumNodes ? ns.hacknet.getPurchaseNodeCost() : -1;
             }
         }
@@ -156,29 +166,48 @@ export async function main(ns) {
             if (minUpgradeCost < availMoney) {
                 const price = Units.money(minUpgradeCost);
                 switch(minUpgradeWhat) {
-                    case 0:
+                    case upgradeLevel:
                         l.d(1, "upgrade node %d level for %.2f%s$", minUpgradeNode, price.amount, price.unit);
                         ns.hacknet.upgradeLevel(minUpgradeNode, 1);
                         break;
-                    case 1:
+                    case upgradeRam:
                         l.d(1, "upgrade node %d ram for %.2f%s$", minUpgradeNode, price.amount, price.unit);
                         ns.hacknet.upgradeRam(minUpgradeNode, 1);
                         break;
-                    case 2:
+                    case upgradeCpu:
                         l.d(1, "upgrade node %d cpu for %.2f%s$", minUpgradeNode, price.amount, price.unit);
                         ns.hacknet.upgradeCore(minUpgradeNode, 1);
                         break;
+                    case upgradeCache:
+                        l.d(1, "upgrade node %d cache for %.2f%s$", minUpgradeNode, price.amount, price.unit);
+                        ns.hacknet.upgradeCache(minUpgradeNode, 1);
+                        break;
                 }
-                minUpgradeNode = -1;
-                minUpgradeCost = -1;
-                minUpgradeWhat = -1; // 0 level, 1 ram, 2 cpu
-                productionRate = 0;
+                upgrade_reset();
             }
         }
 
         numNodes = ns.hacknet.numNodes();
-        if (needUpgrade == false || minUpgradeCost > availMoney) await ns.sleep(1 * ms);
+
+        //spend hashes
+        if (ns.hashCapacity()/numHashes() > hashCapacity) {
+            if (numHashes() - (ns.hashCapacity() * hashCapacity) > ns.hashCost("Sell for Money")) {
+                hacknet.spendHashes("Sell for Money");
+            }
+        }
+
+        // spend hashes if still upgrading
+        if (needUpgrade || nodeCost > 0) {
+            if (numHashes() > ns.hashCost("Sell for Money")) {
+                hacknet.spendHashes("Sell for Money");
+            }
+        }
+
+        // if nothing to do
+        if (needUpgrade == false || nodeCost < 0 || ns.hashCapacity()/numHashes() < hashCapacity) {
+            await ns.sleep(1 * ms);
+        }
+
     }
-    l.g(1, "hack-net done, maximum nodes");
 
 }

@@ -54,6 +54,7 @@ export const scriptFiles = [
     "/h3ml/bin/backdoor.js",
     "/h3ml/bin/connect.js",
     "/h3ml/bin/hack-net.js",
+    "/h3ml/bin/hack-hash.js",
     "/h3ml/bin/scan.js",
     "/h3ml/bin/worm.js",
     "/h3ml/bin/stick.js",
