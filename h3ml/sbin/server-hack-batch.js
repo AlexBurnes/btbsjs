@@ -1,5 +1,5 @@
 const Module  = '/h3ml/sbin/server-hack-batch.js';
-const Version = '0.3.6.31'; // update this every time when edit the code!!!
+const Version = '0.3.6.33'; // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Logger}      from "/h3ml/lib/log.js";
@@ -138,7 +138,7 @@ async function hackServer(l, target, max_threads, once, analyze) {
             l.d(1, "gt %d, grow time %d", gt, grow_time);
             const total_threads = gt + wt;
             await socket.write(">", "", batch_time, total_threads, server.name, "gw", weak_timeout + period_timeout, batch_time);
-            if (gt > 0) { await server["grow"](gt, {start: grow_time, batch: batch_time})};
+            if (gt > 0) { await server["grow"](gt, {start: grow_time, batch: batch_time, stock: 1})};
             await server["weaken"](wt, {start: batch_time, batch: batch_time, await: true});
             updateInfo(ns, server);
             await ns.sleep(gap_timeout); // just in case
@@ -188,8 +188,8 @@ async function hackServer(l, target, max_threads, once, analyze) {
             await socket.write(">", "", batch_time, total_threads, server.name, "hwgw", weak_timeout+ period_timeout, batch_time);
             await server["hack"]  (hack_threads,      {start: hack_time,         batch: batch_time});
             await server["weaken"](weak_hack_threads, {start: hack_weak_time,    batch: batch_time});
-            await server["grow"]  (grow_threads,      {start: grow_time,         batch: batch_time});
-            await server["weaken"](weak_grow_threads, {start: grow_weak_time,    batch: batch_time,  await: true});
+            await server["grow"]  (grow_threads,      {start: grow_time,         batch: batch_time, stock: 1});
+            await server["weaken"](weak_grow_threads, {start: grow_weak_time,    batch: batch_time, await: true});
 
             l.g(1, "%s update info", time2str(ns, new Date(Date.now())));
             updateInfo(ns, server); // check
