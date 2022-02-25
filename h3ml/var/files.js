@@ -1,5 +1,5 @@
 const Module  = '/h3ml/var/files.js';
-const Version = '0.3.6.8';
+const Version = '0.3.6.35';
 
 import {Constants} from "/h3ml/lib/constants.js";
 
@@ -57,7 +57,7 @@ export const scriptFiles = [
     "/h3ml/bin/hack-hash.js",
     "/h3ml/bin/scan.js",
     "/h3ml/bin/worm.js",
-    "/h3ml/bin/stick.js",
+    "/h3ml/bin/stock.js",
 
     "/h3ml/bin/h3ml.js",
     "/h3ml/bin/hack.js",
@@ -86,6 +86,7 @@ export const scriptFiles = [
     "/h3ml/sbin/worker-min.js",
     "/h3ml/sbin/sharing.js",
     "/h3ml/sbin/stock.js",
+    "/h3ml/sbin/crime.js",
     "/h3ml/sbin/server-hack.js",
     "/h3ml/sbin/server-hack-min.js",
     "/h3ml/sbin/server-hack-batch.js",

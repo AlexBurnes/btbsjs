@@ -1,8 +1,8 @@
-const Module  = '/h3ml/bin/hack-hash.js';
-const Version = '0.3.6.34'; // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/hack-cache.js';
+const Version = '0.3.6.35'; // update this every time when edit the code!!!
 
 /*
-    Grow hacknet servers to max nodes and spend hashes for money or other goals
+    Grow hacknet servers to max nodes and spend cachees for money or other goals
 
     to work need source file getOwnedSourceFiles() 9.1
 
@@ -62,9 +62,9 @@ export async function main(ns) {
         [ 'update-port' , 0     ],
         [ 'help'        , false ],
         [ 'log'         , 1     ], // log level - 0 quiet, 1 and more verbose
-        [ 'debug'       , 0     ], // debug level
-        [ 'verbose'     , true  ], // verbose mode, short analog of --log-level 1
-        [ 'quiet'       , false ]  // quiet mode, short analog of --log-level 0
+        [ 'debug'       , 1     ], // debug level
+        [ 'verbose'     , false ], // verbose mode, short analog of --log-level 1
+        [ 'quiet'       , true  ]  // quiet mode, short analog of --log-level 0
 
     ]);
 
@@ -92,7 +92,7 @@ export async function main(ns) {
     const maxLevel = -1;
     const maxRam   = -1;
     const maxCore  = -1;
-    const maxHash  = -1;
+    const maxCache  = -1;
 
     let minUpgradeNode = -1;
     let minUpgradeCost = -1;
@@ -105,8 +105,8 @@ export async function main(ns) {
 
     let hashCapacity = 0.5; // over 50 sell
 
-    const upgrade_fn = function (what, cost) {
-        if (cost.isFinite()) {
+    const upgrade_fn = function (node, what, cost) {
+        if (cost !== Infinity) {
             needUpgrade = true;
             if (minUpgradeCost == -1 || minUpgradeCost > cost) {
                 minUpgradeCost = cost;
@@ -135,21 +135,21 @@ export async function main(ns) {
             nodes[i] = node;
             productionRate += node.production;
         }
-        l.d(1, "total nodes %d production rate %d", nodes.length, productionRate);
+        l.d(1, "total nodes %d production rate %.2f", nodes.length, productionRate);
 
         needUpgrade = false;
 
         nodes
             .forEach( node => {
-                l.d(1, "node[%d] level %d ram %d cpu %d", node.index, node.level, node.ram, node.cores);
-                if (node.level < maxLevel || maxLevel ==1)   upgrade_fn(upgradeLevel, ns.hacknet.getLevelUpgradeCost(node.index, 1));
-                if (node.ram < maxRam     || maxRam == -1)   upgrade_fn(upgradeRam,   ns.hacknet.getRamUpgradeCost(node.index, 1));
-                if (node.cores < maxCore  || maxCore == -1)  upgrade_fn(upgradeCpu,   ns.hacknet.getCoreUpgradeCost(node.index, 1));
-                if (node.cache < maxCache || maxCache == -1) upgrade_fn(upgradeCache, ns.hacknet.getCacheUpgradeCost(node.index, 1));
+                l.d(1, "node[%d] level %d ram %d cpu %d, cache %d", node.index, node.level, node.ram, node.cores, node.cache);
+                if (node.level < maxLevel || maxLevel == -1)   upgrade_fn(node, upgradeLevel, ns.hacknet.getLevelUpgradeCost(node.index, 1));
+                if (node.ram < maxRam     || maxRam == -1)   upgrade_fn(node, upgradeRam,   ns.hacknet.getRamUpgradeCost(node.index, 1));
+                if (node.cores < maxCore  || maxCore == -1)  upgrade_fn(node, upgradeCpu,   ns.hacknet.getCoreUpgradeCost(node.index, 1));
+                if (node.cache < maxCache || maxCache == -1) upgrade_fn(node, upgradeCache, ns.hacknet.getCacheUpgradeCost(node.index, 1));
             });
 
-        l.d(1, "node cost %d, upgrade cost %d, upgrade node %d, upgrade what %d",
-            nodeCost, minUpgradeCost, minUpgradeNode, minUpgradeWhat
+        l.d(1, "node cost %s, upgrade cost %s, upgrade node %d, upgrade what %d",
+            Units.money(nodeCost).pretty(ns), Units.money(minUpgradeCost).pretty(ns), minUpgradeNode, minUpgradeWhat
         );
 
         if (nodeCost > 0 && (nodeCost < minUpgradeCost || minUpgradeCost == -1)) {
@@ -189,24 +189,33 @@ export async function main(ns) {
 
         numNodes = ns.hacknet.numNodes();
 
-        //spend hashes
-        if (ns.hashCapacity()/numHashes() > hashCapacity) {
-            if (numHashes() - (ns.hashCapacity() * hashCapacity) > ns.hashCost("Sell for Money")) {
-                hacknet.spendHashes("Sell for Money");
+        //spend cachees
+        if (ns.hacknet.hashCapacity()/ns.hacknet.numHashes() > hashCapacity) {
+            if (ns.hacknet.numHashes() - (ns.hacknet.hashCapacity() * hashCapacity) > ns.hacknet.hashCost("Sell for Money")) {
+                ns.hacknet.spendHashes("Sell for Money");
             }
         }
 
-        // spend hashes if still upgrading
-        if (needUpgrade || nodeCost > 0) {
-            if (numHashes() > ns.hashCost("Sell for Money")) {
-                hacknet.spendHashes("Sell for Money");
+        // spend cachees if still upgrading
+        if (needUpgrade == true || nodeCost > 0) {
+            if (ns.hacknet.numHashes() > ns.hacknet.hashCost("Sell for Money")) {
+                await ns.hacknet.spendHashes("Sell for Money");
             }
         }
 
         // if nothing to do
-        if (needUpgrade == false || nodeCost < 0 || ns.hashCapacity()/numHashes() < hashCapacity) {
+        if (
+               needUpgrade == false
+            || nodeCost < 0
+            || ns.hacknet.numHashes == 0
+            || (ns.hacknet.numHashes > 0  && ns.hacknet.hashCapacity()/ns.hacknet.numHashes() < hashCapacity)
+            || (needUpgrade == true && minUpgradeCost > availMoney && ns.hacknet.numHashes() < ns.hacknet.hashCost("Sell for Money"))
+            || (nodeCost > 0 && nodeCost > availMoney && ns.hacknet.numHashes() < ns.hacknet.hashCost("Sell for Money"))
+        ) {
             await ns.sleep(1 * ms);
         }
+
+        //await ns.sleep(20);
 
     }
 

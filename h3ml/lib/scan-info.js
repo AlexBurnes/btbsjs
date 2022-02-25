@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/scan-info.js';
-const Version = '0.3.4.10'; // update this every time when edit the code!!!
+const Version = '0.3.6.35'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -57,7 +57,7 @@ export async function main(ns) {
         const hackable = ns.getHackingLevel() > server.hackLevel ? 1 : 0
         const rootable = rootKits >= ns.getServerNumPortsRequired(server.name) ? 1 : 0;
         const rooted   = ns.hasRootAccess(server.name) ? "🞕" : rootable ? "🞖" : "🞎";
-        const hacked   = ns.getServer().backdoorInstalled == true ? "🞕" : hackable ? "🞖" : "🞎";
+        const hacked   = ns.getServer(server.name).backdoorInstalled == true ? "🞕" : hackable ? "🞖" : "🞎";
 
         const moneyAvail = Units.money(ns.getServerMoneyAvailable(server.name));
         const moneyMax   = Units.money(ns.getServerMaxMoney(server.name));

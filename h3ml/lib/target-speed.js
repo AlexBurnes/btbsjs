@@ -1,6 +1,7 @@
 const Module  = '/h3ml/lib/target-speed.js';
-const Version = '0.3.6.30'; // update this every time when edit the code!!!
+const Version = '0.3.6.35'; // update this every time when edit the code!!!
 
+import {Constants}   from "/h3ml/lib/constants.js";
 import {Server}      from "/h3ml/lib/server-min.js";
 
 export class Target extends Server {
@@ -90,7 +91,8 @@ export class Target extends Server {
                 if (threads > 0) {
                     const serverMaxRam = ns.getServerMaxRam(server.name);
                     const serverUsedRam = ns.getServerUsedRam(server.name);
-                    const hostThreads = (serverMaxRam - serverUsedRam) / this.workerRam;
+                    const reserveRam = server.name == "home" ? Constants.reserveRam : 0;
+                    const hostThreads = (serverMaxRam - serverUsedRam - reserveRam) / this.workerRam;
                     //l.g(1, "server %s available threads %d", server.name, hostThreads)h;
                     if (hostThreads > 0) {
                         server.workerThreads = Math.min(hostThreads, threads);

@@ -1,5 +1,5 @@
 const Module  = '/h3ml/lib/botnet-min.js';
-const Version = '0.3.5.11';     // update this every time when edit the code!!!
+const Version = '0.3.6.35';  // update this every time when edit the code!!!
 
 import {Constants}   from "/h3ml/lib/constants.js";
 import {Servers}     from "/h3ml/lib/server-list.js";
@@ -38,15 +38,16 @@ export class BotNet {
         this.usedRam = 0;
         this.servers =
             Servers.list(ns, Server)
-                .filter(server => !server.name.match(/^(ctrl-server|devel-|hack-server(?:-\d+)*)$/)) // do not use ctr-server and hack-server for workers
+                .filter(server => !server.name.match(/^(?:ctrl-server|devel-|hacknet-node-|hack-server-)/)) // do not use ctr-server and hack-server for workers
                 .filter(server => ns.hasRootAccess(server.name))
                 .filter(server => server.maxRam > this.workerRam)
                 .filter(server => ns.fileExists(this.workerScript, server.name));
         this.servers
             .forEach(server => {
                 server.workers = Math.floor((server.maxRam - server.usedRam)/this.workerRam);
+                const reserveRam = server.name == "home" ? Constants.reserveRam : 0;
                 this.maxRam  += server.maxRam;
-                this.usedRam += server.usedRam;
+                this.usedRam += (server.usedRam + reserveRam);
             });
         this.maxWorkers = Math.floor(this.maxRam/this.workerRam);
         this.workers = Math.floor((this.maxRam - this.usedRam - Constants.reserveRam)/this.workerRam);
