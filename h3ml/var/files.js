@@ -53,19 +53,18 @@ export const scriptFiles = [
 
     "/h3ml/bin/backdoor.js",
     "/h3ml/bin/connect.js",
-    "/h3ml/bin/hack-net.js",
-    "/h3ml/bin/hack-hash.js",
     "/h3ml/bin/scan.js",
     "/h3ml/bin/worm.js",
-    "/h3ml/bin/stock.js",
-
+    "/h3ml/bin/stock-ctrl.js",
+    "/h3ml/bin/hacknet-ctrl.js",
+    "/h3ml/bin/crime-ctrl.js",
+    "/h3ml/sbin/hack-servers.js",
+    "/h3ml/sbin/hack-servers-min.js",
     "/h3ml/bin/h3ml.js",
     "/h3ml/bin/hack.js",
     "/h3ml/bin/grow.js",
     "/h3ml/bin/weak.js",
 
-    "/h3ml/bin/hack-servers.js",
-    "/h3ml/bin/hack-servers-min.js",
     "/h3ml/bin/share.js",
 
     "/h3ml/bin/start.js",
@@ -87,6 +86,8 @@ export const scriptFiles = [
     "/h3ml/sbin/sharing.js",
     "/h3ml/sbin/stock.js",
     "/h3ml/sbin/crime.js",
+    "/h3ml/sbin/hack-net.js",
+    "/h3ml/sbin/hack-hash.js",
     "/h3ml/sbin/server-hack.js",
     "/h3ml/sbin/server-hack-min.js",
     "/h3ml/sbin/server-hack-batch.js",

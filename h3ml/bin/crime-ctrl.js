@@ -1,5 +1,5 @@
-const Module  = '/h3ml/bin/stock.js';
-const Version = '0.3.5.11'; // update this every time when edit the code!!!
+const Module  = '/h3ml/bin/crime-ctrl.js';
+const Version = '0.3.7.0'; // update this every time when edit the code!!!
 
 import {Constants}  from "/h3ml/lib/constants.js";
 import {Logger}     from "/h3ml/lib/log.js";
@@ -19,66 +19,50 @@ async function version(ns, port) {
 **/
 function help(ns) {
     ns.tprintf("usage: %s cmd args | --version [--update-port] | --help", Module);
-    ns.tprintf("stock cli ctrl");
+    ns.tprintf("crime cli ctrl");
     return;
 }
 
-
-const stock_start(l) {
+const crime_start(l) {
     const ns = l.ns;
     Servers.list(ns)
         .forEach(server => {
             ns.ps(server.name)
-                .filter(proc => proc.filename == '/h3ml/sbin/stock.js')
+                .filter(proc => proc.filename == '/h3ml/sbin/crime.js')
                 .forEach( proc => {
                     l.w("already started at %s", server.name);
                     return;
                 })
         });
     const ctrl_server = ns.serverExists("ctrl-server") ? "ctrl-server" : "home";
-    ns.exec("/h3ml/sbin/stock.js", ctrl_server, 1);
+    ns.exec("/h3ml/sbin/crime.js", ctrl_server, 1);
     return;
 }
 
-const stock_ctrl_start(l, socket) {
+const crime_ctrl_send(l, socket, ...data) {
     const infoSocket = new Socket(ns, infoPort);
-    await socket.write("@", infoPort, "buy-all");
+    await socket.write("@", infoPort, data);
     const [time, data] = await infoSocket.read({time: infoSocket.time, timeout: 2000});
     if (!time) {
-        return l.e("failed send ctrl to stock module");
-    }
-    // FIXME analyze response
-    l.g(1, "%s", data.join(''));
-}
-
-const stock_ctrl_stop(l, socket) {
-    const infoSocket = new Socket(ns, infoPort);
-    await socket.write("@", infoPort, "sell-all");
-    const [time, data] = await infoSocket.read({time: infoSocket.time, timeout: 2000});
-    if (!time) {
-        return l.e("failed send ctrl to stock module");
+        return l.e("failed send ctrl to crime module");
     }
     l.g(1, "%s", data.join(''));
 }
 
-const stock_ctrl_start(l, socket, sybmol) {
-    const infoSocket = new Socket(ns, infoPort);
-    await socket.write("@", infoPort, "start-trade", symbol);
-    const [time, data] = await infoSocket.read({time: infoSocket.time, timeout: 2000});
-    if (!time) {
-        return l.e("failed send ctrl to stock module");
+const crime_ctrl_commit(l, socket, ...data) {
+    const [cmd, type] = data;
+    if (type != /shop|rob|mug|larceny|drugs|traffic|homecide|gta|kidnap|assassin|heist|\d+/) {
+        return l.e("wrong type of crime, typ list to show available");
     }
-    l.g(1, "%s", data.join(''));
+    return crime_ctrl_send(l, socket, data);
 }
 
-const stock_ctrl_start(l, socket, sybmol) {
-    const infoSocket = new Socket(ns, infoPort);
-    await socket.write("@", infoPort, "stop-trade", symbol);
-    const [time, data] = await infoSocket.read({time: infoSocket.time, timeout: 2000});
-    if (!time) {
-        return l.e("failed send ctrl to stock module");
+const crime_ctrl_enable(l, socket, ...data) {
+    const [cmd, type] = data;
+    if (type != /all|shop|rob|mug|larceny|drugs|traffic|homecide|gta|kidnap|assassin|heist|\d+/) {
+        return l.e("wrong type of crime, typ list to show available");
     }
-    l.g(1, "%s", data.join(''));
+    return crime_ctrl_send(l, socket, data);
 }
 
 /** @param {NS} ns **/
@@ -103,23 +87,26 @@ export async function main(ns) {
 
     const l = new Logger(ns, {args: args});
 
-    const socket = new Socket(ns, Constants.stockPort);
+    const socket = new Socket(ns, Constants.crimePort);
 
-    const [cmd, symbol] = args["_"];
-    l.g(1, "stock ctrl '%s' %s", cmd, sybmol !== undefined ? sybmol : "");
+    const [cmd, ...options] = args["_"];
+    l.g(1, "crime ctrl '%s'", cmd);
     switch (cmd) {
         case "start":
-            stock_start();
-            stock_ctrl_start(l, socket);
+            crime_start();
+            crime_ctrl_send(l, socket, cmd);
             break;
         case "stop":
-            stock_ctrl_stop(l, socket);
+            crime_ctrl_send(l, socket, cmd);
             break;
-        case "buy":
-            stock_ctrl_buy(l, socket, sybmol);
+        case "commit":
+            crime_ctrl_commit(l, socket, cmd, options);
             break;
-        case "sell":
-            stock_ctrl_sell(l, socket, sybmol);
+        case "enable":
+            crime_ctrl_enable(l, socket, cmd, options);
+            break;
+        case "disable":
+            crime_ctrl_enable(l, socket, cmd, options);
             break;
     }
 
